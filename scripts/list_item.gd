@@ -21,13 +21,17 @@ func _ready() -> void:
 	mostrar_acciones(valido == false)
 
 
-func setup(nombre: String, descripcion: String, enlace: String) -> void:
+func setup(nombre: String, descripcion: String, enlace: String, imagen := "") -> void:
 	url = enlace
 	text = ""
 	tooltip_text = enlace
 	%NombreLabel.text = nombre
 	%DescripcionLabel.text = descripcion
 	_pintar_estado("Sin comprobar", Color(0.55, 0.55, 0.55, 1))
+	if imagen != "" and FileAccess.file_exists(imagen):
+		var img := Image.load_from_file(imagen)
+		if img != null and not img.is_empty():
+			%Imagen.texture = ImageTexture.create_from_image(img)
 
 
 func aplicar_estado(ok: Variant, texto: String) -> void:

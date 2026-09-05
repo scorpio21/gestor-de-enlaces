@@ -1,6 +1,8 @@
 extends SceneTree
 
 const LIST_ITEM := preload("res://scenes/ListItem.tscn")
+const PLACEHOLDER := "res://Assets/png/no-disponible.png"
+const BASE := "user://__test_list_item__"
 
 var _fallos := 0
 
@@ -24,6 +26,22 @@ func _arrancar() -> void:
 	_check(_acciones_visibles(caido), "restaurar enlace caído muestra los botones de acción")
 	_check(not _acciones_visibles(valido), "restaurar enlace válido oculta los botones de acción")
 	_check(not _acciones_visibles(fresco), "enlace sin estado oculta los botones de acción")
+
+	var con_imagen := _crear_item()
+	con_imagen.setup("Nom", "Desc", "https://ejemplo.com/v", _generar_png_temporal())
+	var sin_imagen := _crear_item()
+	sin_imagen.setup("Nom", "Desc", "https://ejemplo.com/w", "")
+	var inexistente := _crear_item()
+	inexistente.setup("Nom", "Desc", "https://ejemplo.com/u", BASE + "/no-existe.png")
+
+	root.add_child(con_imagen)
+	root.add_child(sin_imagen)
+	root.add_child(inexistente)
+
+	await process_frame
+	_check(_miniatura_es(con_imagen, false), "miniatura muestra la imagen elegida")
+	_check(_miniatura_es(sin_imagen, true), "sin imagen muestra el placeholder")
+	_check(_miniatura_es(inexistente, true), "imagen inexistente muestra el placeholder")
 
 	if _fallos == 0:
 		print("TESTS OK")
@@ -49,3 +67,22 @@ func _check(condicion: bool, etiqueta: String) -> void:
 	else:
 		_fallos += 1
 		push_error("FALLO: %s" % etiqueta)
+
+
+func _generar_png_temporal() -> String:
+	DirAccess.make_dir_recursive_absolute(BASE)
+	var ruta := BASE + "/prueba.png"
+	var img := Image.create_empty(4, 4, false, Image.FORMAT_RGBA8)
+	img.fill(Color.WHITE)
+	img.save_png(ruta)
+	return ruta
+
+
+func _miniatura_es(item: Control, placeholder_esperado: bool) -> bool:
+	if not item.has_node("%Imagen"):
+		return false
+	var textura: Texture2D = item.get_node("%Imagen").texture
+	if textura == null:
+		return false
+	var es_placeholder := textura.resource_path == PLACEHOLDER
+	return es_placeholder == placeholder_esperado

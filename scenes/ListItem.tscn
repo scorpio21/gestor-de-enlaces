@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bgestoritem001"]
+[gd_scene load_steps=3 format=3 uid="uid://bgestoritem001"]
 
 [ext_resource type="Script" path="res://scripts/list_item.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://Assets/png/no-disponible.png" id="2_placeholder"]
 
 [node name="ListItem" type="Button"]
 custom_minimum_size = Vector2(0, 56)
@@ -25,6 +26,15 @@ theme_override_constants/margin_bottom = 8
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 10
+
+[node name="Imagen" type="TextureRect" parent="Margen/Fila"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("2_placeholder")
 
 [node name="Indicador" type="ColorRect" parent="Margen/Fila"]
 unique_name_in_owner = true
