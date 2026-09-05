@@ -54,7 +54,10 @@ func _leer_json(ruta: String) -> Variant:
 	var archivo := FileAccess.open(ruta, FileAccess.READ)
 	if archivo == null:
 		return null
-	return JSON.parse_string(archivo.get_as_text())
+	var json := JSON.new()
+	if json.parse(archivo.get_as_text()) != OK:
+		return null
+	return json.data
 
 
 func _escribir_json(ruta: String, dato: Variant) -> bool:

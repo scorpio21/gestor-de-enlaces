@@ -7,6 +7,7 @@ var _fallos := 0
 
 
 func _initialize() -> void:
+	DirAccess.make_dir_recursive_absolute(BASE)
 	_limpiar()
 	_check(cargar_vacio(), "cargar() vacío devuelve estados vacíos y borrados vacíos")
 	_check(guardar_y_recuperar(), "guardar_estado() persiste y cargar() lo recupera")
@@ -18,6 +19,7 @@ func _initialize() -> void:
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
+		return
 	print("TESTS FALLIDOS: %d" % _fallos)
 	quit(1)
 
