@@ -1,0 +1,108 @@
+[gd_scene load_steps=3 format=3 uid="uid://bgestormain001"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/AgregarEnlace.tscn" id="2_agregar"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="ColumnaApp" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="MenuBar" type="MenuBar" parent="ColumnaApp"]
+unique_name_in_owner = true
+layout_mode = 2
+prefer_global_menu = false
+
+[node name="File" type="PopupMenu" parent="ColumnaApp/MenuBar"]
+unique_name_in_owner = true
+
+[node name="Utilidades" type="PopupMenu" parent="ColumnaApp/MenuBar"]
+unique_name_in_owner = true
+
+[node name="Margen" type="MarginContainer" parent="ColumnaApp"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Columna" type="VBoxContainer" parent="ColumnaApp/Margen"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Titulo" type="Label" parent="ColumnaApp/Margen/Columna"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Gestor de enlaces AO"
+
+[node name="Busqueda" type="LineEdit" parent="ColumnaApp/Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Buscar por nombre o descripción..."
+clear_button_enabled = true
+
+[node name="BarraAcciones" type="HBoxContainer" parent="ColumnaApp/Margen/Columna"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BotonComprobar" type="Button" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Comprobar enlaces"
+
+[node name="FiltroEstado" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 4
+popup/item_0/text = "Todos"
+popup/item_0/id = 0
+popup/item_1/text = "Válidos"
+popup/item_1/id = 1
+popup/item_2/text = "Caídos / no existen"
+popup/item_2/id = 2
+popup/item_3/text = "Sin comprobar"
+popup/item_3/id = 3
+
+[node name="Progreso" type="Label" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ColumnaApp/Margen/Columna"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ListaContenedor" type="VBoxContainer" parent="ColumnaApp/Margen/Columna/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="VentanaAgregar" parent="." instance=ExtResource("2_agregar")]
+unique_name_in_owner = true

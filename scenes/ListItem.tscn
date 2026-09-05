@@ -1,0 +1,65 @@
+[gd_scene load_steps=2 format=3 uid="uid://bgestoritem001"]
+
+[ext_resource type="Script" path="res://scripts/list_item.gd" id="1_item"]
+
+[node name="ListItem" type="Button"]
+custom_minimum_size = Vector2(0, 56)
+size_flags_horizontal = 3
+alignment = 0
+script = ExtResource("1_item")
+
+[node name="Margen" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="Fila" type="HBoxContainer" parent="Margen"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Indicador" type="ColorRect" parent="Margen/Fila"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.55, 0.55, 0.55, 1)
+
+[node name="Textos" type="VBoxContainer" parent="Margen/Fila"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="NombreLabel" type="Label" parent="Margen/Fila/Textos"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
+text = "Nombre"
+
+[node name="DescripcionLabel" type="Label" parent="Margen/Fila/Textos"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "Descripción"
+autowrap_mode = 3
+
+[node name="EstadoLabel" type="Label" parent="Margen/Fila"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+mouse_filter = 2
+horizontal_alignment = 2
+text = "Sin comprobar"
+autowrap_mode = 3
