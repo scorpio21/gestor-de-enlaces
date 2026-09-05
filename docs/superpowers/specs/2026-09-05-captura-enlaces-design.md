@@ -42,7 +42,7 @@ Al agregar un enlace (escenario AO), poder elegir un archivo de imagen local (ca
 
 ## Placeholder no-disponible.png
 
-- Existe como asset en `res://Assets/png/no-disponible.png` (se genera y commitea en la implementación).
+- Existe como asset en `res://Assets/png/no-disponible.png` (ya creado en el proyecto por el usuario, con su `.import`; se versiona en git).
 - Regla de visualización: si `img` está vacío O `ResourceLoader.file_exists(img)`/carga falla → la miniatura muestra `no-disponible.png`. Si la imagen se carga bien → muestra la imagen.
 - La lista siempre muestra la `TextureRect` (visible), con placeholder o imagen real. Así el usuario sabe que la miniatura existe pero no hay captura.
 
