@@ -22,6 +22,15 @@ activo o de la búsqueda. La barra es un resumen global, no de la lista visible.
 No se modifica el comportamiento del label `Progreso` existente (textos de
 comprobación y mensajes).
 
+## Arquitectura
+
+El cálculo de contadores se aísla en un helper estático puro
+`scripts/gestor_contadores.gd` con firma
+`static func contar(entradas: Array, estados: Dictionary) -> Dictionary`
+(diccionario `{"total", "activos", "rotos"}`), testeable headless como el resto
+de helpers del repo (`gestor_imagenes.gd`, `estado_store.gd`). `main.gd` lo
+invoca desde `_actualizar_status()`.
+
 ## Versión
 
 - Añadir `config/version="0.0.1"` en la sección `[application]` de
@@ -93,6 +102,8 @@ comprobadas) solo suman a `Total`.
 
 - Smoke headless: la escena `Main.tscn` abre sin errores y los labels de la
   barra muestran valores coherentes.
-- El cálculo es trivial y vive en `main.gd` (escena); no se añaden tests GUT
-  nuevos para esta funcionalidad.
+- Harness `tests/test_gestor_contadores.gd`: casos del helper de conteo
+  (vacío, solo sin estado, mezcla, entradas sin formato, URLs repetidas).
+- Harness `tests/test_main_barra.gd`: instancia `Main.tscn` y verifica que los
+  labels únicos existen, muestran valor y que `%Version` comienza por `v`.
 - Los tests existentes (GUT + harness headless) deben seguir pasando.
