@@ -5,12 +5,17 @@ const DATA_RES := "res://data/data.json"
 const DATA_USER := "user://enlaces.json"
 const MAX_PARALELO := 3
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
+const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
 @onready var progreso: Label = %Progreso
 @onready var filtro: OptionButton = %FiltroEstado
 @onready var ventana_agregar = %VentanaAgregar
+@onready var rotos_label: Label = %Rotos
+@onready var activos_label: Label = %Activos
+@onready var total_label: Label = %Total
+@onready var version_label: Label = %Version
 
 var _entradas: Array = []
 var _cola: Array[Button] = []
@@ -38,6 +43,8 @@ func _ready() -> void:
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
 	_cargar_datos()
 	_refrescar_vista()
+	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
+	_actualizar_status()
 
 
 func _configurar_menus() -> void:
@@ -127,6 +134,7 @@ func _on_enlace_guardado(datos: Dictionary) -> void:
 		_entradas.pop_back()
 		return
 	_refrescar_vista()
+	_actualizar_status()
 	progreso.text = "Enlace agregado: %s" % datos.get("nombre", "")
 
 
@@ -214,6 +222,7 @@ func _on_item_terminado(item: Button) -> void:
 	if is_instance_valid(item):
 		_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje)
 	_aplicar_filtro()
+	_actualizar_status()
 	if not _cola.is_empty() or _en_vuelo > 0:
 		_lanzar_siguiente()
 		return
@@ -241,6 +250,7 @@ func _persistir_recompra(item: Button) -> void:
 		return
 	_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje)
 	_aplicar_filtro()
+	_actualizar_status()
 
 
 func _on_eliminar_pedido(item: Button) -> void:
@@ -270,6 +280,7 @@ func _confirmar_borrado() -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(imagen_borrada))
 	progreso.text = "Enlace eliminado"
 	_aplicar_filtro()
+	_actualizar_status()
 
 
 func _aplicar_filtro() -> void:
@@ -288,3 +299,10 @@ func _aplicar_filtro() -> void:
 
 func _on_busqueda_changed(_texto: String) -> void:
 	_refrescar_vista()
+
+
+func _actualizar_status() -> void:
+	var c: Dictionary = ContadoresScript.contar(_entradas, _estados)
+	rotos_label.text = "Rotos: %d" % c.get("rotos", 0)
+	activos_label.text = "Activos: %d" % c.get("activos", 0)
+	total_label.text = "Total: %d" % c.get("total", 0)
