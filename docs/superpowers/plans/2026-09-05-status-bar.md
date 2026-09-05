@@ -140,7 +140,7 @@ static func contar(entradas: Array, estados: Dictionary) -> Dictionary:
 - [ ] **Step 4: Ejecutar y verificar que pasan (GREEN)**
 
 Run: el mismo comando del Step 2.
-Expected: `TESTS OK`, EXIT 0, 9 checks `OK`.
+Expected: `TESTS OK`, EXIT 0, 7 checks `OK`.
 
 - [ ] **Step 5: Smoke y commit**
 
