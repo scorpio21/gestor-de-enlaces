@@ -162,7 +162,8 @@ func _mostrar_lista(entradas: Array) -> void:
 		item.setup(
 			str(entrada.get("nombre", "")),
 			str(entrada.get("desc", "")),
-			str(entrada.get("url", ""))
+			str(entrada.get("url", "")),
+			str(entrada.get("img", ""))
 		)
 		var url_item := str(entrada.get("url", ""))
 		var estado: Dictionary = _estados.get(url_item, {})
@@ -258,11 +259,15 @@ func _confirmar_borrado() -> void:
 	_estado_store.borrar_estado(item.url)
 	_estados.erase(item.url)
 
+	var imagen_borrada := ""
 	for i in range(_entradas.size() - 1, -1, -1):
 		if typeof(_entradas[i]) == TYPE_DICTIONARY and str(_entradas[i].get("url", "")) == item.url:
+			imagen_borrada = str(_entradas[i].get("img", ""))
 			_entradas.remove_at(i)
 
 	item.queue_free()
+	if imagen_borrada.begins_with("res://Assets/png/") and imagen_borrada != "res://Assets/png/no-disponible.png":
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(imagen_borrada))
 	progreso.text = "Enlace eliminado"
 	_aplicar_filtro()
 
