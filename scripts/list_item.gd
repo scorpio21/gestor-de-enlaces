@@ -18,7 +18,7 @@ var _checker: Node = null
 func _ready() -> void:
 	%BtnRecomprobar.pressed.connect(recomprobar_pedido.emit)
 	%BtnEliminar.pressed.connect(eliminar_pedido.emit)
-	mostrar_acciones(false)
+	mostrar_acciones(valido == false)
 
 
 func setup(nombre: String, descripcion: String, enlace: String) -> void:
