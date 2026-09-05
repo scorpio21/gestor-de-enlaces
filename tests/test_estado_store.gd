@@ -1,0 +1,79 @@
+extends SceneTree
+
+const EstadoStore := preload("res://scripts/estado_store.gd")
+const BASE := "user://__test_gestor__"
+
+var _fallos := 0
+
+
+func _initialize() -> void:
+	_limpiar()
+	_check(cargar_vacio(), "cargar() vacío devuelve estados vacíos y borrados vacíos")
+	_check(guardar_y_recuperar(), "guardar_estado() persiste y cargar() lo recupera")
+	_check(actualizar_entrada(), "guardar_estado() actualiza una entrada existente")
+	_check(borrados_sin_duplicados(), "marcar_borrado() no añade duplicados")
+	_check(borrar_estado_limpia(), "borrar_estado() elimina la entrada")
+	_check(json_roto_no_rompe(), "JSON roto no rompe cargar()")
+	_limpiar()
+	if _fallos == 0:
+		print("TESTS OK")
+		quit(0)
+	print("TESTS FALLIDOS: %d" % _fallos)
+	quit(1)
+
+
+func cargar_vacio() -> bool:
+	var datos := EstadoStore.new(BASE).cargar()
+	return datos.has("estados") and datos.has("borrados") \
+		and datos["estados"] == {} and datos["borrados"] == []
+
+
+func guardar_y_recuperar() -> bool:
+	var store := EstadoStore.new(BASE)
+	if not store.guardar_estado("https://ejemplo.com/a", true, "OK (200)"):
+		return false
+	var datos := store.cargar()
+	var e: Dictionary = datos["estados"].get("https://ejemplo.com/a", {})
+	return e.get("valido") == true and e.get("mensaje") == "OK (200)" and int(e.get("fecha", 0)) > 0
+
+
+func actualizar_entrada() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://ejemplo.com/a", true, "OK (200)")
+	store.guardar_estado("https://ejemplo.com/a", false, "No existe (404)")
+	var e: Dictionary = store.cargar()["estados"].get("https://ejemplo.com/a", {})
+	return e.get("valido") == false and e.get("mensaje") == "No existe (404)"
+
+
+func borrados_sin_duplicados() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.marcar_borrado("https://muerto.com/x")
+	store.marcar_borrado("https://muerto.com/x")
+	return store.cargar()["borrados"] == ["https://muerto.com/x"]
+
+
+func borrar_estado_limpia() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://ejemplo.com/a", true, "OK (200)")
+	store.borrar_estado("https://ejemplo.com/a")
+	return store.cargar()["estados"] == {}
+
+
+func json_roto_no_rompe() -> bool:
+	FileAccess.open(BASE + "/estados.json", FileAccess.WRITE).store_string("{no es json")
+	FileAccess.open(BASE + "/borrados.json", FileAccess.WRITE).store_string("burro")
+	var datos := EstadoStore.new(BASE).cargar()
+	return datos["estados"] == {} and datos["borrados"] == []
+
+
+func _check(condicion: bool, etiqueta: String) -> void:
+	if condicion:
+		print("  OK: %s" % etiqueta)
+	else:
+		_fallos += 1
+		push_error("FALLO: %s" % etiqueta)
+
+
+func _limpiar() -> void:
+	DirAccess.remove_absolute(BASE + "/estados.json")
+	DirAccess.remove_absolute(BASE + "/borrados.json")
