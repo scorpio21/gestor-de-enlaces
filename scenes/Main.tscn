@@ -106,3 +106,8 @@ theme_override_constants/separation = 6
 
 [node name="VentanaAgregar" parent="." instance=ExtResource("2_agregar")]
 unique_name_in_owner = true
+
+[node name="ConfirmarBorrado" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Eliminar enlace"
+ok_button_text = "Eliminar"

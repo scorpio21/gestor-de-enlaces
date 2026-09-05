@@ -4,6 +4,7 @@ const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const DATA_RES := "res://data/data.json"
 const DATA_USER := "user://enlaces.json"
 const MAX_PARALELO := 3
+const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -16,12 +17,17 @@ var _cola: Array[Button] = []
 var _en_vuelo := 0
 var _hechos := 0
 var _total := 0
+var _estado_store: RefCounted
+var _estados := {}
+var _borrados: Array = []
+var _item_pendiente_borrar: Button = null
 
 
 func _ready() -> void:
 	_configurar_menus()
 	busqueda.text_changed.connect(_on_busqueda_changed)
 	%BotonComprobar.pressed.connect(_comprobar_visibles)
+	%ConfirmarBorrado.confirmed.connect(_confirmar_borrado)
 	filtro.clear()
 	filtro.add_item("Todos", 0)
 	filtro.add_item("Válidos", 1)
@@ -60,20 +66,29 @@ func _cargar_datos() -> void:
 	var base := _leer_array(DATA_RES)
 	var usuario := _leer_array(DATA_USER)
 	_entradas = base
-	if usuario.is_empty():
-		return
-	var urls := {}
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY:
-			urls[str(entrada.get("url", ""))] = true
-	for entrada in usuario:
-		if typeof(entrada) != TYPE_DICTIONARY:
-			continue
-		var url := str(entrada.get("url", ""))
-		if url.is_empty() or urls.has(url):
-			continue
-		_entradas.append(entrada)
-		urls[url] = true
+	if not usuario.is_empty():
+		var urls := {}
+		for entrada in _entradas:
+			if typeof(entrada) == TYPE_DICTIONARY:
+				urls[str(entrada.get("url", ""))] = true
+		for entrada in usuario:
+			if typeof(entrada) != TYPE_DICTIONARY:
+				continue
+			var url := str(entrada.get("url", ""))
+			if url.is_empty() or urls.has(url):
+				continue
+			_entradas.append(entrada)
+			urls[url] = true
+
+	_estado_store = EstadoStoreScript.new()
+	var datos: Dictionary = _estado_store.cargar()
+	_estados = datos.get("estados", {})
+	_borrados = datos.get("borrados", [])
+	_entradas = _entradas.filter(
+		func(entrada: Variant) -> bool:
+			return typeof(entrada) != TYPE_DICTIONARY \
+				or not _borrados.has(str(entrada.get("url", "")))
+	)
 
 
 func _leer_array(path: String) -> Array:
@@ -149,6 +164,14 @@ func _mostrar_lista(entradas: Array) -> void:
 			str(entrada.get("desc", "")),
 			str(entrada.get("url", ""))
 		)
+		var url_item := str(entrada.get("url", ""))
+		var estado: Dictionary = _estados.get(url_item, {})
+		if estado.is_empty():
+			item.mostrar_acciones(false)
+		else:
+			item.aplicar_estado(estado.get("valido"), str(estado.get("mensaje", "")))
+		item.eliminar_pedido.connect(_on_eliminar_pedido.bind(item))
+		item.recomprobar_pedido.connect(_on_recomprobar_pedido.bind(item))
 		lista.add_child(item)
 
 	_aplicar_filtro()
@@ -179,14 +202,16 @@ func _lanzar_siguiente() -> void:
 		if not is_instance_valid(item):
 			continue
 		_en_vuelo += 1
-		item.verificacion_terminada.connect(_on_item_terminado, CONNECT_ONE_SHOT)
+		item.verificacion_terminada.connect(_on_item_terminado.bind(item), CONNECT_ONE_SHOT)
 		item.verificar()
 
 
-func _on_item_terminado() -> void:
+func _on_item_terminado(item: Button) -> void:
 	_en_vuelo = maxi(_en_vuelo - 1, 0)
 	_hechos += 1
 	progreso.text = "Comprobando %d/%d…" % [_hechos, _total]
+	if is_instance_valid(item):
+		_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje)
 	_aplicar_filtro()
 	if not _cola.is_empty() or _en_vuelo > 0:
 		_lanzar_siguiente()
@@ -195,9 +220,51 @@ func _on_item_terminado() -> void:
 	%BotonComprobar.disabled = false
 	var caidos := 0
 	for hijo in lista.get_children():
-		if hijo.valido == false:
+		if is_instance_valid(hijo) and hijo.valido == false:
 			caidos += 1
 	progreso.text = "Listo: %d caídos de %d" % [caidos, _total]
+
+
+func _on_recomprobar_pedido(item: Button) -> void:
+	if not is_instance_valid(item):
+		return
+	if item.estado == "comprobando":
+		return
+	progreso.text = "Re-comprobando %s…" % item.url
+	item.verificacion_terminada.connect(_persistir_recompra.bind(item), CONNECT_ONE_SHOT)
+	item.verificar()
+
+
+func _persistir_recompra(item: Button) -> void:
+	if not is_instance_valid(item):
+		return
+	_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje)
+	_aplicar_filtro()
+
+
+func _on_eliminar_pedido(item: Button) -> void:
+	_item_pendiente_borrar = item
+	%ConfirmarBorrado.dialog_text = "¿Eliminar «%s» para siempre?" % item.get_node("Margen/Fila/Textos/NombreLabel").text
+	%ConfirmarBorrado.popup_centered()
+
+
+func _confirmar_borrado() -> void:
+	var item := _item_pendiente_borrar
+	_item_pendiente_borrar = null
+	if not is_instance_valid(item):
+		return
+
+	_estado_store.marcar_borrado(item.url)
+	_estado_store.borrar_estado(item.url)
+	_estados.erase(item.url)
+
+	for i in range(_entradas.size() - 1, -1, -1):
+		if typeof(_entradas[i]) == TYPE_DICTIONARY and str(_entradas[i].get("url", "")) == item.url:
+			_entradas.remove_at(i)
+
+	item.queue_free()
+	progreso.text = "Enlace eliminado"
+	_aplicar_filtro()
 
 
 func _aplicar_filtro() -> void:
