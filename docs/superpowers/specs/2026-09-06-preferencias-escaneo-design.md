@@ -65,8 +65,8 @@ Script `scripts/preferencias.gd extends Window`:
 - Eliminar `const MAX_PARALELO := 3`.
 - Nuevas vars `_paralelismo := 3` y `_timeout := 10.0`.
 - `const ConfigStoreScript := preload("res://scripts/config_store.gd")`.
-- `const PreferenciasScene := preload("res://scenes/Preferencias.tscn")`.
-- En `_ready()`, tras `_cargar_datos()`: instanciar `config_store`, cargar config, asignar `_paralelismo` / `_timeout`, instanciar el diálogo `Preferencias` (como hijo, oculto) y conectar `aplicado`.
+- `scenes/Main.tscn`: añadir `[node name="VentanaPreferencias" parent="." instance=ExtResource("3_preferencias")]` con `unique_name_in_owner = true` (mismo patrón que `VentanaAgregar`).
+- En `_ready()`, `@onready var preferencias: Window = %VentanaPreferencias`; tras `_cargar_datos()`: crear `config_store`, cargar config, asignar `_paralelismo` / `_timeout`, conectar `preferencias.aplicado`.
 - Menú Utilidades: añadir «Preferencias…» (id 1) en `_configurar_menus()`; `_on_utilidades_id(1)` abre el diálogo con `abrir(_paralelismo, _timeout)`.
 - `_lanzar_siguiente()`: usar `_paralelismo` en vez de `MAX_PARALELO`.
 - `_mostrar_lista()`: al hacer `item.setup(...)`, llamar `item.configurar_timeout(_timeout)`.
@@ -102,7 +102,7 @@ Próxima tanda:
 
 Harness headless (`extends SceneTree`), sin autoloads, sin red. Patrón de `test_estado_store.gd` para el store.
 
-- **`tests/test_config_store.gd`** (crear): `ConfigStore.new()` con base temporal (p.ej. `res://.tmp/`) para no tocar la config real del usuario. Checks:
+- **`tests/test_config_store.gd`** (crear): `ConfigStore.new()` con base temporal `user://__test_config__` (mismo patrón que `test_estado_store.gd` usa `user://__test_gestor__`) para no tocar la config real del usuario. Checks:
   1. Sin fichero → `cargar()` devuelve defaults (3 / 10.0).
   2. `guardar(5, 20.0)` + `cargar()` → recupera `5` / `20.0`.
   3. JSON roto en disco → defaults.
