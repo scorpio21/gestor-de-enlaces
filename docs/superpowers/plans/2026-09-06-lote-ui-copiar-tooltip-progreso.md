@@ -21,7 +21,7 @@
 | `tests/test_estado_store.gd` | Modificar: +2 checks |
 | `tests/test_link_checker_timeout.gd` | Modificar: +2 checks |
 | `tests/test_list_item.gd` | Modificar: +10 checks |
-| `tests/test_main_barra.gd` | Modificar: +9 checks |
+| `tests/test_main_barra.gd` | Modificar: +7 checks |
 
 No se crean archivos nuevos → no aplican sidecars `.uid` nuevos (se verifica en la tarea 5).
 
