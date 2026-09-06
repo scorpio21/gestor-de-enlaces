@@ -27,7 +27,7 @@ func _ready() -> void:
 func setup(nombre: String, descripcion: String, enlace: String, imagen := "") -> void:
 	url = enlace
 	text = ""
-	tooltip_text = enlace
+	_actualizar_tooltip()
 	%NombreLabel.text = nombre
 	%DescripcionLabel.text = descripcion
 	_pintar_estado("Sin comprobar", Color(0.55, 0.55, 0.55, 1))
@@ -52,6 +52,24 @@ func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva :
 		estado = "pendiente"
 		_pintar_estado("Sin comprobar", Color(0.55, 0.55, 0.55, 1))
 	mostrar_acciones(ok == false)
+	_actualizar_tooltip()
+
+
+static func formatear_fecha(unix: int) -> String:
+	var d := Time.get_datetime_dict_from_unix_time(unix)
+	return "%02d/%02d/%04d %02d:%02d" % [d.day, d.month, d.year, d.hour, d.minute]
+
+
+func _actualizar_tooltip() -> void:
+	if valido == null:
+		tooltip_text = url + "\nSin comprobar"
+		return
+	var lineas := PackedStringArray([url])
+	lineas.append("Código: %s" % ("—" if codigo == 0 else str(codigo)))
+	if fecha > 0:
+		lineas.append("Comprobado: %s" % formatear_fecha(fecha))
+	lineas.append(mensaje)
+	tooltip_text = "\n".join(lineas)
 
 
 func mostrar_acciones(visible_acciones: bool) -> void:
@@ -93,6 +111,7 @@ func _on_check_terminado(ok: bool, texto: String) -> void:
 	mensaje = texto
 	_pintar_estado(texto, Color(0.35, 0.85, 0.45, 1) if ok else Color(0.95, 0.35, 0.35, 1))
 	mostrar_acciones(not ok)
+	_actualizar_tooltip()
 	verificacion_terminada.emit()
 
 

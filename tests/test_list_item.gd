@@ -1,6 +1,7 @@
 extends SceneTree
 
 const LIST_ITEM := preload("res://scenes/ListItem.tscn")
+const ListItemScript := preload("res://scripts/list_item.gd")
 const PLACEHOLDER := "res://Assets/png/no-disponible.png"
 const BASE := "user://__test_list_item__"
 
@@ -50,6 +51,27 @@ func _arrancar() -> void:
 	await process_frame
 	_check(con_detalle.codigo == 200, "aplicar_estado() guarda el código")
 	_check(con_detalle.fecha == 1000000000, "aplicar_estado() guarda la fecha")
+
+	var unix := 1000000000
+	var esperado := ListItemScript.formatear_fecha(unix)
+	_check(esperado.length() == 16, "formatear_fecha devuelve 'dd/mm/aaaa hh:mm'")
+	var d_fecha := Time.get_datetime_dict_from_unix_time(unix)
+	_check(esperado == "%02d/%02d/%04d %02d:%02d" % [d_fecha.day, d_fecha.month, d_fecha.year, d_fecha.hour, d_fecha.minute], "formatear_fecha compone día/mes/año y hora")
+	var detallado := _crear_item()
+	detallado.setup("Nom", "Desc", "https://ejemplo.com/t")
+	detallado.aplicar_estado(false, "No existe (404)", 404, unix)
+	root.add_child(detallado)
+	await process_frame
+	_check(detallado.tooltip_text == "https://ejemplo.com/t\nCódigo: 404\nComprobado: %s\nNo existe (404)" % esperado, "tooltip con estado muestra URL, código, fecha y mensaje")
+	var sin_codigo := _crear_item()
+	sin_codigo.setup("Nom", "Desc", "https://ejemplo.com/s")
+	sin_codigo.aplicar_estado(true, "OK (200)")
+	root.add_child(sin_codigo)
+	await process_frame
+	_check(sin_codigo.tooltip_text == "https://ejemplo.com/s\nCódigo: —\nOK (200)", "tooltip sin código muestra 'Código: —'")
+	var sin_estado := _crear_item()
+	sin_estado.setup("Nom", "Desc", "https://ejemplo.com/p")
+	_check(sin_estado.tooltip_text == "https://ejemplo.com/p\nSin comprobar", "fila sin comprobar muestra URL y 'Sin comprobar'")
 
 	if _fallos == 0:
 		print("TESTS OK")

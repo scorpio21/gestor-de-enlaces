@@ -191,7 +191,12 @@ func _mostrar_lista(entradas: Array) -> void:
 		if estado.is_empty():
 			item.mostrar_acciones(false)
 		else:
-			item.aplicar_estado(estado.get("valido"), str(estado.get("mensaje", "")))
+			item.aplicar_estado(
+				estado.get("valido"),
+				str(estado.get("mensaje", "")),
+				int(estado.get("codigo", 0)),
+				int(estado.get("fecha", 0))
+			)
 		item.eliminar_pedido.connect(_on_eliminar_pedido.bind(item))
 		item.recomprobar_pedido.connect(_on_recomprobar_pedido.bind(item))
 		lista.add_child(item)
