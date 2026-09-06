@@ -895,6 +895,7 @@ func abrir_edicion(datos: Dictionary, url_original: String) -> void:
 	_modo = "editar"
 	fila_modo.visible = false
 	caja_varias.visible = false
+	_mostrar_individual(true)
 	nombre.text = str(datos.get("nombre", ""))
 	descripcion.text = str(datos.get("desc", ""))
 	url.text = str(datos.get("url", ""))
@@ -1090,6 +1091,7 @@ func _arrancar() -> void:
 	emitido = {}
 	url_original_emitida = ""
 	_check(dialogo.get_node("%Nombre").text == "A" and dialogo.get_node("%Url").text == "https://a.com", "abrir_edicion precarga los campos")
+	_check(dialogo.get_node("%Nombre").visible and not dialogo.get_node("%CajaVarias").visible, "abrir_edicion tras modo Varias muestra el formulario")
 	_check(not dialogo.get_node("%Modo").visible, "en edición se oculta el selector de modo")
 	dialogo.get_node("%Url").text = "https://a2.com"
 	dialogo.get_node("%BotonGuardar").pressed.emit()
@@ -1113,7 +1115,7 @@ func _check(condicion: bool, etiqueta: String) -> void:
 		push_error("FALLO: %s" % etiqueta)
 ```
 
-Son 17 checks.
+Son 18 checks.
 
 - [ ] **Step 4: Run test to verify it passes**
 
