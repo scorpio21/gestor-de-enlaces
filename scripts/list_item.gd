@@ -13,6 +13,7 @@ var estado: String = "pendiente"
 var valido: Variant = null
 
 var _checker: Node = null
+var _timeout := 10.0
 
 
 func _ready() -> void:
@@ -53,6 +54,10 @@ func mostrar_acciones(visible_acciones: bool) -> void:
 	%Acciones.visible = visible_acciones
 
 
+func configurar_timeout(segundos: float) -> void:
+	_timeout = segundos
+
+
 func verificar() -> void:
 	if _checker != null:
 		return
@@ -71,6 +76,7 @@ func verificar() -> void:
 	_checker = LinkCheckerScript.new()
 	add_child(_checker)
 	_checker.terminado.connect(_on_check_terminado)
+	_checker.timeout_s = _timeout
 	_checker.comprobar(url)
 
 

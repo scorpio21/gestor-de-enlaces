@@ -2,7 +2,7 @@ extends Node
 
 signal terminado(valido: bool, mensaje: String)
 
-const TIMEOUT_S := 10.0
+var timeout_s: float = 10.0
 const MAX_REDIRECTS := 6
 const MARCAS_MUERTO: PackedStringArray = [
 	"file not found",
@@ -38,7 +38,7 @@ func _process(delta: float) -> void:
 		return
 
 	_transcurrido += delta
-	if _transcurrido >= TIMEOUT_S:
+	if _transcurrido >= timeout_s:
 		_cerrar("Sin respuesta (tiempo agotado)", false)
 		return
 
