@@ -352,25 +352,29 @@ git commit -m "feat: barra de estado con contadores del catálogo y versión 0.0
 
 - [ ] **Step 1: Extender el harness con un caso de regresión**
 
-En `tests/test_main_barra.gd`, tras el arranque y las comprobaciones existentes, añadir un caso que cargue un catálogo con estado `false` y verifique que `%Rotos` se actualiza a `1` cuando `_estados` refleja el resultado. El harness obtiene acceso a la instancia y, tras las assertions existentes, inyecta un estado y llama a `_actualizar_status()`:
+En `tests/test_main_barra.gd`, tras el arranque y las comprobaciones existentes, añadir un caso que pase por la ruta real `_persistir_recompra(item)` (el código bajo prueba), en un entorno determinístico, y verifique que `%Rotos` se actualiza a `1`:
+
+> Nota: el harness arranca contra el catálogo real (`data.json` + `user://estados.json`, con rotos preexistentes), por lo que el caso limpia `_estados` y usa una URL de prueba; inyectar directamente en `_estados` + `_actualizar_status()` daría un falso GREEN (bypasa el fix) o un `Rotos: N+1` permanente. La versión final del harness (test_main_barra.gd) es:
 
 ```gdscript
-	# caso de regresión: sincronizar en memoria tras comprobar
 	var main_script = main.get_node(".")
-	if main_script.has_method("_actualizar_status"):
-		main_script._estados["https://prueba-ejemplo.test"] = {"valido": false, "mensaje": "No existe"}
-		var idx: int = -1
-		for i in range(main_script._entradas.size()):
-			if typeof(main_script._entradas[i]) == TYPE_DICTIONARY \
-				and str(main_script._entradas[i].get("url", "")) == "https://prueba-ejemplo.test":
-				idx = i
-				break
-		if idx == -1:
-			main_script._entradas.append({"nombre": "Prueba", "url": "https://prueba-ejemplo.test"})
-		main_script._actualizar_status()
+	if main_script.has_method("_persistir_recompra"):
+		main_script._estados.clear()
+		var item = LIST_ITEM_SCENE.instantiate()
+		item.url = "https://prueba-ejemplo.test"
+		item.valido = false
+		item.mensaje = "No existe"
+		main_script._entradas.append({"nombre": "Prueba", "url": "https://prueba-ejemplo.test"})
+		main_script._persistir_recompra(item)
+		main_script._estado_store.borrar_estado(item.url)
 		_check(main.get_node("%Rotos").text == "Rotos: 1", "Rotos se actualiza tras nueva comprobación")
+		item.free()
+```
 
-	_cerrar()
+Y añadir el preload al inicio del fichero:
+
+```gdscript
+const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 ```
 
 - [ ] **Step 2: Ejecutar y verificar que fallan (RED)**
