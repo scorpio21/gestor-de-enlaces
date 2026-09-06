@@ -17,6 +17,7 @@ const ConfigStoreScript := preload("res://scripts/config_store.gd")
 @onready var activos_label: Label = %Activos
 @onready var total_label: Label = %Total
 @onready var version_label: Label = %Version
+@onready var barra_progreso: ProgressBar = %BarraProgreso
 
 var _entradas: Array = []
 var _cola: Array[Button] = []
@@ -206,6 +207,17 @@ func _mostrar_lista(entradas: Array) -> void:
 	progreso.text = "%d enlaces" % lista.get_child_count()
 
 
+func _actualizar_barra(hechos: int, total: int) -> void:
+	%BarraProgreso.max_value = maxi(total, 1)
+	%BarraProgreso.value = hechos
+
+
+func _marcar_barra_final(caidos: int) -> void:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color(0.35, 0.85, 0.45, 1) if caidos == 0 else Color(0.95, 0.35, 0.35, 1)
+	%BarraProgreso.add_theme_stylebox_override("fill", estilo)
+
+
 func _comprobar_visibles() -> void:
 	_cola.clear()
 	for hijo in lista.get_children():
@@ -216,10 +228,14 @@ func _comprobar_visibles() -> void:
 	_hechos = 0
 	_en_vuelo = 0
 	if _total == 0:
+		%BarraProgreso.visible = false
 		progreso.text = "Nada que comprobar"
 		return
 
 	%BotonComprobar.disabled = true
+	%BarraProgreso.visible = true
+	%BarraProgreso.remove_theme_stylebox_override("fill")
+	_actualizar_barra(0, _total)
 	progreso.text = "Comprobando 0/%d…" % _total
 	_lanzar_siguiente()
 
@@ -237,6 +253,7 @@ func _lanzar_siguiente() -> void:
 func _on_item_terminado(item: Button) -> void:
 	_en_vuelo = maxi(_en_vuelo - 1, 0)
 	_hechos += 1
+	_actualizar_barra(_hechos, _total)
 	progreso.text = "Comprobando %d/%d…" % [_hechos, _total]
 	var ahora := int(Time.get_unix_time_from_system())
 	if is_instance_valid(item):
@@ -253,6 +270,7 @@ func _on_item_terminado(item: Button) -> void:
 	for hijo in lista.get_children():
 		if is_instance_valid(hijo) and hijo.valido == false:
 			caidos += 1
+	_marcar_barra_final(caidos)
 	progreso.text = "Listo: %d caídos de %d" % [caidos, _total]
 
 

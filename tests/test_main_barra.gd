@@ -47,6 +47,22 @@ func _arrancar() -> void:
 		_check(main.get_node("%Rotos").text == "Rotos: 1", "Rotos se actualiza tras nueva comprobación")
 		item.free()
 
+	_check(not main.get_node("%BarraProgreso").visible, "la barra de progreso nace oculta")
+	main_script._actualizar_barra(3, 5)
+	_check(main.get_node("%BarraProgreso").value == 3, "la barra refleja los enlaces comprobados")
+	_check(main.get_node("%BarraProgreso").max_value == 5, "la barra usa el total de enlaces como máximo")
+	main_script._marcar_barra_final(0)
+	var verde: StyleBoxFlat = main.get_node("%BarraProgreso").get_theme_stylebox("fill")
+	_check(verde.bg_color.is_equal_approx(Color(0.35, 0.85, 0.45, 1)), "con 0 caídos la barra se pone verde")
+	main_script._marcar_barra_final(2)
+	var rojo: StyleBoxFlat = main.get_node("%BarraProgreso").get_theme_stylebox("fill")
+	_check(rojo.bg_color.is_equal_approx(Color(0.95, 0.35, 0.35, 1)), "con caídos la barra se pone roja")
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		hijo.visible = false
+	main_script._comprobar_visibles()
+	_check(not main.get_node("%BarraProgreso").visible, "sin enlaces visibles la barra se oculta")
+	_check(main.get_node("%Progreso").text == "Nada que comprobar", "sin enlaces visibles se muestra el aviso")
+
 	_cerrar()
 
 
