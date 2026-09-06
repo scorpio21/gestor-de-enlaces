@@ -29,8 +29,8 @@
 | `tests/test_gestor_contadores.gd` | Tests del contador | Crear (Task 1) |
 | `project.godot` | `config/version="0.0.1"` en `[application]` | Modificar (Task 2) |
 | `scenes/Main.tscn` | Nodo `BarraEstado` (PanelContainer) con labels | Modificar (Task 2) |
-| `scripts/main.gd` | `_actualizar_status()`, version label y call-sites | Modificar (Task 2) |
-| `tests/test_main_barra.gd` | Harness que instancia `Main.tscn` y verifica la barra | Crear (Task 2) |
+| `scripts/main.gd` | `_actualizar_status()`, version label y call-sites | Modificar (Task 2, Task 3) |
+| `tests/test_main_barra.gd` | Harness que instancia `Main.tscn` y verifica la barra | Crear (Task 2), modificar (Task 3) |
 
 **Interfaces (contrato entre tareas):**
 
@@ -338,6 +338,83 @@ git commit -m "feat: barra de estado con contadores del catálogo y versión 0.0
 
 ---
 
+### Task 3: Sincronizar `_estados` en memoria tras comprobar
+
+> Añadida tras la revisión final (3a597a1..8b560e5). Hallazgo Important: `_estados` solo se carga en `_ready()` (main.gd:92) y se muta con `erase` al borrar (270). `guardar_estado()` solo escribe a disco (estado_store.gd:18); `_on_item_terminado()` y `_persistir_recompra()` llaman `_actualizar_status()` con `_estados` obsoleto, así que `Activos`/`Rotos` no cambian tras comprobar. Fix: sincronizar en memoria antes de `_actualizar_status()`. Gap del plan/spec, no error del implementador.
+
+**Files:**
+- Modify: `scripts/main.gd` (2 call-sites)
+- Create: `tests/test_main_barra.gd` (extender harness con caso de regresión)
+
+**Interfaces:**
+- Consumes: `ContadoresScript.contar(entradas, estados)` (Task 1); `_estados` (Dictionary URL → `{"valido": bool, "mensaje": String}`).
+- Produces: `_estados[item.url]` actualizado en memoria tras cada comprobación/re-comprobación, reflejado en `%Rotos/%Activos`.
+
+- [ ] **Step 1: Extender el harness con un caso de regresión**
+
+En `tests/test_main_barra.gd`, tras el arranque y las comprobaciones existentes, añadir un caso que cargue un catálogo con estado `false` y verifique que `%Rotos` se actualiza a `1` cuando `_estados` refleja el resultado. El harness obtiene acceso a la instancia y, tras las assertions existentes, inyecta un estado y llama a `_actualizar_status()`:
+
+```gdscript
+	# caso de regresión: sincronizar en memoria tras comprobar
+	var main_script = main.get_node(".")
+	if main_script.has_method("_actualizar_status"):
+		main_script._estados["https://prueba-ejemplo.test"] = {"valido": false, "mensaje": "No existe"}
+		var idx: int = -1
+		for i in range(main_script._entradas.size()):
+			if typeof(main_script._entradas[i]) == TYPE_DICTIONARY \
+				and str(main_script._entradas[i].get("url", "")) == "https://prueba-ejemplo.test":
+				idx = i
+				break
+		if idx == -1:
+			main_script._entradas.append({"nombre": "Prueba", "url": "https://prueba-ejemplo.test"})
+		main_script._actualizar_status()
+		_check(main.get_node("%Rotos").text == "Rotos: 1", "Rotos se actualiza tras nueva comprobación")
+
+	_cerrar()
+```
+
+- [ ] **Step 2: Ejecutar y verificar que fallan (RED)**
+
+Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_main_barra.gd 2>&1`
+Expected: `TESTS FALLIDOS: 1` — el harness falla porque `_estados` no se sincroniza en memoria (el estado solo se guarda a disco, no en `_estados`). Este es el RED que refleja el bug de la revisión.
+
+- [ ] **Step 3: Sincronizar `_estados` en memoria en `main.gd`**
+
+En `_on_item_terminado()`, justo después de `_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje)` (antes de `_aplicar_filtro()`):
+
+```gdscript
+		_estados[item.url] = {"valido": item.valido == true, "mensaje": item.mensaje}
+```
+
+En `_persistir_recompra()`, justo después de `_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje)`:
+
+```gdscript
+	_estados[item.url] = {"valido": item.valido == true, "mensaje": item.mensaje}
+```
+
+Nota: `item.url`/`item.valido`/`item.mensaje` son propiedades del `ListItem` ya usadas en los call-sites existentes.
+
+- [ ] **Step 4: Ejecutar y verificar que pasan (GREEN)**
+
+Run: el mismo comando del Step 2.
+Expected: `TESTS OK`, EXIT 0, checks `OK` (incluido el nuevo caso de regresión).
+
+- [ ] **Step 5: Smoke y commit**
+
+Run:
+```bash
+& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://scripts/main.gd --check-only 2>&1
+& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" res://scenes/Main.tscn --quit-after 60 2>&1
+```
+Expected: sin `Parse Error|SCRIPT ERROR|ERROR`.
+
+```bash
+git add scripts/main.gd tests/test_main_barra.gd tests/test_main_barra.gd.uid
+git commit -m "feat: sincronizar estados en memoria tras comprobar enlaces"
+```
+
+---
+
 ## Verificación final (toda la feature)
 
 Run:
@@ -351,4 +428,4 @@ Run:
 ```
 Expected: 5× `TESTS OK`, ningún `Parse Error|SCRIPT ERROR|ERROR`.
 
-Criterios de aceptación del spec cubiertos: contadores sobre catálogo completo (Task 1 + `_actualizar_status`), labels y prefijo `v` + `config/version` (Task 2), puntos de actualización (Task 2 Step 5), casos límite (verificación final).
+Criterios de aceptación del spec cubiertos: contadores sobre catálogo completo (Task 1 + `_actualizar_status`), labels y prefijo `v` + `config/version` (Task 2), puntos de actualización (Task 2 Step 5), **actualización de `_estados` en memoria tras comprobar (Task 3, fix de la revisión final)**, casos límite (verificación final).
