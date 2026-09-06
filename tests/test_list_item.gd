@@ -73,6 +73,20 @@ func _arrancar() -> void:
 	sin_estado.setup("Nom", "Desc", "https://ejemplo.com/p")
 	_check(sin_estado.tooltip_text == "https://ejemplo.com/p\nSin comprobar", "fila sin comprobar muestra URL y 'Sin comprobar'")
 
+	var copiar := _crear_item()
+	copiar.setup("Nom", "Desc", "https://ejemplo.com/copiar")
+	var urls_copiadas: Array[String] = []
+	copiar.copiar_pedido.connect(func(u: String) -> void: urls_copiadas.append(u))
+	root.add_child(copiar)
+	await process_frame
+	copiar.get_node("%BtnCopiar").pressed.emit()
+	await process_frame
+	_check(urls_copiadas == ["https://ejemplo.com/copiar"], "el botón copiar emite copiar_pedido con la URL")
+	_check(copiar.get_node("%BtnCopiar").text == "¡Copiada!", "al copiar el botón muestra feedback")
+	copiar.get_node("%TemporizadorCopiar").emit_signal("timeout")
+	await process_frame
+	_check(copiar.get_node("%BtnCopiar").text == "Copiar", "el botón copiar restaura el texto al terminar el temporizador")
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

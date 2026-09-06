@@ -74,6 +74,11 @@ horizontal_alignment = 2
 text = "Sin comprobar"
 autowrap_mode = 3
 
+[node name="BtnCopiar" type="Button" parent="Margen/Fila"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Copiar"
+
 [node name="Acciones" type="HBoxContainer" parent="Margen/Fila"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -89,3 +94,8 @@ text = "Volver a comprobar"
 unique_name_in_owner = true
 layout_mode = 2
 text = "Eliminar"
+
+[node name="TemporizadorCopiar" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 1.5
+one_shot = true

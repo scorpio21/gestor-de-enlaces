@@ -3,6 +3,7 @@ extends Button
 signal verificacion_terminada
 signal eliminar_pedido
 signal recomprobar_pedido
+signal copiar_pedido(url: String)
 
 var mensaje: String = ""
 var codigo := 0
@@ -21,6 +22,8 @@ var _timeout := 10.0
 func _ready() -> void:
 	%BtnRecomprobar.pressed.connect(recomprobar_pedido.emit)
 	%BtnEliminar.pressed.connect(eliminar_pedido.emit)
+	%BtnCopiar.pressed.connect(_on_copiar)
+	%TemporizadorCopiar.timeout.connect(_restaurar_boton_copiar)
 	mostrar_acciones(valido == false)
 
 
@@ -125,3 +128,15 @@ func _pressed() -> void:
 	if url.is_empty():
 		return
 	OS.shell_open(url)
+
+
+func _on_copiar() -> void:
+	copiar_pedido.emit(url)
+	%BtnCopiar.text = "¡Copiada!"
+	%BtnCopiar.disabled = true
+	%TemporizadorCopiar.start()
+
+
+func _restaurar_boton_copiar() -> void:
+	%BtnCopiar.text = "Copiar"
+	%BtnCopiar.disabled = false

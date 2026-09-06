@@ -199,6 +199,7 @@ func _mostrar_lista(entradas: Array) -> void:
 			)
 		item.eliminar_pedido.connect(_on_eliminar_pedido.bind(item))
 		item.recomprobar_pedido.connect(_on_recomprobar_pedido.bind(item))
+		item.copiar_pedido.connect(_on_copiar_pedido.bind(item))
 		lista.add_child(item)
 
 	_aplicar_filtro()
@@ -279,6 +280,12 @@ func _on_eliminar_pedido(item: Button) -> void:
 	_item_pendiente_borrar = item
 	%ConfirmarBorrado.dialog_text = "¿Eliminar «%s» para siempre?" % item.get_node("Margen/Fila/Textos/NombreLabel").text
 	%ConfirmarBorrado.popup_centered()
+
+
+func _on_copiar_pedido(item: Button) -> void:
+	if not is_instance_valid(item):
+		return
+	DisplayServer.clipboard_set(item.url)
 
 
 func _confirmar_borrado() -> void:
