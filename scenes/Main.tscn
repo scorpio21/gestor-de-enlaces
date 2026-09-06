@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://bgestormain001"]
+[gd_scene load_steps=4 format=3 uid="uid://bgestormain001"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/AgregarEnlace.tscn" id="2_agregar"]
+[ext_resource type="PackedScene" path="res://scenes/Preferencias.tscn" id="3_preferencias"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -111,6 +112,9 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 title = "Eliminar enlace"
 ok_button_text = "Eliminar"
+
+[node name="VentanaPreferencias" parent="." instance=ExtResource("3_preferencias")]
+unique_name_in_owner = true
 
 [node name="BarraEstado" type="PanelContainer" parent="ColumnaApp"]
 layout_mode = 2

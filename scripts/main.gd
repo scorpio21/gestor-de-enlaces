@@ -3,15 +3,16 @@ extends Control
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const DATA_RES := "res://data/data.json"
 const DATA_USER := "user://enlaces.json"
-const MAX_PARALELO := 3
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
+const ConfigStoreScript := preload("res://scripts/config_store.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
 @onready var progreso: Label = %Progreso
 @onready var filtro: OptionButton = %FiltroEstado
 @onready var ventana_agregar = %VentanaAgregar
+@onready var preferencias: Window = %VentanaPreferencias
 @onready var rotos_label: Label = %Rotos
 @onready var activos_label: Label = %Activos
 @onready var total_label: Label = %Total
@@ -23,6 +24,9 @@ var _en_vuelo := 0
 var _hechos := 0
 var _total := 0
 var _estado_store: RefCounted
+var _config_store: RefCounted
+var _paralelismo := 3
+var _timeout := 10.0
 var _estados := {}
 var _borrados: Array = []
 var _item_pendiente_borrar: Button = null
@@ -42,6 +46,11 @@ func _ready() -> void:
 	filtro.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
 	_cargar_datos()
+	_config_store = ConfigStoreScript.new()
+	var cfg: Dictionary = _config_store.cargar()
+	_paralelismo = clampi(int(cfg.get("paralelismo", 3)), 1, 8)
+	_timeout = clampf(float(cfg.get("timeout", 10.0)), 3.0, 60.0)
+	preferencias.aplicado.connect(_aplicar_preferencias)
 	_refrescar_vista()
 	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
 	_actualizar_status()
@@ -56,6 +65,7 @@ func _configurar_menus() -> void:
 	var menu_util: PopupMenu = %Utilidades
 	menu_util.clear()
 	menu_util.add_item("Agregar", 0)
+	menu_util.add_item("Preferencias…", 1)
 	menu_util.id_pressed.connect(_on_utilidades_id)
 
 
@@ -67,6 +77,8 @@ func _on_file_id(id: int) -> void:
 func _on_utilidades_id(id: int) -> void:
 	if id == 0:
 		ventana_agregar.abrir()
+	elif id == 1:
+		preferencias.abrir(_paralelismo, _timeout)
 
 
 func _cargar_datos() -> void:
@@ -173,6 +185,7 @@ func _mostrar_lista(entradas: Array) -> void:
 			str(entrada.get("url", "")),
 			str(entrada.get("img", ""))
 		)
+		item.configurar_timeout(_timeout)
 		var url_item := str(entrada.get("url", ""))
 		var estado: Dictionary = _estados.get(url_item, {})
 		if estado.is_empty():
@@ -206,7 +219,7 @@ func _comprobar_visibles() -> void:
 
 
 func _lanzar_siguiente() -> void:
-	while _en_vuelo < MAX_PARALELO and not _cola.is_empty():
+	while _en_vuelo < _paralelismo and not _cola.is_empty():
 		var item: Button = _cola.pop_front()
 		if not is_instance_valid(item):
 			continue
@@ -308,3 +321,10 @@ func _actualizar_status() -> void:
 	rotos_label.text = "Rotos: %d" % c.get("rotos", 0)
 	activos_label.text = "Activos: %d" % c.get("activos", 0)
 	total_label.text = "Total: %d" % c.get("total", 0)
+
+
+func _aplicar_preferencias(paralelismo: int, timeout: float) -> void:
+	_paralelismo = paralelismo
+	_timeout = timeout
+	if not _config_store.guardar(paralelismo, timeout):
+		progreso.text = "No se pudo guardar la configuración."
