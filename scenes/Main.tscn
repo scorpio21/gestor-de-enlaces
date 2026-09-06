@@ -128,30 +128,35 @@ unique_name_in_owner = true
 [node name="BarraEstado" type="PanelContainer" parent="ColumnaApp"]
 layout_mode = 2
 
-[node name="Box" type="HBoxContainer" parent="ColumnaApp/BarraEstado"]
+[node name="MargenBarra" type="MarginContainer" parent="ColumnaApp/BarraEstado"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+
+[node name="Box" type="HBoxContainer" parent="ColumnaApp/BarraEstado/MargenBarra"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Rotos" type="Label" parent="ColumnaApp/BarraEstado/Box"]
+[node name="Rotos" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Rotos: 0"
 
-[node name="Activos" type="Label" parent="ColumnaApp/BarraEstado/Box"]
+[node name="Activos" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Activos: 0"
 
-[node name="Total" type="Label" parent="ColumnaApp/BarraEstado/Box"]
+[node name="Total" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Total: 0"
 
-[node name="Empuje" type="Control" parent="ColumnaApp/BarraEstado/Box"]
+[node name="Empuje" type="Control" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Version" type="Label" parent="ColumnaApp/BarraEstado/Box"]
+[node name="Version" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "v0.0.1"
