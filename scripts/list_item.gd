@@ -92,6 +92,7 @@ func verificar() -> void:
 		estado = "invalido"
 		mensaje = "URL inválida"
 		_pintar_estado("URL inválida", Color(0.95, 0.55, 0.2, 1))
+		_actualizar_tooltip()
 		verificacion_terminada.emit()
 		return
 
