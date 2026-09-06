@@ -15,6 +15,8 @@ func _initialize() -> void:
 	_check(borrados_sin_duplicados(), "marcar_borrado() no añade duplicados")
 	_check(borrar_estado_limpia(), "borrar_estado() elimina la entrada")
 	_check(json_roto_no_rompe(), "JSON roto no rompe cargar()")
+	_check(guarda_codigo(), "guardar_estado() persiste el código HTTP")
+	_check(codigo_por_defecto(), "guardar_estado() sin código persiste 0")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -66,6 +68,20 @@ func json_roto_no_rompe() -> bool:
 	FileAccess.open(BASE + "/borrados.json", FileAccess.WRITE).store_string("burro")
 	var datos := EstadoStore.new(BASE).cargar()
 	return datos["estados"] == {} and datos["borrados"] == []
+
+
+func guarda_codigo() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://ejemplo.com/a", true, "OK (200)", 200)
+	var e: Dictionary = store.cargar()["estados"].get("https://ejemplo.com/a", {})
+	return int(e.get("codigo", -1)) == 200
+
+
+func codigo_por_defecto() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://ejemplo.com/a", true, "OK (200)")
+	var e: Dictionary = store.cargar()["estados"].get("https://ejemplo.com/a", {})
+	return int(e.get("codigo", -1)) == 0
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

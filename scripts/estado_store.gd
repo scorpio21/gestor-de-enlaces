@@ -15,11 +15,12 @@ func cargar() -> Dictionary:
 	}
 
 
-func guardar_estado(url: String, valido: bool, mensaje: String) -> bool:
+func guardar_estado(url: String, valido: bool, mensaje: String, codigo := 0) -> bool:
 	var estados := _leer_estados()
 	estados[url] = {
 		"valido": valido,
 		"mensaje": mensaje,
+		"codigo": codigo,
 		"fecha": int(Time.get_unix_time_from_system()),
 	}
 	return _escribir_json(_ruta("estados.json"), estados)

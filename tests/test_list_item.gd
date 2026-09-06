@@ -43,6 +43,14 @@ func _arrancar() -> void:
 	_check(_miniatura_es(sin_imagen, true), "sin imagen muestra el placeholder")
 	_check(_miniatura_es(inexistente, true), "imagen inexistente muestra el placeholder")
 
+	var con_detalle := _crear_item()
+	con_detalle.setup("Nom", "Desc", "https://ejemplo.com/d")
+	con_detalle.aplicar_estado(true, "OK (200)", 200, 1000000000)
+	root.add_child(con_detalle)
+	await process_frame
+	_check(con_detalle.codigo == 200, "aplicar_estado() guarda el código")
+	_check(con_detalle.fecha == 1000000000, "aplicar_estado() guarda la fecha")
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

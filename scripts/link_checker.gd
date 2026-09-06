@@ -3,6 +3,7 @@ extends Node
 signal terminado(valido: bool, mensaje: String)
 
 var timeout_s: float = 10.0
+var codigo := 0
 const MAX_REDIRECTS := 6
 const MARCAS_MUERTO: PackedStringArray = [
 	"file not found",
@@ -97,7 +98,7 @@ func _enviar_pedido() -> void:
 
 
 func _leer_respuesta() -> void:
-	var codigo := _cliente.get_response_code()
+	codigo = _cliente.get_response_code()
 	if codigo in [301, 302, 303, 307, 308]:
 		var destino := _cabecera("Location")
 		if destino.is_empty() or _redirects >= MAX_REDIRECTS:

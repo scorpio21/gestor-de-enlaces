@@ -14,6 +14,9 @@ func _arrancar() -> void:
 	_check(is_equal_approx(checker.timeout_s, 10.0), "timeout_s tiene default 10.0")
 	checker.timeout_s = 25.0
 	_check(is_equal_approx(checker.timeout_s, 25.0), "timeout_s es asignable")
+	_check(checker.codigo == 0, "codigo tiene default 0")
+	checker.codigo = 404
+	_check(checker.codigo == 404, "codigo es asignable")
 	checker.free()
 	_cerrar()
 

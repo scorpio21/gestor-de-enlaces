@@ -5,6 +5,8 @@ signal eliminar_pedido
 signal recomprobar_pedido
 
 var mensaje: String = ""
+var codigo := 0
+var fecha := 0
 
 const LinkCheckerScript := preload("res://scripts/link_checker.gd")
 
@@ -35,9 +37,11 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "") ->
 			%Imagen.texture = ImageTexture.create_from_image(img)
 
 
-func aplicar_estado(ok: Variant, texto: String) -> void:
+func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva := 0) -> void:
 	valido = ok
 	mensaje = texto
+	codigo = codigo_nuevo
+	fecha = fecha_nueva
 	if ok == true:
 		estado = "ok"
 		_pintar_estado(texto, Color(0.35, 0.85, 0.45, 1))
@@ -81,6 +85,8 @@ func verificar() -> void:
 
 
 func _on_check_terminado(ok: bool, texto: String) -> void:
+	codigo = _checker.codigo
+	fecha = int(Time.get_unix_time_from_system())
 	_checker = null
 	valido = ok
 	estado = "ok" if ok else "caido"

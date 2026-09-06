@@ -232,9 +232,10 @@ func _on_item_terminado(item: Button) -> void:
 	_en_vuelo = maxi(_en_vuelo - 1, 0)
 	_hechos += 1
 	progreso.text = "Comprobando %d/%d…" % [_hechos, _total]
+	var ahora := int(Time.get_unix_time_from_system())
 	if is_instance_valid(item):
-		_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje)
-		_estados[item.url] = {"valido": item.valido == true, "mensaje": item.mensaje}
+		_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje, item.codigo)
+		_estados[item.url] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
 	_aplicar_filtro()
 	_actualizar_status()
 	if not _cola.is_empty() or _en_vuelo > 0:
@@ -262,8 +263,9 @@ func _on_recomprobar_pedido(item: Button) -> void:
 func _persistir_recompra(item: Button) -> void:
 	if not is_instance_valid(item):
 		return
-	_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje)
-	_estados[item.url] = {"valido": item.valido == true, "mensaje": item.mensaje}
+	var ahora := int(Time.get_unix_time_from_system())
+	_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje, item.codigo)
+	_estados[item.url] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
 	_aplicar_filtro()
 	_actualizar_status()
 
