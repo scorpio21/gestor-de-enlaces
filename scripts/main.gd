@@ -221,6 +221,7 @@ func _on_item_terminado(item: Button) -> void:
 	progreso.text = "Comprobando %d/%d…" % [_hechos, _total]
 	if is_instance_valid(item):
 		_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje)
+		_estados[item.url] = {"valido": item.valido == true, "mensaje": item.mensaje}
 	_aplicar_filtro()
 	_actualizar_status()
 	if not _cola.is_empty() or _en_vuelo > 0:
@@ -249,6 +250,7 @@ func _persistir_recompra(item: Button) -> void:
 	if not is_instance_valid(item):
 		return
 	_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje)
+	_estados[item.url] = {"valido": item.valido == true, "mensaje": item.mensaje}
 	_aplicar_filtro()
 	_actualizar_status()
 

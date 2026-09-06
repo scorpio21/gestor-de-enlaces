@@ -1,6 +1,7 @@
 extends SceneTree
 
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
+const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 
 var _fallos := 0
 
@@ -29,6 +30,19 @@ func _arrancar() -> void:
 	_check(not main.get_node("%Rotos").text.is_empty(), "Rotos muestra un valor")
 	_check(not main.get_node("%Activos").text.is_empty(), "Activos muestra un valor")
 	_check(not main.get_node("%Total").text.is_empty(), "Total muestra un valor")
+
+	var main_script = main.get_node(".")
+	if main_script.has_method("_persistir_recompra"):
+		main_script._estados.clear()
+		var item = LIST_ITEM_SCENE.instantiate()
+		item.url = "https://prueba-ejemplo.test"
+		item.valido = false
+		item.mensaje = "No existe"
+		main_script._entradas.append({"nombre": "Prueba", "url": "https://prueba-ejemplo.test"})
+		main_script._persistir_recompra(item)
+		main_script._estado_store.borrar_estado(item.url)
+		_check(main.get_node("%Rotos").text == "Rotos: 1", "Rotos se actualiza tras nueva comprobación")
+		item.free()
 
 	_cerrar()
 
