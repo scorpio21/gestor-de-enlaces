@@ -156,11 +156,11 @@ func _on_guardar() -> void:
 		img_final = str(resultado.get("destino", ""))
 
 	var datos := {"nombre": n, "desc": d, "url": u, "img": img_final}
+	hide()
 	if _modo == "editar":
 		editado.emit(datos, _url_original)
 	else:
 		guardado.emit(datos)
-	hide()
 
 
 func _on_guardar_lote() -> void:
@@ -173,5 +173,5 @@ func _on_guardar_lote() -> void:
 		error_label.text = "Pega al menos una URL."
 		%ListaUrls.grab_focus()
 		return
-	lote_guardado.emit(lineas)
 	hide()
+	lote_guardado.emit(lineas)

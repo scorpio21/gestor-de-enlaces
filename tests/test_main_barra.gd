@@ -92,10 +92,13 @@ func _arrancar() -> void:
 		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
 		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""},
 	]
-	main_script._on_enlace_editado({"nombre": "A", "desc": "", "url": "https://c.test", "img": ""}, "https://a.test")
+	var ventana: Window = main.get_node("%VentanaAgregar")
+	ventana.abrir_edicion({"nombre": "A", "desc": "", "url": "https://a.test", "img": ""}, "https://a.test")
+	ventana.get_node("%Url").text = "https://c.test"
+	ventana.get_node("%BotonGuardar").pressed.emit()
 	_check(main_script._entradas[0].get("url") == "https://a.test", "editar con URL que colisiona no modifica")
 	_check(main.get_node("%Progreso").text == "Ya existe: https://c.test", "editar con colisión informa en la barra")
-	_check(main.get_node("%VentanaAgregar").visible, "editar con colisión reabre el diálogo")
+	_check(ventana.visible, "editar con colisión reabre el diálogo")
 
 	# Catálogo: copiar URL desde la fila informa en la barra
 	main_script._entradas = [{"nombre": "Copiar", "desc": "", "url": "https://copiar.test", "img": ""}]
