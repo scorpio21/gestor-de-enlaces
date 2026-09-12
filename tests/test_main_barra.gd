@@ -1,5 +1,11 @@
 extends SceneTree
 
+class _FakeStore extends RefCounted:
+	var ultima_renombrar: Array = []
+	func renombrar(url_antigua: String, url_nueva: String) -> bool:
+		ultima_renombrar = [url_antigua, url_nueva]
+		return true
+
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 
@@ -46,6 +52,26 @@ func _arrancar() -> void:
 		main_script._estado_store.borrar_estado(item.url)
 		_check(main.get_node("%Rotos").text == "Rotos: 1", "Rotos se actualiza tras nueva comprobación")
 		item.free()
+
+	# Catálogo: alta única con duplicados
+	main_script._persistir = false
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""}]
+	main_script._on_enlace_guardado({"nombre": "B", "desc": "", "url": "https://a.test", "img": ""})
+	_check(main_script._entradas.size() == 1, "alta con URL existente no añade")
+	_check(main.get_node("%Progreso").text == "Ya existe: https://a.test", "alta duplicada informa en la barra")
+
+	# Catálogo: lote de URLs
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""}]
+	main_script._on_lote_guardado(["https://a.test", "https://bb.test", "https://a.test", "no-es-url", ""])
+	_check(main_script._entradas.size() == 2, "el lote añade solo las válidas nuevas")
+	_check(main_script._entradas[1].get("nombre") == "bb.test", "el lote deriva el nombre del dominio")
+	_check(main.get_node("%Progreso").text == "Se añadieron 1 enlaces. 2 repetidas ignoradas. 1 inválidas ignoradas.", "el lote reporta repetidas e inválidas")
+
+	# Catálogo: lote todo repetido
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""}]
+	main_script._on_lote_guardado(["https://a.test"])
+	_check(main_script._entradas.size() == 1, "lote sin nuevas no añade nada")
+	_check(main.get_node("%Progreso").text == "No se añadió ningún enlace. 1 repetidas ignoradas.", "lote sin nuevas reporta")
 
 	# Catálogo: copiar URL desde la fila informa en la barra
 	main_script._entradas = [{"nombre": "Copiar", "desc": "", "url": "https://copiar.test", "img": ""}]

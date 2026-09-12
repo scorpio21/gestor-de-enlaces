@@ -6,6 +6,7 @@ const DATA_USER := "user://enlaces.json"
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
+const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -31,6 +32,7 @@ var _timeout := 10.0
 var _estados := {}
 var _borrados: Array = []
 var _item_pendiente_borrar: Button = null
+var _persistir := true
 
 
 func _ready() -> void:
@@ -46,6 +48,7 @@ func _ready() -> void:
 	filtro.select(0)
 	filtro.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
+	ventana_agregar.lote_guardado.connect(_on_lote_guardado)
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new()
 	var cfg: Dictionary = _config_store.cargar()
@@ -124,6 +127,8 @@ func _leer_array(path: String) -> Array:
 
 
 func _guardar_datos() -> bool:
+	if not _persistir:
+		return true
 	var texto := JSON.stringify(_entradas, "\t")
 	if not _escribir_archivo(DATA_USER, texto):
 		progreso.text = "No se pudo guardar el enlace."
@@ -142,6 +147,10 @@ func _escribir_archivo(path: String, texto: String) -> bool:
 
 
 func _on_enlace_guardado(datos: Dictionary) -> void:
+	var url_nueva := str(datos.get("url", ""))
+	if _url_existe(url_nueva):
+		progreso.text = "Ya existe: %s" % url_nueva
+		return
 	_entradas.append(datos)
 	if not _guardar_datos():
 		_entradas.pop_back()
@@ -149,6 +158,65 @@ func _on_enlace_guardado(datos: Dictionary) -> void:
 	_refrescar_vista()
 	_actualizar_status()
 	progreso.text = "Enlace agregado: %s" % datos.get("nombre", "")
+
+
+func _on_lote_guardado(urls: Array) -> void:
+	var normales: Array = []
+	for linea in urls:
+		var u: String = linea.strip_edges() if typeof(linea) == TYPE_STRING else ""
+		if not u.is_empty():
+			normales.append(u)
+	var validas: Array = []
+	var invalidas: Array = []
+	for u in normales:
+		if u.begins_with("http://") or u.begins_with("https://"):
+			validas.append(u)
+		else:
+			invalidas.append(u)
+	var res := GestorCatalogoScript.separar(validas, _urls_existentes())
+	var nuevas: Array = res.get("nuevas", [])
+	var repetidas: Array = res.get("repetidas", [])
+	if nuevas.is_empty():
+		var partes_vacias: Array = ["No se añadió ningún enlace."]
+		if not repetidas.is_empty():
+			partes_vacias.append("%d repetidas ignoradas." % repetidas.size())
+		if not invalidas.is_empty():
+			partes_vacias.append("%d inválidas ignoradas." % invalidas.size())
+		progreso.text = " ".join(partes_vacias)
+		return
+	for u in nuevas:
+		_entradas.append({
+			"nombre": GestorCatalogoScript.dominio(u),
+			"desc": "",
+			"url": u,
+			"img": "",
+		})
+	if not _guardar_datos():
+		for i in range(nuevas.size()):
+			_entradas.pop_back()
+		progreso.text = "No se pudo guardar el lote."
+		return
+	var partes: Array = ["Se añadieron %d enlaces." % nuevas.size()]
+	if not repetidas.is_empty():
+		partes.append("%d repetidas ignoradas." % repetidas.size())
+	if not invalidas.is_empty():
+		partes.append("%d inválidas ignoradas." % invalidas.size())
+	_refrescar_vista()
+	_actualizar_status()
+	progreso.text = " ".join(partes)
+
+
+func _urls_existentes() -> Array:
+	var urls: Array = []
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY:
+			urls.append(str(entrada.get("url", "")))
+	return urls
+
+
+func _url_existe(url: String) -> bool:
+	var res := GestorCatalogoScript.separar([url], _urls_existentes())
+	return not (res.get("repetidas", []) as Array).is_empty()
 
 
 func _refrescar_vista() -> void:
