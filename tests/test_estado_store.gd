@@ -20,6 +20,7 @@ func _initialize() -> void:
 	_check(renombrar_mueve_estado(), "renombrar() traslada el estado a la nueva URL")
 	_check(renombrar_actualiza_borrados(), "renombrar() reemplaza la URL en los borrados")
 	_check(renombrar_sin_clave(), "renombrar() sin clave previa no falla")
+	_check(renombrar_misma_url(), "renombrar() con la misma URL no borra el estado")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -109,6 +110,16 @@ func renombrar_actualiza_borrados() -> bool:
 func renombrar_sin_clave() -> bool:
 	var store := EstadoStore.new(BASE)
 	return store.renombrar("https://fantasma.com", "https://otra.com")
+
+
+func renombrar_misma_url() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://misma.com", true, "OK (200)", 200)
+	if not store.renombrar("https://misma.com", "https://misma.com"):
+		return false
+	var datos := store.cargar()
+	return datos["estados"].has("https://misma.com") \
+		and int(datos["estados"]["https://misma.com"].get("codigo", -1)) == 200
 
 
 func _check(condicion: bool, etiqueta: String) -> void:
