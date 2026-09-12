@@ -189,9 +189,7 @@ func _mostrar_lista(entradas: Array) -> void:
 		item.configurar_timeout(_timeout)
 		var url_item := str(entrada.get("url", ""))
 		var estado: Dictionary = _estados.get(url_item, {})
-		if estado.is_empty():
-			item.mostrar_acciones(false)
-		else:
+		if not estado.is_empty():
 			item.aplicar_estado(
 				estado.get("valido"),
 				str(estado.get("mensaje", "")),
@@ -304,6 +302,7 @@ func _on_copiar_pedido(item: Button) -> void:
 	if not is_instance_valid(item):
 		return
 	DisplayServer.clipboard_set(item.url)
+	progreso.text = "URL copiada: %s" % item.url
 
 
 func _confirmar_borrado() -> void:

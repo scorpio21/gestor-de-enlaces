@@ -4,6 +4,7 @@ signal verificacion_terminada
 signal eliminar_pedido
 signal recomprobar_pedido
 signal copiar_pedido(url: String)
+signal editar_pedido
 
 var mensaje: String = ""
 var codigo := 0
@@ -20,11 +21,13 @@ var _timeout := 10.0
 
 
 func _ready() -> void:
-	%BtnRecomprobar.pressed.connect(recomprobar_pedido.emit)
-	%BtnEliminar.pressed.connect(eliminar_pedido.emit)
-	%BtnCopiar.pressed.connect(_on_copiar)
-	%TemporizadorCopiar.timeout.connect(_restaurar_boton_copiar)
-	mostrar_acciones(valido == false)
+	var menu: PopupMenu = %MenuContexto
+	menu.add_item("Editar…", 0)
+	menu.add_item("Volver a comprobar", 1)
+	menu.add_item("Copiar URL", 2)
+	menu.add_item("Eliminar", 3)
+	menu.id_pressed.connect(_on_menu)
+	gui_input.connect(_on_gui_input)
 
 
 func setup(nombre: String, descripcion: String, enlace: String, imagen := "") -> void:
@@ -54,7 +57,6 @@ func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva :
 	else:
 		estado = "pendiente"
 		_pintar_estado("Sin comprobar", Color(0.55, 0.55, 0.55, 1))
-	mostrar_acciones(ok == false)
 	_actualizar_tooltip()
 
 
@@ -75,10 +77,6 @@ func _actualizar_tooltip() -> void:
 	tooltip_text = "\n".join(lineas)
 
 
-func mostrar_acciones(visible_acciones: bool) -> void:
-	%Acciones.visible = visible_acciones
-
-
 func configurar_timeout(segundos: float) -> void:
 	_timeout = segundos
 
@@ -97,7 +95,6 @@ func verificar() -> void:
 		return
 
 	estado = "comprobando"
-	mostrar_acciones(false)
 	_pintar_estado("Comprobando…", Color(0.85, 0.75, 0.25, 1))
 	_checker = LinkCheckerScript.new()
 	add_child(_checker)
@@ -114,7 +111,6 @@ func _on_check_terminado(ok: bool, texto: String) -> void:
 	estado = "ok" if ok else "caido"
 	mensaje = texto
 	_pintar_estado(texto, Color(0.35, 0.85, 0.45, 1) if ok else Color(0.95, 0.35, 0.35, 1))
-	mostrar_acciones(not ok)
 	_actualizar_tooltip()
 	verificacion_terminada.emit()
 
@@ -131,13 +127,18 @@ func _pressed() -> void:
 	OS.shell_open(url)
 
 
-func _on_copiar() -> void:
-	copiar_pedido.emit(url)
-	%BtnCopiar.text = "¡Copiada!"
-	%BtnCopiar.disabled = true
-	%TemporizadorCopiar.start()
+func _on_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		%MenuContexto.popup(Rect2i(Vector2i(event.global_position), Vector2i.ZERO))
 
 
-func _restaurar_boton_copiar() -> void:
-	%BtnCopiar.text = "Copiar"
-	%BtnCopiar.disabled = false
+func _on_menu(id: int) -> void:
+	match id:
+		0:
+			editar_pedido.emit()
+		1:
+			recomprobar_pedido.emit()
+		2:
+			copiar_pedido.emit(url)
+		3:
+			eliminar_pedido.emit()

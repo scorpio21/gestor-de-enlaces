@@ -22,11 +22,9 @@ func _arrancar() -> void:
 	root.add_child(caido)
 	root.add_child(valido)
 	root.add_child(fresco)
-
 	await process_frame
-	_check(_acciones_visibles(caido), "restaurar enlace caído muestra los botones de acción")
-	_check(not _acciones_visibles(valido), "restaurar enlace válido oculta los botones de acción")
-	_check(not _acciones_visibles(fresco), "enlace sin estado oculta los botones de acción")
+	_check(_menu_completo(caido), "la fila construye el menú con 4 opciones")
+	_check(_menu_completo(valido), "la fila válida también construye el menú")
 
 	var con_imagen := _crear_item()
 	con_imagen.setup("Nom", "Desc", "https://ejemplo.com/v", _generar_png_temporal())
@@ -73,19 +71,31 @@ func _arrancar() -> void:
 	sin_estado.setup("Nom", "Desc", "https://ejemplo.com/p")
 	_check(sin_estado.tooltip_text == "https://ejemplo.com/p\nSin comprobar", "fila sin comprobar muestra URL y 'Sin comprobar'")
 
-	var copiar := _crear_item()
-	copiar.setup("Nom", "Desc", "https://ejemplo.com/copiar")
-	var urls_copiadas: Array[String] = []
-	copiar.copiar_pedido.connect(func(u: String) -> void: urls_copiadas.append(u))
-	root.add_child(copiar)
+	var item := _crear_item()
+	item.setup("Nom", "Desc", "https://ejemplo.com/menu")
+	var emitido: Array = []
+	item.editar_pedido.connect(func() -> void: emitido.append("editar"))
+	item.recomprobar_pedido.connect(func() -> void: emitido.append("recomprobar"))
+	item.copiar_pedido.connect(func(u: String) -> void: emitido.append(["copiar", u]))
+	item.eliminar_pedido.connect(func() -> void: emitido.append("eliminar"))
+	root.add_child(item)
 	await process_frame
-	copiar.get_node("%BtnCopiar").pressed.emit()
+
+	var clic_derecho := InputEventMouseButton.new()
+	clic_derecho.button_index = MOUSE_BUTTON_RIGHT
+	clic_derecho.pressed = true
+	item.gui_input.emit(clic_derecho)
 	await process_frame
-	_check(urls_copiadas == ["https://ejemplo.com/copiar"], "el botón copiar emite copiar_pedido con la URL")
-	_check(copiar.get_node("%BtnCopiar").text == "¡Copiada!", "al copiar el botón muestra feedback")
-	copiar.get_node("%TemporizadorCopiar").emit_signal("timeout")
-	await process_frame
-	_check(copiar.get_node("%BtnCopiar").text == "Copiar", "el botón copiar restaura el texto al terminar el temporizador")
+	_check(item.get_node("%MenuContexto").visible, "el clic derecho abre el menú contextual")
+
+	item.get_node("%MenuContexto").id_pressed.emit(0)
+	_check(emitido == ["editar"], "la opción Editar emite editar_pedido")
+	item.get_node("%MenuContexto").id_pressed.emit(1)
+	_check(emitido == ["editar", "recomprobar"], "la opción Volver a comprobar emite recomprobar_pedido")
+	item.get_node("%MenuContexto").id_pressed.emit(2)
+	_check(emitido == ["editar", "recomprobar", ["copiar", "https://ejemplo.com/menu"]], "la opción Copiar URL emite copiar_pedido con la URL")
+	item.get_node("%MenuContexto").id_pressed.emit(3)
+	_check(emitido == ["editar", "recomprobar", ["copiar", "https://ejemplo.com/menu"], "eliminar"], "la opción Eliminar emite eliminar_pedido")
 
 	if _fallos == 0:
 		print("TESTS OK")
@@ -101,8 +111,9 @@ func _crear_item() -> Control:
 	return item
 
 
-func _acciones_visibles(item: Control) -> bool:
-	return item.get_node("%Acciones").visible
+func _menu_completo(item: Control) -> bool:
+	var menu: PopupMenu = item.get_node("%MenuContexto")
+	return menu != null and menu.get_item_count() == 4
 
 
 func _check(condicion: bool, etiqueta: String) -> void:
