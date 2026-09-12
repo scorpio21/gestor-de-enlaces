@@ -745,6 +745,7 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="FilaModo" type="HBoxContainer" parent="Margen/Columna"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
 
@@ -917,6 +918,7 @@ func abrir() -> void:
 func abrir_edicion(datos: Dictionary, url_original: String) -> void:
 	_modo = "editar"
 	fila_modo.visible = false
+	%Modo.visible = false
 	caja_varias.visible = false
 	_mostrar_individual(true)
 	nombre.text = str(datos.get("nombre", ""))
@@ -935,6 +937,7 @@ func abrir_edicion(datos: Dictionary, url_original: String) -> void:
 func _cambiar_modo(id: int) -> void:
 	_modo = "varias" if id == 1 else "individual"
 	fila_modo.visible = true
+	%Modo.visible = true
 	_mostrar_individual(_modo == "individual")
 	if _modo == "varias":
 		%ListaUrls.text = ""
@@ -1025,7 +1028,7 @@ func _on_guardar() -> void:
 func _on_guardar_lote() -> void:
 	var lineas: Array = []
 	for parte in %ListaUrls.text.split("\n"):
-		var linea := (parte if typeof(parte) == TYPE_STRING else str(parte)).strip_edges()
+		var linea: String = (parte if typeof(parte) == TYPE_STRING else str(parte)).strip_edges()
 		if not linea.is_empty():
 			lineas.append(linea)
 	if lineas.is_empty():
@@ -1044,6 +1047,9 @@ extends SceneTree
 const DIALOGO := preload("res://scenes/AgregarEnlace.tscn")
 
 var _fallos := 0
+var emitido: Dictionary = {}
+var url_original_emitida := ""
+var lote: Array = []
 
 
 func _initialize() -> void:
@@ -1055,9 +1061,6 @@ func _arrancar() -> void:
 	root.add_child(dialogo)
 	await process_frame
 
-	var emitido: Dictionary = {}
-	var url_original_emitida := ""
-	var lote: Array = []
 	dialogo.guardado.connect(func(d: Dictionary) -> void: emitido = d)
 	dialogo.editado.connect(func(d: Dictionary, uo: String) -> void:
 		emitido = d
