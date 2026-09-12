@@ -17,6 +17,9 @@ func _initialize() -> void:
 	_check(json_roto_no_rompe(), "JSON roto no rompe cargar()")
 	_check(guarda_codigo(), "guardar_estado() persiste el código HTTP")
 	_check(codigo_por_defecto(), "guardar_estado() sin código persiste 0")
+	_check(renombrar_mueve_estado(), "renombrar() traslada el estado a la nueva URL")
+	_check(renombrar_actualiza_borrados(), "renombrar() reemplaza la URL en los borrados")
+	_check(renombrar_sin_clave(), "renombrar() sin clave previa no falla")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -82,6 +85,30 @@ func codigo_por_defecto() -> bool:
 	store.guardar_estado("https://ejemplo.com/a", true, "OK (200)")
 	var e: Dictionary = store.cargar()["estados"].get("https://ejemplo.com/a", {})
 	return int(e.get("codigo", -1)) == 0
+
+
+func renombrar_mueve_estado() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://vieja.com", true, "OK (200)", 200)
+	if not store.renombrar("https://vieja.com", "https://nueva.com"):
+		return false
+	var datos := store.cargar()
+	return datos["estados"].has("https://nueva.com") \
+		and not datos["estados"].has("https://vieja.com") \
+		and int(datos["estados"]["https://nueva.com"].get("codigo", -1)) == 200
+
+
+func renombrar_actualiza_borrados() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.marcar_borrado("https://borrada.com")
+	if not store.renombrar("https://borrada.com", "https://borrada2.com"):
+		return false
+	return store.cargar()["borrados"] == ["https://borrada2.com"]
+
+
+func renombrar_sin_clave() -> bool:
+	var store := EstadoStore.new(BASE)
+	return store.renombrar("https://fantasma.com", "https://otra.com")
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

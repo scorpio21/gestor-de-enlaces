@@ -39,6 +39,19 @@ func borrar_estado(url: String) -> void:
 		_escribir_json(_ruta("estados.json"), estados)
 
 
+func renombrar(url_antigua: String, url_nueva: String) -> bool:
+	var estados := _leer_estados()
+	if estados.has(url_antigua):
+		estados[url_nueva] = estados[url_antigua]
+		estados.erase(url_antigua)
+	var borrados := _leer_borrados()
+	for i in range(borrados.size() - 1, -1, -1):
+		if str(borrados[i]) == url_antigua:
+			borrados[i] = url_nueva
+	return _escribir_json(_ruta("estados.json"), estados) \
+		and _escribir_json(_ruta("borrados.json"), borrados)
+
+
 func _leer_estados() -> Dictionary:
 	var v: Variant = _leer_json(_ruta("estados.json"))
 	return v if typeof(v) == TYPE_DICTIONARY else {}
