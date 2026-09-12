@@ -1217,7 +1217,7 @@ func _on_enlace_guardado(datos: Dictionary) -> void:
 func _on_lote_guardado(urls: Array) -> void:
 	var normales: Array = []
 	for linea in urls:
-		var u := linea.strip_edges() if typeof(linea) == TYPE_STRING else ""
+		var u: String = linea.strip_edges() if typeof(linea) == TYPE_STRING else ""
 		if not u.is_empty():
 			normales.append(u)
 	var validas: Array = []
