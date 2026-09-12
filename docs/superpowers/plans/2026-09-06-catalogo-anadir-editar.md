@@ -1018,11 +1018,11 @@ func _on_guardar() -> void:
 		img_final = str(resultado.get("destino", ""))
 
 	var datos := {"nombre": n, "desc": d, "url": u, "img": img_final}
+	hide()
 	if _modo == "editar":
 		editado.emit(datos, _url_original)
 	else:
 		guardado.emit(datos)
-	hide()
 
 
 func _on_guardar_lote() -> void:
@@ -1035,8 +1035,8 @@ func _on_guardar_lote() -> void:
 		error_label.text = "Pega al menos una URL."
 		%ListaUrls.grab_focus()
 		return
-	lote_guardado.emit(lineas)
 	hide()
+	lote_guardado.emit(lineas)
 ```
 
 - [ ] **Step 3: Write the failing test** `tests/test_agregar_enlace.gd`
@@ -1446,10 +1446,13 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
 		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""},
 	]
-	main_script._on_enlace_editado({"nombre": "A", "desc": "", "url": "https://c.test", "img": ""}, "https://a.test")
+	var ventana: Window = main.get_node("%VentanaAgregar")
+	ventana.abrir_edicion({"nombre": "A", "desc": "", "url": "https://a.test", "img": ""}, "https://a.test")
+	ventana.get_node("%Url").text = "https://c.test"
+	ventana.get_node("%BotonGuardar").pressed.emit()
 	_check(main_script._entradas[0].get("url") == "https://a.test", "editar con URL que colisiona no modifica")
 	_check(main.get_node("%Progreso").text == "Ya existe: https://c.test", "editar con colisión informa en la barra")
-	_check(main.get_node("%VentanaAgregar").visible, "editar con colisión reabre el diálogo")
+	_check(ventana.visible, "editar con colisión reabre el diálogo")
 ```
 
 - [ ] **Step 3: Run test to verify it fails**
