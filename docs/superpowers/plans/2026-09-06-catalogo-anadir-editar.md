@@ -497,14 +497,14 @@ por:
 				item.aplicar_estado(
 ```
 
-Y reemplazar `_on_copiar_pedido` completo (líneas 303-306):
+Y reemplazar `_on_copiar_pedido` completo (líneas 303-306). La señal emite `copiar_pedido(url)` (1 arg) y el binding añade `item` (1 arg): los args emitidos van ANTES de los bindeados, así que el handler recibe `(url, item)`:
 
 ```gdscript
-func _on_copiar_pedido(item: Button) -> void:
+func _on_copiar_pedido(url: String, item: Button) -> void:
 	if not is_instance_valid(item):
 		return
-	DisplayServer.clipboard_set(item.url)
-	progreso.text = "URL copiada: %s" % item.url
+	DisplayServer.clipboard_set(url)
+	progreso.text = "URL copiada: %s" % url
 ```
 
 - [ ] **Step 4: Run existing suite to verify RED**
@@ -667,15 +667,26 @@ Son 17 checks (2 menú + 3 imagen + 2 código/fecha + 2 fecha + 3 tooltip + 1 cl
 Run: mismo comando del Step 4.
 Expected: GREEN — `TESTS OK`.
 
-- [ ] **Step 7: Regression: ejecutar `test_main_barra`**
+- [ ] **Step 7: Añadir check de wiring y ejecutar `test_main_barra`**
+
+Antes de ejecutar, insertar en `tests/test_main_barra.gd` tras el bloque `_persistir_recompra` (tras la línea `		item.free()`), el siguiente bloque (da cobertura al handler arreglado en Step 3):
+
+```gdscript
+	# Catálogo: copiar URL desde la fila informa en la barra
+	main_script._entradas = [{"nombre": "Copiar", "desc": "", "url": "https://copiar.test", "img": ""}]
+	main_script._refrescar_vista()
+	var fila = main.get_node("%ListaContenedor").get_child(0)
+	fila.copiar_pedido.emit(fila.url)
+	_check(main.get_node("%Progreso").text == "URL copiada: https://copiar.test", "copiar desde la fila informa en la barra")
+```
 
 Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" -s tests/test_main_barra.gd`
-Expected: GREEN — `TESTS OK` (18 checks, no depende de `mostrar_acciones`).
+Expected: GREEN — `TESTS OK` (19 checks, no depende de `mostrar_acciones`).
 
 - [ ] **Step 8: Commit**
 
 ```bash
-git add scenes/ListItem.tscn scripts/list_item.gd scripts/main.gd tests/test_list_item.gd
+git add scenes/ListItem.tscn scripts/list_item.gd scripts/main.gd tests/test_list_item.gd tests/test_main_barra.gd
 git commit -m "feat: menú contextual en fila de enlace"
 ```
 
@@ -1304,7 +1315,7 @@ Expected: RED — fallan los checks de catálogo (`Invalid call. Nonexistent fun
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: mismo comando del Step 3.
-Expected: GREEN — `TESTS OK` (18 + 7 = 25 checks).
+Expected: GREEN — `TESTS OK` (19 + 7 = 26 checks).
 
 - [ ] **Step 5: Regression: `test_gestor_catalogo` sigue verde**
 
@@ -1446,7 +1457,7 @@ Expected: RED — `Invalid call. Nonexistent function '_on_enlace_editado'`, cam
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: mismo comando del Step 3.
-Expected: GREEN — `TESTS OK` (25 + 8 = 33 checks).
+Expected: GREEN — `TESTS OK` (26 + 8 = 34 checks).
 
 - [ ] **Step 5: Commit**
 
