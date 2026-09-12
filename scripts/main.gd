@@ -49,6 +49,7 @@ func _ready() -> void:
 	filtro.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
 	ventana_agregar.lote_guardado.connect(_on_lote_guardado)
+	ventana_agregar.editado.connect(_on_enlace_editado)
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new()
 	var cfg: Dictionary = _config_store.cargar()
@@ -219,6 +220,69 @@ func _url_existe(url: String) -> bool:
 	return not (res.get("repetidas", []) as Array).is_empty()
 
 
+func _on_editar_pedido(item: Button) -> void:
+	if not is_instance_valid(item):
+		return
+	var datos := _buscar_entrada(item.url)
+	if datos.is_empty():
+		progreso.text = "No se encontró el enlace."
+		return
+	ventana_agregar.abrir_edicion(datos, item.url)
+
+
+func _buscar_entrada(url_entrada: String) -> Dictionary:
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("url", "")) == url_entrada:
+			return entrada
+	return {}
+
+
+func _cambios_url_validos(url_original: String, url_nueva: String) -> bool:
+	var existentes: Array = []
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("url", "")) != url_original:
+			existentes.append(str(entrada.get("url", "")))
+	var res := GestorCatalogoScript.separar([url_nueva], existentes)
+	return (res.get("repetidas", []) as Array).is_empty()
+
+
+func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
+	var url_nueva := str(datos.get("url", ""))
+	var indice := -1
+	for i in range(_entradas.size()):
+		if typeof(_entradas[i]) == TYPE_DICTIONARY and str(_entradas[i].get("url", "")) == url_original:
+			indice = i
+			break
+	if indice == -1:
+		progreso.text = "No se encontró el enlace."
+		return
+	if url_nueva != url_original and not _cambios_url_validos(url_original, url_nueva):
+		progreso.text = "Ya existe: %s" % url_nueva
+		ventana_agregar.abrir_edicion(datos, url_original)
+		return
+	if url_nueva != url_original:
+		_estado_store.renombrar(url_original, url_nueva)
+		if _estados.has(url_original):
+			_estados[url_nueva] = _estados[url_original]
+			_estados.erase(url_original)
+		for i_b in range(_borrados.size()):
+			if str(_borrados[i_b]) == url_original:
+				_borrados[i_b] = url_nueva
+	var entrada: Dictionary = _entradas[indice]
+	entrada["nombre"] = str(datos.get("nombre", ""))
+	entrada["desc"] = str(datos.get("desc", ""))
+	entrada["url"] = url_nueva
+	entrada["img"] = str(datos.get("img", ""))
+	if not _guardar_datos():
+		_cargar_datos()
+		_refrescar_vista()
+		progreso.text = "No se pudo guardar el enlace."
+		return
+	_refrescar_vista()
+	_actualizar_status()
+	progreso.text = "Enlace actualizado: %s" % str(datos.get("nombre", ""))
+
+
 func _refrescar_vista() -> void:
 	_mostrar_lista(_filtrar_busqueda(busqueda.text))
 
@@ -267,6 +331,7 @@ func _mostrar_lista(entradas: Array) -> void:
 		item.eliminar_pedido.connect(_on_eliminar_pedido.bind(item))
 		item.recomprobar_pedido.connect(_on_recomprobar_pedido.bind(item))
 		item.copiar_pedido.connect(_on_copiar_pedido.bind(item))
+		item.editar_pedido.connect(_on_editar_pedido.bind(item))
 		lista.add_child(item)
 
 	_aplicar_filtro()

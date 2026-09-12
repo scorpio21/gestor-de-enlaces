@@ -73,6 +73,30 @@ func _arrancar() -> void:
 	_check(main_script._entradas.size() == 1, "lote sin nuevas no añade nada")
 	_check(main.get_node("%Progreso").text == "No se añadió ningún enlace. 1 repetidas ignoradas.", "lote sin nuevas reporta")
 
+	# Catálogo: edición con cambio de URL remapea
+	main_script._estado_store = _FakeStore.new()
+	main_script._estados = {"https://a.test": {"valido": true, "mensaje": "OK (200)", "codigo": 200, "fecha": 1}}
+	main_script._borrados = ["https://a.test"]
+	main_script._entradas = [{"nombre": "A", "desc": "D", "url": "https://a.test", "img": ""}]
+	main_script._on_enlace_editado({"nombre": "A2", "desc": "D2", "url": "https://a2.test", "img": ""}, "https://a.test")
+	_check(main_script._entradas[0].get("url") == "https://a2.test" and main_script._entradas[0].get("nombre") == "A2", "editar sustituye los campos de la entrada")
+	_check(main_script._estados.has("https://a2.test") and not main_script._estados.has("https://a.test"), "editar remapea el estado en memoria")
+	_check(main_script._borrados == ["https://a2.test"], "editar remapea los borrados en memoria")
+	_check(main_script._estado_store.ultima_renombrar == ["https://a.test", "https://a2.test"], "editar pide el remapeo persistido al store")
+	_check(main.get_node("%Progreso").text == "Enlace actualizado: A2", "editar confirma en la barra")
+
+	# Catálogo: edición con colisión de URL no modifica
+	main_script._estados = {}
+	main_script._borrados = []
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
+		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""},
+	]
+	main_script._on_enlace_editado({"nombre": "A", "desc": "", "url": "https://c.test", "img": ""}, "https://a.test")
+	_check(main_script._entradas[0].get("url") == "https://a.test", "editar con URL que colisiona no modifica")
+	_check(main.get_node("%Progreso").text == "Ya existe: https://c.test", "editar con colisión informa en la barra")
+	_check(main.get_node("%VentanaAgregar").visible, "editar con colisión reabre el diálogo")
+
 	# Catálogo: copiar URL desde la fila informa en la barra
 	main_script._entradas = [{"nombre": "Copiar", "desc": "", "url": "https://copiar.test", "img": ""}]
 	main_script._refrescar_vista()
