@@ -36,7 +36,22 @@ theme_override_constants/margin_bottom = 16
 layout_mode = 2
 theme_override_constants/separation = 10
 
+[node name="FilaModo" type="HBoxContainer" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Modo" type="OptionButton" parent="Margen/Columna/FilaModo"]
+unique_name_in_owner = true
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "Individual"
+popup/item_0/id = 0
+popup/item_1/text = "Varias"
+popup/item_1/id = 1
+
 [node name="EtiquetaNombre" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Nombre"
 
@@ -46,6 +61,7 @@ layout_mode = 2
 placeholder_text = "Ej. Mi servidor AO"
 
 [node name="EtiquetaDesc" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Descripción"
 
@@ -55,6 +71,7 @@ layout_mode = 2
 placeholder_text = "Ej. (Cliente + códigos)"
 
 [node name="EtiquetaUrl" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "URL"
 
@@ -73,6 +90,7 @@ stretch_mode = 5
 texture = ExtResource("2_placeholder")
 
 [node name="FilaImagen" type="HBoxContainer" parent="Margen/Columna"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
 
@@ -85,6 +103,22 @@ text = "Elegir imagen…"
 unique_name_in_owner = true
 layout_mode = 2
 text = "Quitar imagen"
+
+[node name="CajaVarias" type="VBoxContainer" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+visible = false
+theme_override_constants/separation = 8
+
+[node name="EtiquetaVarias" type="Label" parent="Margen/Columna/CajaVarias"]
+layout_mode = 2
+text = "Una URL por línea"
+
+[node name="ListaUrls" type="TextEdit" parent="Margen/Columna/CajaVarias"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 200)
+placeholder_text = "https://servidor1.com\nhttps://servidor2.com"
 
 [node name="Error" type="Label" parent="Margen/Columna"]
 unique_name_in_owner = true
