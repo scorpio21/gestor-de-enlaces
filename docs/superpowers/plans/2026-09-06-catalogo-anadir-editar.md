@@ -116,7 +116,7 @@ static func separar(urls: Array, existentes: Array) -> Dictionary:
 	var nuevas: Array = []
 	var repetidas: Array = []
 	for u in urls:
-		var nu := u.strip_edges() if typeof(u) == TYPE_STRING else ""
+		var nu: String = u.strip_edges() if typeof(u) == TYPE_STRING else ""
 		if nu.is_empty():
 			continue
 		if vistos.has(nu):
@@ -130,7 +130,7 @@ static func separar(urls: Array, existentes: Array) -> Dictionary:
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: mismo comando del Step 2.
-Expected: GREEN — `TESTS OK` con 15 `  OK:`.
+Expected: GREEN — `TESTS OK` con 13 `  OK:`.
 
 - [ ] **Step 5: Commit**
 
