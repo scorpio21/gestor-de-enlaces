@@ -159,6 +159,7 @@ Añadir tras la línea `_check(codigo_por_defecto(), ...)`:
 	_check(renombrar_mueve_estado(), "renombrar() traslada el estado a la nueva URL")
 	_check(renombrar_actualiza_borrados(), "renombrar() reemplaza la URL en los borrados")
 	_check(renombrar_sin_clave(), "renombrar() sin clave previa no falla")
+	_check(renombrar_misma_url(), "renombrar() con la misma URL no borra el estado")
 ```
 
 Y añadir los helpers antes de `func _check(`:
@@ -186,6 +187,16 @@ func renombrar_actualiza_borrados() -> bool:
 func renombrar_sin_clave() -> bool:
 	var store := EstadoStore.new(BASE)
 	return store.renombrar("https://fantasma.com", "https://otra.com")
+
+
+func renombrar_misma_url() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://misma.com", true, "OK (200)", 200)
+	if not store.renombrar("https://misma.com", "https://misma.com"):
+		return false
+	var datos := store.cargar()
+	return datos["estados"].has("https://misma.com") \
+		and int(datos["estados"]["https://misma.com"].get("codigo", -1)) == 200
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -198,13 +209,14 @@ Expected: RED — `Invalid call. Nonexistent function 'renombrar'` + `TESTS FALL
 ```gdscript
 func renombrar(url_antigua: String, url_nueva: String) -> bool:
 	var estados := _leer_estados()
-	if estados.has(url_antigua):
+	if url_antigua != url_nueva and estados.has(url_antigua):
 		estados[url_nueva] = estados[url_antigua]
 		estados.erase(url_antigua)
 	var borrados := _leer_borrados()
-	for i in range(borrados.size() - 1, -1, -1):
-		if str(borrados[i]) == url_antigua:
-			borrados[i] = url_nueva
+	if url_antigua != url_nueva:
+		for i in range(borrados.size() - 1, -1, -1):
+			if str(borrados[i]) == url_antigua:
+				borrados[i] = url_nueva
 	return _escribir_json(_ruta("estados.json"), estados) \
 		and _escribir_json(_ruta("borrados.json"), borrados)
 ```
@@ -212,7 +224,7 @@ func renombrar(url_antigua: String, url_nueva: String) -> bool:
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: mismo comando del Step 2.
-Expected: GREEN — `TESTS OK` (11 checks).
+Expected: GREEN — `TESTS OK` (12 checks).
 
 - [ ] **Step 5: Commit**
 
