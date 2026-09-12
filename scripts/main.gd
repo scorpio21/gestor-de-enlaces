@@ -298,11 +298,11 @@ func _on_eliminar_pedido(item: Button) -> void:
 	%ConfirmarBorrado.popup_centered()
 
 
-func _on_copiar_pedido(item: Button) -> void:
+func _on_copiar_pedido(url: String, item: Button) -> void:
 	if not is_instance_valid(item):
 		return
-	DisplayServer.clipboard_set(item.url)
-	progreso.text = "URL copiada: %s" % item.url
+	DisplayServer.clipboard_set(url)
+	progreso.text = "URL copiada: %s" % url
 
 
 func _confirmar_borrado() -> void:

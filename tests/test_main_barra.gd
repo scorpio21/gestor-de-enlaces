@@ -47,6 +47,14 @@ func _arrancar() -> void:
 		_check(main.get_node("%Rotos").text == "Rotos: 1", "Rotos se actualiza tras nueva comprobación")
 		item.free()
 
+	# Catálogo: copiar URL desde la fila informa en la barra
+	main_script._entradas = [{"nombre": "Copiar", "desc": "", "url": "https://copiar.test", "img": ""}]
+	main_script._refrescar_vista()
+	await process_frame
+	var fila = main.get_node("%ListaContenedor").get_child(0)
+	fila.copiar_pedido.emit(fila.url)
+	_check(main.get_node("%Progreso").text == "URL copiada: https://copiar.test", "copiar desde la fila informa en la barra")
+
 	_check(not main.get_node("%BarraProgreso").visible, "la barra de progreso nace oculta")
 	main_script._actualizar_barra(3, 5)
 	_check(main.get_node("%BarraProgreso").value == 3, "la barra refleja los enlaces comprobados")
