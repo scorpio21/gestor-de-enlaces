@@ -87,9 +87,9 @@ Cada entrada gana `"cat": "<clave>"`. **No se tocan** `data/data.json.bak` ni `d
 ### `agregar_enlace.gd` + AgregarEnlace.tscn — desplegable
 
 - Nuevos nodos `%EtiquetaCategoria` (Label) y `%Categoria` (OptionButton) en la sección individual, junto al resto de `%Etiqueta*`/campos existentes.
-- `_ready`/construcción: items de `%Categoria` en orden `CATEGORIAS` con `categoria_display`; `select(4)` por defecto (`"otro"`).
+- `_ready`/construcción: items de `%Categoria` en orden `CATEGORIAS` con `categoria_display`; `select(0)` por defecto (`"otro"`, que ocupa el índice 0 de `CATEGORIAS`).
 - `_mostrar_individual(individual)`: añade `%EtiquetaCategoria.visible = individual` y `%Categoria.visible = individual` (en modo "varias" y edición se comporta como el resto de la sección individual — en edición `abrir_edicion` llama `_mostrar_individual(true)`).
-- `abrir()`: `%Categoria.select(4)` (reset a `"otro"`).
+- `abrir()`: `%Categoria.select(0)` (reset a `"otro"`, índice 0 en `CATEGORIAS`).
 - `abrir_edicion(datos, ...)`: `%Categoria.select(GestorCatalogoScript.CATEGORIAS.find(GestorCatalogoScript.normalizar_categoria(datos.get("cat", ""))))` (find nunca devuelve -1: normalizar garantiza clave válida).
 - `_on_guardar` (rama individual/editar): `var cat_clave := GestorCatalogoScript.CATEGORIAS[%Categoria.get_selected_index()]`; `datos["cat"] = cat_clave`. Lote queda intacto (emite URLs; `main` añade `"otro"`).
 - Preload `GestorCatalogoScript` en `agregar_enlace.gd`.
@@ -138,7 +138,7 @@ Cada entrada gana `"cat": "<clave>"`. **No se tocan** `data/data.json.bak` ni `d
 - `abrir_edicion` con `{"cat": "servidor", ...}` → `%Categoria` seleccionado en el índice de `"servidor"` en `CATEGORIAS`; al guardar `emitido.get("cat") == "servidor"`.
 - `abrir_edicion` sin `cat` → `%Categoria` en índice de `"otro"`; al guardar `emitido.get("cat") == "otro"`.
 
-### `tests/test_main_barra.gd` (53 → 60 checks) — filtro y normalización
+### `tests/test_main_barra.gd` (53 → 59 checks) — filtro y normalización
 
 Nuevo bloque «Catálogo: categorías», con `main_script._persistir = false`, sembrando `_entradas` y refrescando vista (helpers existentes):
 
