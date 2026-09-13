@@ -219,6 +219,19 @@ func _arrancar() -> void:
 	_check(not main.get_node("%BarraProgreso").visible, "sin enlaces visibles la barra se oculta")
 	_check(main.get_node("%Progreso").text == "Nada que comprobar", "sin enlaces visibles se muestra el aviso")
 
+	# Catálogo: categorías (persistencia y normalización)
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""}]
+	main_script._on_lote_guardado(["https://nueva.test"])
+	_check(main_script._entradas[1].get("cat") == "otro", "el lote crea los enlaces con cat otro")
+	main_script._entradas = [
+		{"nombre": "A", "url": "https://a.test"},
+		{"nombre": "B", "url": "https://b.test", "cat": "cliente"},
+		{"nombre": "C", "url": "https://c.test", "cat": "raro"},
+	]
+	main_script._normalizar_categorias()
+	_check(main_script._entradas[0].get("cat") == "otro" and main_script._entradas[1].get("cat") == "cliente", "normalizar fija otro a ausente y conserva la clave válida")
+	_check(main_script._entradas[2].get("cat") == "otro", "normalizar lleva el valor desconocido a otro")
+
 	_cerrar()
 
 

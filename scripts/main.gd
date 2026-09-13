@@ -164,6 +164,13 @@ func _cargar_datos() -> void:
 			return typeof(entrada) != TYPE_DICTIONARY \
 				or not _borrados.has(str(entrada.get("url", "")))
 	)
+	_normalizar_categorias()
+
+
+func _normalizar_categorias() -> void:
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY:
+			entrada["cat"] = GestorCatalogoScript.normalizar_categoria(entrada.get("cat", ""))
 
 
 func _leer_array(path: String) -> Array:
@@ -203,6 +210,7 @@ func _on_enlace_guardado(datos: Dictionary) -> void:
 	if _url_existe(url_nueva):
 		progreso.text = "Ya existe: %s" % url_nueva
 		return
+	datos["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", "otro"))
 	_entradas.append(datos)
 	if not _guardar_datos():
 		_entradas.pop_back()
@@ -242,6 +250,7 @@ func _on_lote_guardado(urls: Array) -> void:
 			"desc": "",
 			"url": u,
 			"img": "",
+			"cat": "otro",
 		})
 	if not _guardar_datos():
 		for i in range(nuevas.size()):
@@ -335,6 +344,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 	entrada["desc"] = str(datos.get("desc", ""))
 	entrada["url"] = url_nueva
 	entrada["img"] = destino
+	entrada["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", entrada.get("cat", "otro")))
 	if not _guardar_datos():
 		_cargar_datos()
 		_refrescar_vista()
