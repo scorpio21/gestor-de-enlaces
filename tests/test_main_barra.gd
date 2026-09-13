@@ -10,6 +10,7 @@ const MAIN_SCENE := preload("res://scenes/Main.tscn")
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 
 var _fallos := 0
+var _imgs_iniciales: Array = []
 
 
 func _initialize() -> void:
@@ -100,6 +101,77 @@ func _arrancar() -> void:
 	_check(main.get_node("%Progreso").text == "Ya existe: https://c.test", "editar con colisión informa en la barra")
 	_check(ventana.visible, "editar con colisión reabre el diálogo")
 
+	# Catálogo: capturas (cambiar / quitar / compartir)
+	main_script._persistir = false
+	_imgs_iniciales = _listar_capturas()
+	var fuente := ProjectSettings.globalize_path("res://Assets/png/no-disponible.png")
+	var no_existe := ProjectSettings.globalize_path("res://Assets/png/__inexistente__.png")
+
+	# 1) cambiar captura: destino nuevo y archivo viejo borrado
+	var vieja1 := _crear_captura("img_test_old1.png")
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja1}]
+	ventana.abrir_edicion({"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja1}, "https://a.test")
+	ventana._imagen_ruta = fuente
+	ventana.get_node("%BotonGuardar").pressed.emit()
+	var img_nueva := str(main_script._entradas[0].get("img", ""))
+	_check(img_nueva != vieja1 and img_nueva.begins_with("res://Assets/png/img_"), "cambiar captura apunta a un img_*.png nuevo")
+	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(vieja1)), "cambiar captura borra el archivo viejo")
+
+	# 2) quitar captura: img vacío y archivo viejo borrado
+	var vieja2 := _crear_captura("img_test_old2.png")
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja2}]
+	ventana.abrir_edicion({"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja2}, "https://a.test")
+	ventana.get_node("%BotonQuitar").pressed.emit()
+	ventana.get_node("%BotonGuardar").pressed.emit()
+	_check(str(main_script._entradas[0].get("img", "")) == "", "quitar captura deja img vacío")
+	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(vieja2)), "quitar captura borra el archivo viejo")
+
+	# 3) editar sin tocar la imagen: archivo conservado e img intacto
+	var vieja3 := _crear_captura("img_test_old3.png")
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja3}]
+	ventana.abrir_edicion({"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja3}, "https://a.test")
+	ventana.get_node("%BotonGuardar").pressed.emit()
+	_check(str(main_script._entradas[0].get("img", "")) == vieja3, "editar sin tocar imagen conserva img")
+	_check(FileAccess.file_exists(ProjectSettings.globalize_path(vieja3)), "editar sin tocar imagen conserva el archivo")
+
+	# 4) colisión de URL con imagen nueva: sin archivos nuevos y reabre con la original
+	var vieja4 := _crear_captura("img_test_old4.png")
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja4},
+		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""},
+	]
+	var antes4 := _listar_capturas()
+	ventana.abrir_edicion({"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja4}, "https://a.test")
+	ventana._imagen_ruta = fuente
+	ventana.get_node("%Url").text = "https://c.test"
+	ventana.get_node("%BotonGuardar").pressed.emit()
+	_check(_listar_capturas() == antes4, "colisión con imagen nueva no crea archivos")
+	_check(main_script._entradas[0].get("img") == vieja4, "colisión con imagen nueva no toca la entrada")
+	_check(ventana._imagen_original == vieja4, "colisión con imagen nueva reabre con la imagen original")
+
+	# 5) captura compartida: no se borra al quitar en un enlace
+	var vieja5 := _crear_captura("img_test_old5.png")
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja5},
+		{"nombre": "B", "desc": "", "url": "https://b.test", "img": vieja5},
+	]
+	ventana.abrir_edicion({"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja5}, "https://a.test")
+	ventana.get_node("%BotonQuitar").pressed.emit()
+	ventana.get_node("%BotonGuardar").pressed.emit()
+	_check(FileAccess.file_exists(ProjectSettings.globalize_path(vieja5)), "captura compartida no se borra al quitar")
+	_check(str(main_script._entradas[0].get("img", "")) == "" and str(main_script._entradas[1].get("img", "")) == vieja5, "captura compartida solo se desreferencia en el enlace editado")
+
+	# 6) copiar fallido (fuente inexistente): barra de error y entrada intacta
+	var vieja6 := _crear_captura("img_test_old6.png")
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja6}]
+	ventana.abrir_edicion({"nombre": "A", "desc": "", "url": "https://a.test", "img": vieja6}, "https://a.test")
+	ventana._imagen_ruta = no_existe
+	ventana.get_node("%BotonGuardar").pressed.emit()
+	_check(main_script._entradas[0].get("img") == vieja6, "copiar fallido deja la entrada intacta")
+	_check(main.get_node("%Progreso").text == "No se pudo procesar la imagen.", "copiar fallido informa en la barra")
+
+	_limpiar_capturas()
+
 	# Catálogo: copiar URL desde la fila informa en la barra
 	main_script._entradas = [{"nombre": "Copiar", "desc": "", "url": "https://copiar.test", "img": ""}]
 	main_script._refrescar_vista()
@@ -125,6 +197,36 @@ func _arrancar() -> void:
 	_check(main.get_node("%Progreso").text == "Nada que comprobar", "sin enlaces visibles se muestra el aviso")
 
 	_cerrar()
+
+
+func _crear_captura(nombre: String) -> String:
+	var ruta := "res://Assets/png/%s" % nombre
+	var img := Image.create_empty(4, 4, false, Image.FORMAT_RGBA8)
+	img.fill(Color.MAGENTA)
+	if img.save_png(ProjectSettings.globalize_path(ruta)) != OK:
+		return ""
+	return ruta
+
+
+func _listar_capturas() -> Array:
+	var carpeta := DirAccess.open("res://Assets/png")
+	if carpeta == null:
+		return []
+	var lista: Array = []
+	for f in carpeta.get_files():
+		if f.begins_with("img_") and f.ends_with(".png"):
+			lista.append(f)
+	lista.sort()
+	return lista
+
+
+func _limpiar_capturas() -> void:
+	var carpeta := DirAccess.open("res://Assets/png")
+	if carpeta == null:
+		return
+	for f in _listar_capturas():
+		if f not in _imgs_iniciales:
+			carpeta.remove(f)
 
 
 func _cerrar() -> void:

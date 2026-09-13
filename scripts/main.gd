@@ -7,6 +7,7 @@ const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
+const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -256,9 +257,14 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 	if indice == -1:
 		progreso.text = "No se encontró el enlace."
 		return
+	var entrada: Dictionary = _entradas[indice]
+	var img_anterior := str(entrada.get("img", ""))
 	if url_nueva != url_original and not _cambios_url_validos(url_original, url_nueva):
 		progreso.text = "Ya existe: %s" % url_nueva
-		ventana_agregar.abrir_edicion(datos, url_original)
+		var datos_reabrir := datos.duplicate(true)
+		datos_reabrir["img"] = img_anterior
+		datos_reabrir.erase("img_pendiente")
+		ventana_agregar.abrir_edicion(datos_reabrir, url_original)
 		return
 	if url_nueva != url_original:
 		_estado_store.renombrar(url_original, url_nueva)
@@ -268,19 +274,38 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 		for i_b in range(_borrados.size()):
 			if str(_borrados[i_b]) == url_original:
 				_borrados[i_b] = url_nueva
-	var entrada: Dictionary = _entradas[indice]
+	var destino := str(datos.get("img", ""))
+	if datos.has("img_pendiente"):
+		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]))
+		if not resultado.get("ok", false):
+			progreso.text = "No se pudo procesar la imagen."
+			return
+		destino = str(resultado.get("destino", ""))
 	entrada["nombre"] = str(datos.get("nombre", ""))
 	entrada["desc"] = str(datos.get("desc", ""))
 	entrada["url"] = url_nueva
-	entrada["img"] = str(datos.get("img", ""))
+	entrada["img"] = destino
 	if not _guardar_datos():
 		_cargar_datos()
 		_refrescar_vista()
 		progreso.text = "No se pudo guardar el enlace."
 		return
+	if destino != img_anterior:
+		_borrar_captura_si_huerfana(img_anterior)
 	_refrescar_vista()
 	_actualizar_status()
 	progreso.text = "Enlace actualizado: %s" % str(datos.get("nombre", ""))
+
+
+func _borrar_captura_si_huerfana(ruta: String) -> void:
+	if not ruta.begins_with("res://Assets/png/"):
+		return
+	if not ruta.get_file().begins_with("img_"):
+		return
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("img", "")) == ruta:
+			return
+	GestorImagenesScript.borrar(ruta)
 
 
 func _refrescar_vista() -> void:
