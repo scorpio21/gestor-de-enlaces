@@ -291,7 +291,7 @@ func _exit_tree() -> void:
 - [ ] **Step 4: Run test to verify it passes**
 
 Run igual que Step 2.
-Expected: 52 líneas `  OK:` (47 previas + 5 nuevas) y `TESTS OK`.
+Expected: 53 líneas `  OK:` (47 previas + 6 nuevas) y `TESTS OK`.
 
 - [ ] **Step 5: Batería completa (regresión)**
 
@@ -311,7 +311,7 @@ $godot = "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe"
 & $godot --headless --path "K:\gestor-de-enlaces" -s tests/test_agregar_enlace.gd
 ```
 
-Expected: 10 suites terminan cada una con `TESTS OK` (test_gestor_imagenes con 13, test_main_barra con 52, resto con sus conteos previos). Nota esperada: al liberarse Main, `_exit_tree()` del test_main_barra vuelve a barrer y limpia cualquier `img_*` residual. Smokes opcionales:
+Expected: 10 suites terminan cada una con `TESTS OK` (test_gestor_imagenes con 13, test_main_barra con 53, resto con sus conteos previos). Nota esperada: al liberarse Main, `_exit_tree()` del test_main_barra vuelve a barrer y limpia cualquier `img_*` residual. Smokes opcionales:
 `& $godot --headless --path "K:\gestor-de-enlaces" --check-only --quit-after 120` (exit 0) y `& $godot --headless --path "K:\gestor-de-enlaces" res://scenes/Main.tscn --quit-after 5` (exit 0).
 
 - [ ] **Step 6: Commit**
@@ -332,7 +332,7 @@ git commit -m "feat: limpieza de capturas huérfanas desde menú y al cerrar (#2
 - Menú `Utilidades` item 2 + `_solicitar_limpieza_capturas` (0 → barra «No hay capturas huérfanas.»; >0 → `%ConfirmarLimpieza` «¿Borrar N capturas huérfanas?») → Task 2. ✓
 - `_confirmar_limpieza` con «Capturas huérfanas eliminadas: N» y «(%d errores)» → Task 2. ✓
 - `_exit_tree()` barrido silencioso → Task 2. ✓
-- Pruebas spec: test_gestor_imagenes 8→13 (los 6 bullets se agrupan en 5 checks: bullet 1→C1, 2→C2, 3→C3, 4→C4, 5+6→C5) → Task 1. test_main_barra 47→52 (5 checks: sin huérfanas, confirmación, confirmar borra, conserva referida, exit barre) → Task 2. ✓
+- Pruebas spec: test_gestor_imagenes 8→13 (los 6 bullets se agrupan en 5 checks: bullet 1→C1, 2→C2, 3→C3, 4→C4, 5+6→C5) → Task 1. test_main_barra 47→53 (6 checks: sin huérfanas, confirmación, confirmar borra, informa barra, conserva referida, exit barre) → Task 2. ✓
 - Casos borde de la tabla (copiar vacío/ilegible, carpeta no abrible, no-`img_*`, errores en barrido, cierre sin diálogo) cubiertos por código o tests. ✓
 - Fuera de alcance: `_confirmar_borrado`, esquema de datos (#5), ancho configurable → no tocados. ✓
 

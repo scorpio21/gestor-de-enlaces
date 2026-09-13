@@ -112,7 +112,7 @@ ANCHO_MAX := 800
 
 Reglas de higiene: los tests crean/borran sus propios `img_test_*`/`img_*.png` en `Assets/png` (y un `user://__test_gestor_imagenes__` como ya hacen) y limpian tras cada bloque con `DirAccess.remove_absolute`.
 
-### `tests/test_main_barra.gd` (47 → 52 checks)
+### `tests/test_main_barra.gd` (47 → 53 checks)
 
 Bloque «Catálogo: limpieza de capturas» con helpers ya presentes (`_crear_captura`, `_listar_capturas`, `_imgs_iniciales`/`_limpiar_capturas`) vía diálogo real y `main_script._persistir = false`:
 
