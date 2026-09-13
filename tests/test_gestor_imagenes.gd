@@ -33,6 +33,15 @@ func _arrancar() -> void:
 	var r3: Dictionary = GestorImagenesScript.copiar("")
 	_check(r3.get("ok", false) and str(r3.get("destino", "X")) == "", "sin imagen devuelve ok con destino vacío")
 
+	var a_borrar := BASE + "/a-borrar.png"
+	var img_b := Image.create_empty(4, 4, false, Image.FORMAT_RGBA8)
+	img_b.fill(Color.RED)
+	img_b.save_png(a_borrar)
+	var rb := GestorImagenesScript.borrar(a_borrar)
+	_check(rb.get("ok", false) and not FileAccess.file_exists(a_borrar), "borrar elimina el archivo real")
+	_check(FileAccess.file_exists(BASE + "/origen.png"), "borrar no afecta a otros archivos")
+	_check(not GestorImagenesScript.borrar("").get("ok", true), "borrar con ruta vacía devuelve fallo")
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

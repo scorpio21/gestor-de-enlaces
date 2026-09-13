@@ -17,3 +17,12 @@ static func copiar(origen: String) -> Dictionary:
 	if img.save_png(ProjectSettings.globalize_path(destino)) != OK:
 		return {"ok": false, "destino": "", "error": "No se pudo copiar la imagen."}
 	return {"ok": true, "destino": destino, "error": ""}
+
+
+static func borrar(ruta: String) -> Dictionary:
+	if ruta.is_empty():
+		return {"ok": false, "error": "Ruta vacía."}
+	var err := DirAccess.remove_absolute(ProjectSettings.globalize_path(ruta))
+	if err == OK:
+		return {"ok": true, "error": ""}
+	return {"ok": false, "error": "No se pudo borrar la captura."}
