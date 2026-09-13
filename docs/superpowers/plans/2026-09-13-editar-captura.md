@@ -369,7 +369,7 @@ func _borrar_captura_si_huerfana(ruta: String) -> void:
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" -s tests/test_main_barra.gd`
-Expected: 46 líneas `  OK:` y `TESTS OK`.
+Expected: 47 líneas `  OK:` y `TESTS OK`.
 
 - [ ] **Step 5: Batería completa (regresión)**
 
@@ -389,7 +389,7 @@ $godot = "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe"
 & $godot --headless --path "K:\gestor-de-enlaces" -s tests/test_agregar_enlace.gd
 ```
 
-Expected: 11 suites terminan cada una con `TESTS OK` (test_main_barra con 46 checks, test_gestor_imagenes con 8, test_agregar_enlace con 19, resto con sus conteos previos). Smokes opcionales:
+Expected: 11 suites terminan cada una con `TESTS OK` (test_main_barra con 47 checks, test_gestor_imagenes con 8, test_agregar_enlace con 19, resto con sus conteos previos). Smokes opcionales:
 `& $godot --headless --path "K:\gestor-de-enlaces" --check-only --quit-after 120` (exit 0) y `& $godot --headless --path "K:\gestor-de-enlaces" res://scenes/Main.tscn --quit-after 5` (exit 0).
 
 - [ ] **Step 6: Commit**
@@ -409,7 +409,7 @@ git commit -m "feat: main copia o borra la captura al editar y reabre con la ori
 - `_on_enlace_editado` pasos 1-8 (colisión sin I/O + reapertura con imagen original, destino por `img_pendiente`, persistencia fallida, borrado si cambió) → Task 3.
 - `_borrar_captura_si_huerfana` (convención `res://Assets/png/img_*` + captura compartida) → Task 3c.
 - Tabla de errores: caso 1 → Task 3 paso 6 de main + test 6; caso persistencia fallida → código (message) cubierto; compartida → test 5; fuera de convención → guarda en helper; sin tocar → test 3; colisión con imagen nueva → test 4. ✓
-- Pruebas spec: gestor_imagenes 5→8 → Task 1; main_barra 34→~40 (46 reales, incluye los 6 bullets del spec; el ~ permitía holgura) → Task 3. test_agregar_enlace pasa de 18 a 19 con un check del CONTRATO nuevo de edición (la spec decía "inalterado" porque el camino de alta no cambia; el check añadido solo cubre el contrato `img_pendiente` que la spec define, no modifica los checks existentes del alta).
+- Pruebas spec: gestor_imagenes 5→8 → Task 1; main_barra 34→~40 (47 reales: 13 checks, incluye los 6 bullets del spec; el ~ permitía holgura) → Task 3. test_agregar_enlace pasa de 18 a 19 con un check del CONTRATO nuevo de edición (la spec decía "inalterado" porque el camino de alta no cambia; el check añadido solo cubre el contrato `img_pendiente` que la spec define, no modifica los checks existentes del alta).
 - Fuera de alcance (#21/#22, alta duplicada) → no tocado. ✓
 
 **Placeholder scan:** sin TBD/TODO; todo paso lleva código verbatim extraído de los fuentes actuales.
