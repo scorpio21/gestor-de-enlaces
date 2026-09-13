@@ -172,6 +172,29 @@ func _arrancar() -> void:
 
 	_limpiar_capturas()
 
+	# Catálogo: limpieza de capturas huérfanas
+	var sin_huerfana := _crear_captura("img_test_ok.png")
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": sin_huerfana}]
+	main_script._on_utilidades_id(2)
+	_check(main.get_node("%Progreso").text == "No hay capturas huérfanas.", "limpieza sin huérfanas informa en la barra")
+
+	var huerfana := _crear_captura("img_test_huerfana.png")
+	main_script._on_utilidades_id(2)
+	var confirma: AcceptDialog = main.get_node("%ConfirmarLimpieza")
+	_check(confirma.visible and confirma.dialog_text.contains("1"), "limpieza con huérfana pide confirmación")
+	confirma.confirmed.emit()
+	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(huerfana)), "confirmar limpieza borra la huérfana")
+	_check(main.get_node("%Progreso").text == "Capturas huérfanas eliminadas: 1", "confirmar limpieza informa en la barra")
+
+	var ref_huerfana := _crear_captura("img_test_ref.png")
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": ref_huerfana}]
+	main_script._on_utilidades_id(2)
+	_check(FileAccess.file_exists(ProjectSettings.globalize_path(ref_huerfana)), "limpieza conserva la captura referenciada")
+
+	var huerfana_exit := _crear_captura("img_test_exit.png")
+	main_script._exit_tree()
+	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(huerfana_exit)), "al cerrar la app se barre lo huérfano")
+
 	# Catálogo: copiar URL desde la fila informa en la barra
 	main_script._entradas = [{"nombre": "Copiar", "desc": "", "url": "https://copiar.test", "img": ""}]
 	main_script._refrescar_vista()

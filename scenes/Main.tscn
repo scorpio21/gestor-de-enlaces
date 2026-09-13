@@ -122,6 +122,11 @@ unique_name_in_owner = true
 title = "Eliminar enlace"
 ok_button_text = "Eliminar"
 
+[node name="ConfirmarLimpieza" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Limpiar capturas huérfanas"
+ok_button_text = "Limpiar"
+
 [node name="VentanaPreferencias" parent="." instance=ExtResource("3_preferencias")]
 unique_name_in_owner = true
 

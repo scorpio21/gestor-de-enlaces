@@ -34,6 +34,7 @@ var _estados := {}
 var _borrados: Array = []
 var _item_pendiente_borrar: Button = null
 var _persistir := true
+var _limpieza_resultado: Dictionary = {}
 
 
 func _ready() -> void:
@@ -41,6 +42,7 @@ func _ready() -> void:
 	busqueda.text_changed.connect(_on_busqueda_changed)
 	%BotonComprobar.pressed.connect(_comprobar_visibles)
 	%ConfirmarBorrado.confirmed.connect(_confirmar_borrado)
+	%ConfirmarLimpieza.confirmed.connect(_confirmar_limpieza)
 	filtro.clear()
 	filtro.add_item("Todos", 0)
 	filtro.add_item("Válidos", 1)
@@ -72,6 +74,7 @@ func _configurar_menus() -> void:
 	menu_util.clear()
 	menu_util.add_item("Agregar", 0)
 	menu_util.add_item("Preferencias…", 1)
+	menu_util.add_item("Limpiar capturas huérfanas…", 2)
 	menu_util.id_pressed.connect(_on_utilidades_id)
 
 
@@ -85,6 +88,53 @@ func _on_utilidades_id(id: int) -> void:
 		ventana_agregar.abrir()
 	elif id == 1:
 		preferencias.abrir(_paralelismo, _timeout)
+	elif id == 2:
+		_solicitar_limpieza_capturas()
+
+
+func _rutas_captura_referidas() -> Array:
+	var rutas := {}
+	for lista in [_leer_array(DATA_RES), _leer_array(DATA_USER), _entradas]:
+		for entrada in lista:
+			if typeof(entrada) != TYPE_DICTIONARY:
+				continue
+			var ruta := str(entrada.get("img", ""))
+			if not ruta.is_empty():
+				rutas[ruta] = true
+	return rutas.keys()
+
+
+func _hacer_limpieza_capturas() -> Dictionary:
+	return GestorImagenesScript.limpiar_huerfanas(_rutas_captura_referidas())
+
+
+func _solicitar_limpieza_capturas() -> void:
+	var res := _hacer_limpieza_capturas()
+	_limpieza_resultado = res
+	if not res.get("ok", false):
+		progreso.text = str(res.get("error", "No se pudo limpiar las capturas."))
+		return
+	var borradas := int(res.get("borradas", 0))
+	if borradas == 0:
+		progreso.text = "No hay capturas huérfanas."
+		return
+	%ConfirmarLimpieza.dialog_text = "¿Borrar %d capturas huérfanas?" % borradas
+	%ConfirmarLimpieza.popup_centered()
+
+
+func _confirmar_limpieza() -> void:
+	var res := _limpieza_resultado
+	_limpieza_resultado = {}
+	var borradas := int(res.get("borradas", 0))
+	var errores := int(res.get("errores", 0))
+	var texto := "Capturas huérfanas eliminadas: %d" % borradas
+	if errores > 0:
+		texto += " (%d errores)" % errores
+	progreso.text = texto
+
+
+func _exit_tree() -> void:
+	_hacer_limpieza_capturas()
 
 
 func _cargar_datos() -> void:
