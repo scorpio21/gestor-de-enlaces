@@ -11,6 +11,7 @@ const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
+@onready var filtro_cat: OptionButton = %FiltroCategoria
 @onready var progreso: Label = %Progreso
 @onready var filtro: OptionButton = %FiltroEstado
 @onready var ventana_agregar = %VentanaAgregar
@@ -50,6 +51,12 @@ func _ready() -> void:
 	filtro.add_item("Sin comprobar", 3)
 	filtro.select(0)
 	filtro.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
+	filtro_cat.clear()
+	filtro_cat.add_item("Todas", 0)
+	for i in range(GestorCatalogoScript.CATEGORIAS.size()):
+		filtro_cat.add_item(GestorCatalogoScript.categoria_display(GestorCatalogoScript.CATEGORIAS[i]), i + 1)
+	filtro_cat.select(0)
+	filtro_cat.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
 	ventana_agregar.lote_guardado.connect(_on_lote_guardado)
 	ventana_agregar.editado.connect(_on_enlace_editado)
@@ -401,7 +408,8 @@ func _mostrar_lista(entradas: Array) -> void:
 			str(entrada.get("nombre", "")),
 			str(entrada.get("desc", "")),
 			str(entrada.get("url", "")),
-			str(entrada.get("img", ""))
+			str(entrada.get("img", "")),
+			GestorCatalogoScript.normalizar_categoria(entrada.get("cat", ""))
 		)
 		item.configurar_timeout(_timeout)
 		var url_item := str(entrada.get("url", ""))
@@ -549,16 +557,20 @@ func _confirmar_borrado() -> void:
 
 func _aplicar_filtro() -> void:
 	var modo := filtro.get_selected_id()
+	var cat_id := filtro_cat.get_selected_id()
+	var clave_cat := ""
+	if cat_id > 0:
+		clave_cat = GestorCatalogoScript.CATEGORIAS[cat_id - 1]
 	for hijo in lista.get_children():
+		var visible_estado := true
 		match modo:
 			1:
-				hijo.visible = hijo.valido == true
+				visible_estado = hijo.valido == true
 			2:
-				hijo.visible = hijo.valido == false
+				visible_estado = hijo.valido == false
 			3:
-				hijo.visible = hijo.valido == null
-			_:
-				hijo.visible = true
+				visible_estado = hijo.valido == null
+		hijo.visible = visible_estado and (cat_id == 0 or hijo.categoria == clave_cat)
 
 
 func _on_busqueda_changed(_texto: String) -> void:

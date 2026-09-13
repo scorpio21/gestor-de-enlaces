@@ -232,6 +232,36 @@ func _arrancar() -> void:
 	_check(main_script._entradas[0].get("cat") == "otro" and main_script._entradas[1].get("cat") == "cliente", "normalizar fija otro a ausente y conserva la clave válida")
 	_check(main_script._entradas[2].get("cat") == "otro", "normalizar lleva el valor desconocido a otro")
 
+	var filtro_cat: OptionButton = main.get_node("%FiltroCategoria")
+	_check(filtro_cat.get_item_count() == 6 and filtro_cat.get_item_text(0) == "Todas" and filtro_cat.get_item_text(1) == "Otro" and filtro_cat.get_item_text(2) == "Cliente" and filtro_cat.get_item_text(3) == "Servidor" and filtro_cat.get_item_text(4) == "Códigos fuente" and filtro_cat.get_item_text(5) == "Parche", "el filtro de categoría ofrece Todas y las 5 categorías en orden")
+
+	main_script._entradas = [
+		{"nombre": "SOK", "url": "https://srv.test", "cat": "servidor"},
+		{"nombre": "SCAI", "url": "https://srv2.test", "cat": "servidor"},
+		{"nombre": "COK", "url": "https://cli.test", "cat": "cliente"},
+	]
+	main_script._estados = {
+		"https://srv.test": {"valido": true},
+		"https://srv2.test": {"valido": false},
+		"https://cli.test": {"valido": true},
+	}
+	main_script._refrescar_vista()
+	main.get_node("%FiltroEstado").select(1)
+	main.get_node("%FiltroCategoria").select(3)
+	main_script._aplicar_filtro()
+	var visibles: Array = []
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		if hijo.visible:
+			visibles.append(hijo.url)
+	_check(visibles == ["https://srv.test"], "el filtro combina estado válido y categoría servidor")
+	main.get_node("%FiltroCategoria").select(0)
+	main_script._aplicar_filtro()
+	var visibles_todas: Array = []
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		if hijo.visible:
+			visibles_todas.append(hijo.url)
+	_check(visibles_todas == ["https://srv.test", "https://cli.test"], "categoría Todas no filtra por categoría y mantiene el estado")
+
 	_cerrar()
 
 

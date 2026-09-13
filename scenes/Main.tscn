@@ -89,6 +89,11 @@ popup/item_2/id = 2
 popup/item_3/text = "Sin comprobar"
 popup/item_3/id = 3
 
+[node name="FiltroCategoria" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+
 [node name="Progreso" type="Label" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
 unique_name_in_owner = true
 layout_mode = 2
