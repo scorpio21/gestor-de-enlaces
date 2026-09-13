@@ -28,6 +28,16 @@ func _initialize() -> void:
 	sep = GestorCatalogo.separar(["", " "], [])
 	_check(sep.get("nuevas") == [] and sep.get("repetidas") == [], "separar descarta líneas vacías")
 
+	# Categorías
+	_check(GestorCatalogo.CATEGORIAS == ["otro", "cliente", "servidor", "codigos", "parche"], "CATEGORIAS tiene las 5 claves en orden")
+	_check(GestorCatalogo.normalizar_categoria("") == "otro", "normalizar categoría vacía a otro")
+	_check(GestorCatalogo.normalizar_categoria("cliente") == "cliente", "normalizar conserva clave válida")
+	_check(GestorCatalogo.normalizar_categoria("Códigos fuente") == "codigos", "normalizar etiqueta con acentos a clave")
+	_check(GestorCatalogo.normalizar_categoria("patch") == "parche", "normalizar patch a parche")
+	_check(GestorCatalogo.normalizar_categoria("desconocida") == "otro", "normalizar valor desconocido a otro")
+	_check(GestorCatalogo.categoria_display("codigos") == "Códigos fuente", "display de codigos")
+	_check(GestorCatalogo.categoria_display("cliente") == "Cliente" and GestorCatalogo.categoria_display("") == "Otro", "display de cliente y de desconocida")
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

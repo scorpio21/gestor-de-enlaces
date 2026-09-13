@@ -30,3 +30,33 @@ static func separar(urls: Array, existentes: Array) -> Dictionary:
 			vistos[nu] = true
 			nuevas.append(nu)
 	return {"nuevas": nuevas, "repetidas": repetidas}
+
+
+const CATEGORIAS := ["otro", "cliente", "servidor", "codigos", "parche"]
+
+
+static func normalizar_categoria(valor: Variant) -> String:
+	var texto: String = String(valor).strip_edges().to_lower()
+	var limpio: String = texto.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ñ", "n")
+	var equivalencias := {
+		"otro": "otro",
+		"cliente": "cliente",
+		"servidor": "servidor",
+		"codigos": "codigos",
+		"codigo fuente": "codigos",
+		"codigos fuente": "codigos",
+		"parche": "parche",
+		"patch": "parche",
+	}
+	return equivalencias.get(limpio, "otro")
+
+
+static func categoria_display(cat: String) -> String:
+	var etiquetas := {
+		"otro": "Otro",
+		"cliente": "Cliente",
+		"servidor": "Servidor",
+		"codigos": "Códigos fuente",
+		"parche": "Parche",
+	}
+	return etiquetas.get(normalizar_categoria(cat), "Otro")
