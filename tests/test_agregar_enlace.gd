@@ -88,6 +88,36 @@ func _arrancar() -> void:
 	dialogo.get_node("%BotonGuardar").pressed.emit()
 	_check(emitido.get("img") == "" and emitido.get("img_pendiente") == fuente_rara, "editar con imagen nueva emite img vacío e img_pendiente")
 
+	dialogo.abrir()
+	emitido = {}
+	dialogo.get_node("%Nombre").text = "Con cat"
+	dialogo.get_node("%Url").text = "https://cat.test"
+	dialogo.get_node("%BotonGuardar").pressed.emit()
+	_check(emitido.get("cat") == "otro", "alta individual fija cat otro por defecto")
+
+	dialogo.abrir()
+	emitido = {}
+	dialogo.get_node("%Categoria").select(1)
+	dialogo.get_node("%Nombre").text = "Cliente"
+	dialogo.get_node("%Url").text = "https://client.test"
+	dialogo.get_node("%BotonGuardar").pressed.emit()
+	_check(emitido.get("cat") == "cliente", "alta individual usa la categoría elegida")
+
+	dialogo.abrir()
+	dialogo.get_node("%Modo").select(1)
+	dialogo.get_node("%Modo").item_selected.emit(1)
+	_check(not dialogo.get_node("%Categoria").visible and not dialogo.get_node("%EtiquetaCategoria").visible, "en modo Varias se oculta la categoría")
+
+	dialogo.abrir_edicion({"nombre": "Srv", "desc": "", "url": "https://srv.test", "img": "", "cat": "servidor"}, "https://srv.test")
+	_check(dialogo.get_node("%Categoria").selected == 2, "edición selecciona la categoría del enlace")
+	emitido = {}
+	url_original_emitida = ""
+	dialogo.get_node("%BotonGuardar").pressed.emit()
+	_check(emitido.get("cat") == "servidor", "editar conserva la categoría")
+
+	dialogo.abrir_edicion({"nombre": "Sin", "desc": "", "url": "https://sin.test", "img": ""}, "https://sin.test")
+	_check(dialogo.get_node("%Categoria").selected == 0, "edición sin cat selecciona otro")
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

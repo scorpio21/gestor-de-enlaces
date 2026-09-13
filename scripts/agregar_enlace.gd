@@ -6,6 +6,7 @@ signal lote_guardado(urls: Array)
 
 const PLACEHOLDER := preload("res://Assets/png/no-disponible.png")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
+const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 
 @onready var nombre: LineEdit = %Nombre
 @onready var descripcion: LineEdit = %Descripcion
@@ -34,12 +35,15 @@ func _ready() -> void:
 	descripcion.text_submitted.connect(func(_t: String) -> void: url.grab_focus())
 	url.text_submitted.connect(func(_t: String) -> void: _on_guardar())
 	%Modo.item_selected.connect(_cambiar_modo)
+	for i in range(GestorCatalogoScript.CATEGORIAS.size()):
+		%Categoria.add_item(GestorCatalogoScript.categoria_display(GestorCatalogoScript.CATEGORIAS[i]))
 
 
 func abrir() -> void:
 	_modo = "individual"
 	%Modo.select(0)
 	_cambiar_modo(0)
+	%Categoria.select(0)
 	_url_original = ""
 	_imagen_original = ""
 	_quitar_imagen = false
@@ -66,6 +70,7 @@ func abrir_edicion(datos: Dictionary, url_original: String) -> void:
 	_url_original = url_original
 	_imagen_original = str(datos.get("img", ""))
 	_fijar_imagen(_imagen_original)
+	%Categoria.select(GestorCatalogoScript.CATEGORIAS.find(GestorCatalogoScript.normalizar_categoria(datos.get("cat", ""))))
 	title = "Editar enlace"
 	%BotonGuardar.text = "Guardar cambios"
 	popup_centered()
@@ -96,6 +101,8 @@ func _mostrar_individual(individual: bool) -> void:
 	%Descripcion.visible = individual
 	%EtiquetaUrl.visible = individual
 	%Url.visible = individual
+	%EtiquetaCategoria.visible = individual
+	%Categoria.visible = individual
 	%VistaPrevia.visible = individual
 	%FilaImagen.visible = individual
 	caja_varias.visible = not individual
@@ -158,7 +165,8 @@ func _on_guardar() -> void:
 				return
 			img_final = str(resultado.get("destino", ""))
 
-	var datos := {"nombre": n, "desc": d, "url": u, "img": img_final}
+	var cat_clave: String = GestorCatalogoScript.CATEGORIAS[%Categoria.selected]
+	var datos := {"nombre": n, "desc": d, "url": u, "img": img_final, "cat": cat_clave}
 	if _modo == "editar" and _imagen_ruta != "" and not _quitar_imagen:
 		datos["img_pendiente"] = _imagen_ruta
 	hide()
