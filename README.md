@@ -24,7 +24,7 @@
 
 ## Requisitos
 
-- **Godot 4.7** (motor usará *Forward Plus*, renderizado **D3D12** en Windows).
+- **Godot 4.7.2** (motor usará *Forward Plus*, renderizado **D3D12** en Windows).
 
 ---
 
@@ -37,7 +37,7 @@ godot --path .          # abre el editor
 godot -e                # importa y abre el editor con importación de recursos
 ```
 
-O simplemente abre `project.godot` desde el propio editor de Godot 4.7.
+O simplemente abre `project.godot` desde el propio editor de Godot 4.7.2.
 
 La escena principal es `res://scenes/Main.tscn`.
 
