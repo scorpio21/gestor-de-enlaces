@@ -11,10 +11,12 @@ var codigo := 0
 var fecha := 0
 
 const LinkCheckerScript := preload("res://scripts/link_checker.gd")
+const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 
 var url: String = ""
 var estado: String = "pendiente"
 var valido: Variant = null
+var categoria: String = "otro"
 
 var _checker: Node = null
 var _timeout := 10.0
@@ -30,13 +32,15 @@ func _ready() -> void:
 	gui_input.connect(_on_gui_input)
 
 
-func setup(nombre: String, descripcion: String, enlace: String, imagen := "") -> void:
+func setup(nombre: String, descripcion: String, enlace: String, imagen := "", categoria := "") -> void:
 	url = enlace
 	text = ""
 	_actualizar_tooltip()
 	%NombreLabel.text = nombre
 	%DescripcionLabel.text = descripcion
 	_pintar_estado("Sin comprobar", Color(0.55, 0.55, 0.55, 1))
+	self.categoria = GestorCatalogoScript.normalizar_categoria(categoria)
+	%CategoriaLabel.text = GestorCatalogoScript.categoria_display(self.categoria)
 	if imagen != "" and FileAccess.file_exists(imagen):
 		var img := Image.load_from_file(imagen)
 		if img != null and not img.is_empty():

@@ -97,6 +97,24 @@ func _arrancar() -> void:
 	item.get_node("%MenuContexto").id_pressed.emit(3)
 	_check(emitido == ["editar", "recomprobar", ["copiar", "https://ejemplo.com/menu"], "eliminar"], "la opción Eliminar emite eliminar_pedido")
 
+	var cat_cliente := _crear_item()
+	cat_cliente.setup("Nom", "Desc", "https://ejemplo.com/cat1", "", "cliente")
+	var cat_codigos := _crear_item()
+	cat_codigos.setup("Nom", "Desc", "https://ejemplo.com/cat2", "", "codigos")
+	var cat_vacia := _crear_item()
+	cat_vacia.setup("Nom", "Desc", "https://ejemplo.com/cat3", "", "")
+	var cat_rara := _crear_item()
+	cat_rara.setup("Nom", "Desc", "https://ejemplo.com/cat4", "", "rara")
+	root.add_child(cat_cliente)
+	root.add_child(cat_codigos)
+	root.add_child(cat_vacia)
+	root.add_child(cat_rara)
+	await process_frame
+	_check(cat_cliente.get_node("%CategoriaLabel").text == "Cliente" and cat_cliente.categoria == "cliente", "la fila muestra y guarda la categoría cliente")
+	_check(cat_codigos.get_node("%CategoriaLabel").text == "Códigos fuente", "la fila muestra la etiqueta de códigos fuente")
+	_check(cat_vacia.get_node("%CategoriaLabel").text == "Otro" and cat_vacia.categoria == "otro", "sin categoría la fila normaliza y muestra Otro")
+	_check(cat_rara.get_node("%CategoriaLabel").text == "Otro", "categoría desconocida muestra Otro")
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

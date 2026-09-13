@@ -65,6 +65,14 @@ theme_override_font_sizes/font_size = 13
 text = "Descripción"
 autowrap_mode = 3
 
+[node name="CategoriaLabel" type="Label" parent="Margen/Fila/Textos"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "Otro"
+
 [node name="EstadoLabel" type="Label" parent="Margen/Fila"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(160, 0)
