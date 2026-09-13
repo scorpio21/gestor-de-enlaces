@@ -42,6 +42,42 @@ func _arrancar() -> void:
 	_check(FileAccess.file_exists(BASE + "/origen.png"), "borrar no afecta a otros archivos")
 	_check(not GestorImagenesScript.borrar("").get("ok", true), "borrar con ruta vacía devuelve fallo")
 
+	var origen_grande := BASE + "/grande.png"
+	var img_g := Image.create_empty(1200, 600, false, Image.FORMAT_RGBA8)
+	img_g.fill(Color.CYAN)
+	img_g.save_png(origen_grande)
+	var rg := GestorImagenesScript.copiar(origen_grande)
+	var leida_g: Image = Image.load_from_file(str(rg.get("destino", "")))
+	_check(rg.get("ok", false) and not leida_g.is_empty() and leida_g.get_width() <= 800 and leida_g.get_width() > 0, "copiar reduce la imagen a máximo 800 px de ancho")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(str(rg.get("destino", ""))))
+
+	var rs := GestorImagenesScript.copiar(BASE + "/origen.png")
+	var leida_s: Image = Image.load_from_file(str(rs.get("destino", "")))
+	_check(rs.get("ok", false) and leida_s.get_width() == 4, "copiar conserva el tamaño de imágenes pequeñas")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(str(rs.get("destino", ""))))
+
+	var img_t := Image.create_empty(8, 8, false, Image.FORMAT_RGBA8)
+	img_t.fill(Color.ORANGE)
+	var lt1 := "res://Assets/png/img_test_lt1.png"
+	var lt2 := "res://Assets/png/img_test_lt2.png"
+	img_t.save_png(ProjectSettings.globalize_path(lt1))
+	img_t.save_png(ProjectSettings.globalize_path(lt2))
+	var rl := GestorImagenesScript.limpiar_huerfanas([lt1])
+	_check(rl.get("ok", false) and int(rl.get("borradas", -1)) == 1 and int(rl.get("errores", -1)) == 0 and not FileAccess.file_exists(ProjectSettings.globalize_path(lt2)) and FileAccess.file_exists(ProjectSettings.globalize_path(lt1)), "limpiar_huerfanas borra solo las no referidas")
+	img_t.save_png(ProjectSettings.globalize_path(lt2))
+	var rl2 := GestorImagenesScript.limpiar_huerfanas([lt1, lt2])
+	_check(rl2.get("ok", false) and int(rl2.get("borradas", -1)) == 0 and FileAccess.file_exists(ProjectSettings.globalize_path(lt1)) and FileAccess.file_exists(ProjectSettings.globalize_path(lt2)), "limpiar_huerfanas conserva las referidas")
+	var txt := ProjectSettings.globalize_path("res://Assets/png/nota_limpieza.txt")
+	var f := FileAccess.open(txt, FileAccess.WRITE)
+	if f:
+		f.store_string("x")
+		f.close()
+	var rl3 := GestorImagenesScript.limpiar_huerfanas([lt1, lt2])
+	_check(rl3.get("ok", false) and FileAccess.file_exists(txt) and int(rl3.get("borradas", -1)) == 0 and int(rl3.get("errores", -1)) == 0, "limpiar_huerfanas ignora no-img_ y reporta contadores enteros")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(lt1))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(lt2))
+	DirAccess.remove_absolute(txt)
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
