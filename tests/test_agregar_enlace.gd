@@ -80,6 +80,13 @@ func _arrancar() -> void:
 	_check(not dialogo.visible, "el diálogo se cierra tras editar")
 	_check(emitido.get("url") == "https://a2.com" and url_original_emitida == "https://a.com", "editar emite editado con los datos y la URL original")
 	_check(emitido.get("nombre") == "A", "editar conserva los campos no modificados")
+	dialogo.abrir_edicion({"nombre": "S", "desc": "D", "url": "https://s.com", "img": ""}, "https://s.com")
+	emitido = {}
+	url_original_emitida = ""
+	var fuente_rara := ProjectSettings.globalize_path("res://__fuente_inexistente__.png")
+	dialogo._imagen_ruta = fuente_rara
+	dialogo.get_node("%BotonGuardar").pressed.emit()
+	_check(emitido.get("img") == "" and emitido.get("img_pendiente") == fuente_rara, "editar con imagen nueva emite img vacío e img_pendiente")
 
 	if _fallos == 0:
 		print("TESTS OK")

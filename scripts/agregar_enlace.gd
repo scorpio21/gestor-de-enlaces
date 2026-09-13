@@ -149,13 +149,18 @@ func _on_guardar() -> void:
 	if _quitar_imagen:
 		img_final = ""
 	elif _imagen_ruta != "":
-		var resultado := GestorImagenesScript.copiar(_imagen_ruta)
-		if not resultado.get("ok", false):
-			error_label.text = str(resultado.get("error", "No se pudo copiar la imagen."))
-			return
-		img_final = str(resultado.get("destino", ""))
+		if _modo == "editar":
+			img_final = ""
+		else:
+			var resultado := GestorImagenesScript.copiar(_imagen_ruta)
+			if not resultado.get("ok", false):
+				error_label.text = str(resultado.get("error", "No se pudo copiar la imagen."))
+				return
+			img_final = str(resultado.get("destino", ""))
 
 	var datos := {"nombre": n, "desc": d, "url": u, "img": img_final}
+	if _modo == "editar" and _imagen_ruta != "" and not _quitar_imagen:
+		datos["img_pendiente"] = _imagen_ruta
 	hide()
 	if _modo == "editar":
 		editado.emit(datos, _url_original)
