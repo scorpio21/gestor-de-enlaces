@@ -9,6 +9,7 @@ const ConfigStoreScript := preload("res://scripts/config_store.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
 const GestorArchivoScript := preload("res://scripts/gestor_archivo.gd")
+const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -45,6 +46,7 @@ func _ready() -> void:
 	%BotonComprobar.pressed.connect(_comprobar_visibles)
 	%ConfirmarBorrado.confirmed.connect(_confirmar_borrado)
 	%ConfirmarLimpieza.confirmed.connect(_confirmar_limpieza)
+	%ConfirmarRestaurar.confirmed.connect(_confirmar_restaurar)
 	filtro.clear()
 	filtro.add_item("Todos", 0)
 	filtro.add_item("Válidos", 1)
@@ -80,6 +82,7 @@ func _configurar_menus() -> void:
 	menu_file.add_item("Importar…", 1)
 	menu_file.add_item("Exportar…", 2)
 	menu_file.add_separator()
+	menu_file.add_item("Restaurar copia…", 4)
 	menu_file.add_item("Salir", 3)
 	menu_file.id_pressed.connect(_on_file_id)
 
@@ -99,6 +102,8 @@ func _on_file_id(id: int) -> void:
 			%DialogoExportar.popup_centered()
 		3:
 			get_tree().quit()
+		4:
+			_on_restaurar_copia()
 
 
 func _on_importar_elegido(ruta: String) -> void:
@@ -169,7 +174,7 @@ func _on_atajo(accion: String) -> void:
 
 func _rutas_captura_referidas() -> Array:
 	var rutas := {}
-	for lista in [_leer_array(DATA_RES), _leer_array(DATA_USER), _entradas]:
+	for lista in [GestorDatosScript.cargar(DATA_RES), GestorDatosScript.cargar(DATA_USER), _entradas]:
 		for entrada in lista:
 			if typeof(entrada) != TYPE_DICTIONARY:
 				continue
@@ -208,13 +213,35 @@ func _confirmar_limpieza() -> void:
 	progreso.text = texto
 
 
+func _on_restaurar_copia() -> void:
+	if not GestorDatosScript.hay_copia(DATA_USER) and not GestorDatosScript.hay_copia(DATA_RES):
+		progreso.text = "No hay copia de seguridad disponible."
+		return
+	%ConfirmarRestaurar.popup_centered()
+
+
+func _confirmar_restaurar() -> void:
+	var ok_rest := true
+	if not GestorDatosScript.restaurar_copia(DATA_USER):
+		ok_rest = false
+	if not GestorDatosScript.restaurar_copia(DATA_RES):
+		ok_rest = false
+	if not ok_rest:
+		progreso.text = "No se pudo restaurar la copia."
+		return
+	_cargar_datos()
+	_refrescar_vista()
+	_actualizar_status()
+	progreso.text = "Catálogo restaurado desde la copia."
+
+
 func _exit_tree() -> void:
 	_hacer_limpieza_capturas()
 
 
 func _cargar_datos() -> void:
-	var base := _leer_array(DATA_RES)
-	var usuario := _leer_array(DATA_USER)
+	var base := GestorDatosScript.cargar(DATA_RES)
+	var usuario := GestorDatosScript.cargar(DATA_USER)
 	_entradas = base
 	if not usuario.is_empty():
 		var urls := {}
@@ -269,35 +296,13 @@ func _normalizar_urls() -> void:
 			entrada["url"] = GestorCatalogoScript.normalizar_url(str(entrada.get("url", "")))
 
 
-func _leer_array(path: String) -> Array:
-	if not FileAccess.file_exists(path):
-		return []
-	var archivo := FileAccess.open(path, FileAccess.READ)
-	if archivo == null:
-		return []
-	var parseado: Variant = JSON.parse_string(archivo.get_as_text())
-	if typeof(parseado) != TYPE_ARRAY:
-		return []
-	return parseado
-
-
 func _guardar_datos() -> bool:
 	if not _persistir:
 		return true
-	var texto := JSON.stringify(_entradas, "\t")
-	if not _escribir_archivo(DATA_USER, texto):
+	if not GestorDatosScript.guardar(DATA_USER, _entradas):
 		progreso.text = "No se pudo guardar el enlace."
 		return false
-	_escribir_archivo(DATA_RES, texto)
-	return true
-
-
-func _escribir_archivo(path: String, texto: String) -> bool:
-	var archivo := FileAccess.open(path, FileAccess.WRITE)
-	if archivo == null:
-		return false
-	archivo.store_string(texto)
-	archivo.close()
+	GestorDatosScript.guardar(DATA_RES, _entradas)
 	return true
 
 

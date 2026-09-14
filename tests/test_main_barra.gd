@@ -320,6 +320,22 @@ func _arrancar() -> void:
 	_check(diag_exp.visible, "Archivo > Exportar… abre el diálogo de exportación")
 	diag_exp.hide()
 
+	# Restaurar copia (#23, #24)
+	var menu_file: PopupMenu = main.get_node("%File")
+	var hay_restaurar := false
+	for i in menu_file.get_item_count():
+		if menu_file.get_item_id(i) == 4 and menu_file.get_item_text(i) == "Restaurar copia…":
+			hay_restaurar = true
+	_check(hay_restaurar, "Archivo > Restaurar copia… está en el menú")
+	var hay_copia := FileAccess.file_exists("user://enlaces.json.bak") or FileAccess.file_exists("res://data/data.json.bak")
+	main_script._on_file_id(4)
+	if hay_copia:
+		_check(main.has_node("%ConfirmarRestaurar") and main.get_node("%ConfirmarRestaurar").visible, "Restaurar copia… abre el diálogo de confirmación al existir copia")
+		if main.has_node("%ConfirmarRestaurar"):
+			main.get_node("%ConfirmarRestaurar").hide()
+	else:
+		_check(main.get_node("%Progreso").text == "No hay copia de seguridad disponible.", "Restaurar copia… sin copia informa en la barra")
+
 	var ruta_imp := "user://__test_import_export__.json"
 	var f_imp := FileAccess.open(ruta_imp, FileAccess.WRITE)
 	f_imp.store_string(JSON.stringify([

@@ -132,6 +132,12 @@ unique_name_in_owner = true
 title = "Limpiar capturas huérfanas"
 ok_button_text = "Limpiar"
 
+[node name="ConfirmarRestaurar" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Restaurar copia"
+ok_button_text = "Restaurar"
+dialog_text = "¿Restaurar el catálogo desde la copia de seguridad?"
+
 [node name="VentanaPreferencias" parent="." instance=ExtResource("3_preferencias")]
 unique_name_in_owner = true
 
