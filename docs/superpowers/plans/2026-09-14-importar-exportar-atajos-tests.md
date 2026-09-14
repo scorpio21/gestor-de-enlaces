@@ -34,7 +34,7 @@ Spec: `docs/superpowers/specs/2026-09-14-importar-exportar-atajos-tests-design.m
 7. El import no toca `_estados`, `_borrados` ni `estado_store`: los enlaces importados quedan "sin comprobar".
 8. Los `.tscn` se editan a mano con el formato texto; los archivos `.gd.uid` nuevos (generados por Godot al primer parseo) **se commitean**.
 9. Commit por tarea con los mensajes indicados; no mezclar cambios de tareas distintas.
-10. Batería final = 11 suites (ver Verification); el número de checks por archivo debe cumplirse (gestor_archivo 14, main_barra 81, link_checker_timeout 20).
+10. Batería final = 11 suites (ver Verification); el número de checks por archivo debe cumplirse (gestor_archivo 15, main_barra 81, link_checker_timeout 20).
 
 ---
 
@@ -48,7 +48,7 @@ Steps (TDD):
 
 ### Step 1 — RED: `tests/test_gestor_archivo.gd`
 
-Escribir el test (14 checks). Copiar el esqueleto de `test_estado_store.gd` (var `_fallos`) y usar rutas en `user://__test_gestor_archivo__...`:
+Escribir el test (15 checks). Copiar el esqueleto de `test_estado_store.gd` (var `_fallos`) y usar rutas en `user://__test_gestor_archivo__...`:
 
 ```gdscript
 extends SceneTree
@@ -139,7 +139,7 @@ func _arrancar() -> void:
 
 func _check(cond: bool, nombre: String) -> void:
 	if cond:
-		print("  check OK — ", nombre)
+		print("  OK: %s" % nombre)
 	else:
 		_fallos += 1
 		printerr("  check FALLIDO — ", nombre)
@@ -147,7 +147,7 @@ func _check(cond: bool, nombre: String) -> void:
 
 func _cerrar() -> void:
 	if _fallos == 0:
-		print("TESTS OK: 14 checks")
+		print("TESTS OK")
 	else:
 		print("TESTS FALLIDOS: %d" % _fallos)
 	quit(0 if _fallos == 0 else 1)
@@ -222,7 +222,7 @@ static func importar(ruta: String, existentes: Array) -> Dictionary:
 	return {"ok": true, "entradas": entradas, "omitidas": omitidas}
 ```
 
-Ejecutar el test → `TESTS OK: 14 checks`. Verificar que se generó `scripts/gestor_archivo.gd.uid` (commitearlo).
+Ejecutar el test → `TESTS OK` (15 checks, salida `print("TESTS OK")` conforme a la convención de las 10 suites). Verificar que se generó `scripts/gestor_archivo.gd.uid` (commitearlo).
 
 ### Step 3 — RED: tests de integración en `tests/test_main_barra.gd` (+5 checks)
 
@@ -616,7 +616,7 @@ Commitear `tests/test_link_checker_timeout.gd` (+ `.gd.uid` si cambió).
 
 ## Final Integration
 
-1. **Batería completa** — ejecutar los 11 suites. Respuesta esperada: `TESTS OK` en todas, 246 checks:
+1. **Batería completa** — ejecutar los 11 suites. Respuesta esperada: `TESTS OK` en todas, 247 checks:
    - `test_gestor_catalogo` 32
    - `test_main_barra` 81
    - `test_gestor_imagenes` 19
@@ -627,14 +627,14 @@ Commitear `tests/test_link_checker_timeout.gd` (+ `.gd.uid` si cambió).
    - `test_preferencias` 4
    - `test_link_checker_timeout` 20
    - `test_config_store` 5
-   - `test_gestor_archivo` 14
+   - `test_gestor_archivo` 15
 2. **Smoke headless:** `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" res://scenes/Main.tscn --quit-after 60` → exit 0 sin errores; y `--check-only` → exit 0.
 3. Si falla algo en la batería, arreglar según `systematic-debugging` y `verification-before-completion` ANTES de commitear el plan integrado.
 
 ## Components
 
 - `scripts/gestor_archivo.gd` (nuevo) — exportar/importar estático con saneado y dedup.
-- `tests/test_gestor_archivo.gd` (nuevo) — 14 checks.
+- `tests/test_gestor_archivo.gd` (nuevo) — 15 checks.
 - `scenes/Main.tscn` — `%DialogoImportar`, `%DialogoExportar` (FileDialog).
 - `scripts/main.gd` — preload, conexiones, `_configurar_menus`, `_on_file_id`, handlers import/export, `_unhandled_input`, `_on_atajo`.
 - `project.godot` — `[input]` con `atajo_buscar`/`atajo_agregar`/`atajo_comprobar`.
@@ -643,7 +643,7 @@ Commitear `tests/test_link_checker_timeout.gd` (+ `.gd.uid` si cambió).
 
 ## Verification
 
-- Batería 11/11 `TESTS OK` (246 checks).
+- Batería 11/11 `TESTS OK` (247 checks).
 - Smoke `Main.tscn` exit 0 y `--check-only` exit 0.
 - Pruebas manuales (no automatizables en headless): Ctrl+F/N/R y Esc en el editor; menú Archivo → Importar…/Exportar… sobre `data/data.json`.
 - Sin cambios en `estado_store`; `link_checker.gd` intacto; sin commits de los archivos protegidos (Constraint 5).
