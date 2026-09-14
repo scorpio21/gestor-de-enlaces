@@ -91,7 +91,7 @@ func _check(cond: bool, nombre: String) -> void:
 
 func _cerrar() -> void:
 	if _fallos == 0:
-		print("TESTS OK: 20 checks")
+		print("TESTS OK")
 	else:
 		print("TESTS FALLIDOS: %d" % _fallos)
 	quit(0 if _fallos == 0 else 1)
