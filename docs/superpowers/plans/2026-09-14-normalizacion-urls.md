@@ -618,7 +618,8 @@ En `tests/test_gestor_imagenes.gd`, añadir antes del cierre (`if _fallos == 0`,
 	if FileAccess.file_exists(destino_j):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(destino_j))
 
-	var origen_jpeg := BASE + "/origen.jpeg"
+var origen_jpeg := BASE + "/origen.jpeg"
+ 	img_j.save_jpg(origen_jpeg, 0.9)
 	var rjpeg: Dictionary = GestorImagenesScript.copiar(origen_jpeg)
 	_check(str(rjpeg.get("destino", "")).begins_with("res://Assets/jpg/img_") and str(rjpeg.get("destino", "")).ends_with(".jpg"), "copiar jpeg también termina en .jpg")
 
@@ -761,7 +762,7 @@ Guard de borrado directo en `_confirmar_borrado` (línea 551):
 
 - [ ] **Step 4: Ejecutar y verificar GREEN**
 
-Run: `tests/test_gestor_imagenes.gd` (20 checks OK) y `tests/test_main_barra.gd` (todo OK), `--check-only` sobre `scripts/gestor_imagenes.gd`.
+Run: `tests/test_gestor_imagenes.gd` (19 checks OK) y `tests/test_main_barra.gd` (todo OK), `--check-only` sobre `scripts/gestor_imagenes.gd`.
 Expected: `TESTS OK`, sin errores de parseo.
 
 - [ ] **Step 5: Smoke y commit**
@@ -793,7 +794,7 @@ Run:
 & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://scripts/main.gd --check-only 2>&1
 & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" res://scenes/Main.tscn --quit-after 60 2>&1
 ```
-Expected: 10× `TESTS OK` (32+71+20+30+8+12+21+4+4+5 = 207 checks), ningún `Parse Error|SCRIPT ERROR|ERROR`.
+Expected: 10× `TESTS OK` (32+71+19+30+8+12+21+4+4+5 = 206 checks), ningún `Parse Error|SCRIPT ERROR|ERROR`.
 
 Verificación manual (la hace el implementador): abrir la ventana Agregar enlace → botón Guardar visible sin redimensionar (#32); seleccionar un `.JPG` real del sistema → aparece la vista previa y se guarda como `Assets/jpg/img_*.jpg` (#33); probar un `.JPG` no decodificable (renombrado) → error visible "No se pudo cargar la imagen.". Confirmar `data/data.json.bak` y `data/data2.json` intactos.
 
