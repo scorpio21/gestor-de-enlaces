@@ -119,10 +119,13 @@ func _fijar_imagen(ruta: String) -> void:
 
 
 func _on_imagen_picked(ruta: String) -> void:
+	var img := Image.load_from_file(ruta)
+	if img == null or img.is_empty():
+		error_label.text = "No se pudo cargar la imagen."
+		return
 	_imagen_ruta = ruta
 	_quitar_imagen = false
-	var img := Image.load_from_file(ruta)
-	vista_previa.texture = ImageTexture.create_from_image(img) if img != null else PLACEHOLDER
+	vista_previa.texture = ImageTexture.create_from_image(img)
 
 
 func _on_quitar_imagen() -> void:

@@ -6,8 +6,9 @@
 [node name="VentanaAgregar" type="Window"]
 title = "Agregar enlace"
 initial_position = 2
-size = Vector2i(540, 520)
-unresizable = true
+size = Vector2i(540, 680)
+unresizable = false
+min_size = Vector2i(540, 680)
 exclusive = true
 visible = false
 script = ExtResource("1_agregar")
@@ -155,4 +156,4 @@ unique_name_in_owner = true
 title = "Elegir imagen"
 size = Vector2i(600, 400)
 access = 0
-filters = PackedStringArray("*.png", "*.jpg ; *.jpeg", "*.webp")
+filters = PackedStringArray("*.png ; *.jpg ; *.jpeg ; *.webp")

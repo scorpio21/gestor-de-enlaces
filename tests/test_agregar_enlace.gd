@@ -118,6 +118,21 @@ func _arrancar() -> void:
 	dialogo.abrir_edicion({"nombre": "Sin", "desc": "", "url": "https://sin.test", "img": ""}, "https://sin.test")
 	_check(dialogo.get_node("%Categoria").selected == 0, "edición sin cat selecciona otro")
 
+	_check(not dialogo.unresizable, "la ventana de agregar es redimensionable (#32)")
+	_check(dialogo.size.y >= 680, "la ventana de agregar tiene altura suficiente (#32)")
+
+	var dialogo_imagen: FileDialog = dialogo.get_node("%DialogoImagen")
+	_check(dialogo_imagen.filters.size() == 1 and dialogo_imagen.filters[0] == "*.png ; *.jpg ; *.jpeg ; *.webp", "el diálogo de imagen lista png, jpg, jpeg y webp (#33)")
+	var jpg_prueba := ProjectSettings.globalize_path("user://__test_agregar_jpg__.jpg")
+	var img := Image.create_empty(8, 8, false, Image.FORMAT_RGB8)
+	img.fill(Color.BLUE)
+	img.save_jpg(jpg_prueba, 0.9)
+	dialogo._on_imagen_picked(jpg_prueba)
+	_check(dialogo._imagen_ruta == jpg_prueba and dialogo.get_node("%VistaPrevia").texture != null, "seleccionar un jpg válido lo acepta (#33)")
+	dialogo._on_imagen_picked(ProjectSettings.globalize_path("user://__no_existe__.png"))
+	_check(dialogo._imagen_ruta == jpg_prueba and dialogo.get_node("%Error").text == "No se pudo cargar la imagen.", "un archivo no decodificable muestra error y no se acepta (#33)")
+	DirAccess.remove_absolute(jpg_prueba)
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
