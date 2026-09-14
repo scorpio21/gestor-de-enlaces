@@ -518,11 +518,11 @@ git commit -m "feat: estados, borrados y contadores indexados por clave única d
 En `tests/test_agregar_enlace.gd`, añadir tras el último `abrir_edicion` de "Sin" (línea 119), antes del cierre:
 
 ```gdscript
-	_check(dialogo.resizable, "la ventana de agregar es redimensionable (#32)")
+	_check(not dialogo.unresizable, "la ventana de agregar es redimensionable (#32)")
 	_check(dialogo.size.y >= 680, "la ventana de agregar tiene altura suficiente (#32)")
 
 	var dialogo_imagen: FileDialog = dialogo.get_node("%DialogoImagen")
-	_check(dialogo_imagen.filters == PackedStringArray("*.png ; *.jpg ; *.jpeg ; *.webp"), "el diálogo de imagen lista png, jpg, jpeg y webp (#33)")
+	_check(dialogo_imagen.filters.size() == 1 and dialogo_imagen.filters[0] == "*.png ; *.jpg ; *.jpeg ; *.webp", "el diálogo de imagen lista png, jpg, jpeg y webp (#33)")
 	var jpg_prueba := ProjectSettings.globalize_path("user://__test_agregar_jpg__.jpg")
 	var img := Image.create_empty(8, 8, false, Image.FORMAT_RGB8)
 	img.fill(Color.BLUE)
@@ -541,14 +541,14 @@ Expected: `TESTS FALLIDOS: 5` (el diálogo no es resizable, altura 520, filtros 
 
 - [ ] **Step 3: Implementar escena y script**
 
-En `scenes/AgregarEnlace.tscn`, nodo `VentanaAgregar` (líneas 6-13):
+En `scenes/AgregarEnlace.tscn`, nodo `VentanaAgregar` (líneas 6-13); en Godot 4.7.2 `Window` no expone `resizable`, solo `unresizable` (el valor en el archivo es `unresizable = true`):
 
 ```
 [node name="VentanaAgregar" type="Window"]
 title = "Agregar enlace"
 initial_position = 2
 size = Vector2i(540, 680)
-resizable = true
+unresizable = false
 exclusive = true
 visible = false
 script = ExtResource("1_agregar")
