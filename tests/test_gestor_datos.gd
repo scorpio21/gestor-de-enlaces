@@ -64,6 +64,13 @@ func _arrancar() -> void:
 	_check(GestorDatosScript.restaurar_copia(RUTA) and str(GestorDatosScript.cargar(RUTA)[0].get("url", "")) == "https://a.test", "restaurar_copia recupera el catálogo anterior desde el .bak")
 	_check(not GestorDatosScript.restaurar_copia(BASE + "/no-existe.json"), "restaurar_copia sin copia falla")
 
+	var f_bak_malo := FileAccess.open(BASE + "/malo-bak.json", FileAccess.WRITE)
+	f_bak_malo.store_string(JSON.stringify({"schema_version": 1, "enlaces": {"no": "array"}}, "\t"))
+	f_bak_malo.close()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(BASE + "/malo-bak.json.bak"))
+	DirAccess.rename_absolute(ProjectSettings.globalize_path(BASE + "/malo-bak.json"), ProjectSettings.globalize_path(BASE + "/malo-bak.json.bak"))
+	_check(not GestorDatosScript.restaurar_copia(BASE + "/malo-bak.json"), "restaurar_copia rechaza una copia v1 cuyo enlaces no es array")
+
 	_cerrar()
 
 

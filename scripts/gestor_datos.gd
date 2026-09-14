@@ -37,6 +37,9 @@ static func guardar(ruta: String, enlaces: Array) -> bool:
 		return false
 	archivo.store_string(texto)
 	archivo.close()
+	if archivo.get_error() != OK:
+		DirAccess.remove_absolute(abs_tmp)
+		return false
 	if FileAccess.file_exists(ruta):
 		if FileAccess.file_exists(ruta + ".bak"):
 			DirAccess.remove_absolute(abs_bak)
@@ -60,7 +63,10 @@ static func restaurar_copia(ruta: String) -> bool:
 	if typeof(parseado) == TYPE_ARRAY:
 		return guardar(ruta, parseado)
 	if typeof(parseado) == TYPE_DICTIONARY and int(parseado.get("schema_version", -1)) == SCHEMA_ACTUAL:
-		return guardar(ruta, parseado.get("enlaces", []))
+		var enlaces: Variant = parseado.get("enlaces", [])
+		if typeof(enlaces) != TYPE_ARRAY:
+			return false
+		return guardar(ruta, enlaces)
 	return false
 
 
