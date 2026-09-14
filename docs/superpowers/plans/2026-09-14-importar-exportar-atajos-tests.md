@@ -15,7 +15,7 @@ Spec: `docs/superpowers/specs/2026-09-14-importar-exportar-atajos-tests-design.m
 - El importado/exportado vive en un helper estático nuevo `scripts/gestor_archivo.gd` (RefCounted), testeable sin escena, siguiendo el patrón `gestor_*.gd`.
 - La UI (#3 y #14) son cambios acotados en `scenes/Main.tscn` + `scripts/main.gd`; no se toca `estado_store.gd`.
 - Los atajos se definen en `project.godot` sección `[input]` (acciones `atajo_buscar`, `atajo_agregar`, `atajo_comprobar`); `Esc` usa la acción integrada `ui_cancel`.
-- `link_checker.gd` no cambia: el texto de #31 está anticuado (`void_marker`/`ultracheck_status`/`parse_http_code` no existen). Se cubre el código real (helper `MARCAS_MUERTO`, `_parece_muerto`, `_parsear_url`, `_resolver_redirect`, `comprobar` sin red). Quirk conocido de `_resolver_redirect` (relativos sin `/` no expanden barra): se documenta en test, no se corrige.
+- `link_checker.gd` no cambia: el texto de #31 está anticuado (`void_marker`/`ultracheck_status`/`parse_http_code` no existen). Se cubre el código real (helper `MARCAS_MUERTO`, `_parece_muerto`, `_parsear_url`, `_resolver_redirect`, `comprobar` sin red). Quirk conocido de `_resolver_redirect` (relativos sin `/` no expanden barra): documentado aquí en el plan, los tests solo cubren los dos casos especificados; no se corrige.
 
 ## Tech Stack
 
