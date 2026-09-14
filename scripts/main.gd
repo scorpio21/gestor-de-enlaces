@@ -141,6 +141,32 @@ func _on_utilidades_id(id: int) -> void:
 		_solicitar_limpieza_capturas()
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("atajo_buscar"):
+		_on_atajo("atajo_buscar")
+	elif event.is_action_pressed("atajo_agregar"):
+		_on_atajo("atajo_agregar")
+	elif event.is_action_pressed("atajo_comprobar"):
+		_on_atajo("atajo_comprobar")
+	elif event.is_action_pressed("ui_cancel"):
+		_on_atajo("ui_cancel")
+
+
+func _on_atajo(accion: String) -> void:
+	match accion:
+		"atajo_buscar":
+			busqueda.grab_focus()
+		"atajo_agregar":
+			ventana_agregar.abrir()
+		"atajo_comprobar":
+			_comprobar_visibles()
+		"ui_cancel":
+			if ventana_agregar.visible:
+				ventana_agregar.hide()
+			elif preferencias.visible:
+				preferencias.hide()
+
+
 func _rutas_captura_referidas() -> Array:
 	var rutas := {}
 	for lista in [_leer_array(DATA_RES), _leer_array(DATA_USER), _entradas]:

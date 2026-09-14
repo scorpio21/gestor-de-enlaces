@@ -337,6 +337,47 @@ func _arrancar() -> void:
 	main_script._on_exportar_elegido(ruta_exp)
 	_check(FileAccess.file_exists(ruta_exp) and (JSON.parse_string(FileAccess.get_file_as_string(ruta_exp)) as Array).size() == 3, "exportar escribe un JSON con el catálogo")
 
+	# Atajos de teclado (#14)
+	_check(
+		InputMap.has_action("atajo_buscar") and InputMap.has_action("atajo_agregar") and InputMap.has_action("atajo_comprobar"),
+		"las acciones de los atajos están definidas"
+	)
+
+	var ev_f := InputEventKey.new()
+	ev_f.keycode = KEY_F
+	ev_f.physical_keycode = KEY_F
+	ev_f.ctrl_pressed = true
+	ev_f.pressed = true
+	main_script._unhandled_input(ev_f)
+	_check(main.get_viewport().gui_get_focus_owner() == main.get_node("%Busqueda") or main.get_node("%Busqueda").has_focus(), "Ctrl+F enfoca el buscador")
+
+	var ev_n := InputEventKey.new()
+	ev_n.keycode = KEY_N
+	ev_n.physical_keycode = KEY_N
+	ev_n.ctrl_pressed = true
+	ev_n.pressed = true
+	main_script._unhandled_input(ev_n)
+	_check(main.get_node("%VentanaAgregar").visible, "Ctrl+N abre la ventana Agregar enlace")
+
+	main_script._entradas = []
+	main_script._refrescar_vista()
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		hijo.visible = false
+	var ev_r := InputEventKey.new()
+	ev_r.keycode = KEY_R
+	ev_r.physical_keycode = KEY_R
+	ev_r.ctrl_pressed = true
+	ev_r.pressed = true
+	main_script._unhandled_input(ev_r)
+	_check(main.get_node("%Progreso").text == "Nada que comprobar", "Ctrl+R dispara la comprobación")
+
+	var ev_esc := InputEventKey.new()
+	ev_esc.keycode = KEY_ESCAPE
+	ev_esc.physical_keycode = KEY_ESCAPE
+	ev_esc.pressed = true
+	main_script._unhandled_input(ev_esc)
+	_check(not main.get_node("%VentanaAgregar").visible, "Esc cierra la ventana Agregar enlace")
+
 	_cerrar()
 
 
