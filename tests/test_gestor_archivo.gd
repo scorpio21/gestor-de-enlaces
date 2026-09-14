@@ -86,7 +86,7 @@ func _arrancar() -> void:
 
 func _check(cond: bool, nombre: String) -> void:
 	if cond:
-		print("  check OK — ", nombre)
+		print("  OK: %s" % nombre)
 	else:
 		_fallos += 1
 		printerr("  check FALLIDO — ", nombre)
@@ -94,7 +94,7 @@ func _check(cond: bool, nombre: String) -> void:
 
 func _cerrar() -> void:
 	if _fallos == 0:
-		print("TESTS OK: 14 checks")
+		print("TESTS OK")
 	else:
 		print("TESTS FALLIDOS: %d" % _fallos)
 	quit(0 if _fallos == 0 else 1)
