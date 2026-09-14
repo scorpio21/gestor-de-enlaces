@@ -507,6 +507,10 @@ extends SceneTree
 const LinkChecker := preload("res://scripts/link_checker.gd")
 
 var _fallos := 0
+var _emitido_1 := false
+var _valido_1 := true
+var _mensaje_1 := ""
+var _emitido_2 := false
 
 
 func _initialize() -> void:
@@ -560,30 +564,32 @@ func _arrancar() -> void:
 	cr.free()
 
 	# comprobar sin red: URLs inválidas emiten terminado síncrono (#31)
+	# QUIRK del motor (verificado en 4.7.2): las lambdas inline que capturan VARIABLES LOCALES no se invocan
+	# en este contexto; se capturan campos de la instancia (patrón del repo) en su lugar.
 	var c1 := LinkChecker.new()
-	var emitido_1 := false
-	var valido_1 := true
-	var mensaje_1 := ""
+	_emitido_1 = false
+	_valido_1 = true
+	_mensaje_1 = ""
 	c1.terminado.connect(func(v: bool, m: String) -> void:
-		emitido_1 = true
-		valido_1 = v
-		mensaje_1 = m)
+		_emitido_1 = true
+		_valido_1 = v
+		_mensaje_1 = m)
 	c1.comprobar("")
-	_check(emitido_1 and not valido_1 and mensaje_1 == "URL inválida" and not c1._activo, "comprobar('') emite terminado(false, 'URL inválida') sin red")
+	_check(_emitido_1 and not _valido_1 and _mensaje_1 == "URL inválida" and not c1._activo, "comprobar('') emite terminado(false, 'URL inválida') sin red")
 
 	var c2 := LinkChecker.new()
-	var emitido_2 := false
+	_emitido_2 = false
 	c2.terminado.connect(func(v: bool, _m: String) -> void:
-		emitido_2 = true)
+		_emitido_2 = true)
 	c2.comprobar("gopher://x")
-	_check(emitido_2 and not c2._activo, "comprobar('gopher://x') emite terminado sin red")
+	_check(_emitido_2 and not c2._activo, "comprobar('gopher://x') emite terminado sin red")
 
 	_cerrar()
 
 
 func _check(cond: bool, nombre: String) -> void:
 	if cond:
-		print("  check OK — ", nombre)
+		print("  OK: %s" % nombre)
 	else:
 		_fallos += 1
 		printerr("  check FALLIDO — ", nombre)
@@ -591,7 +597,7 @@ func _check(cond: bool, nombre: String) -> void:
 
 func _cerrar() -> void:
 	if _fallos == 0:
-		print("TESTS OK: 20 checks")
+		print("TESTS OK")
 	else:
 		print("TESTS FALLIDOS: %d" % _fallos)
 	quit(0 if _fallos == 0 else 1)
@@ -603,7 +609,9 @@ func _cerrar() -> void:
 
 Cuidado con `_process`: `comprobar` llama `set_process(true)`; como `_conectar` cierra síncrono, `_activo` vuelve a `false` y el procesado se apaga (`set_process(false)` en `_cerrar`). No hace falta `await` ningún frame.
 
-Ejecutar `--script res://tests/test_link_checker_timeout.gd` → `TESTS OK: 20 checks` (GREEN directo; los helpers ya existen).
+**Quirk del motor (documentado, NO arreglar):** en Godot 4.7.2, en este contexto (`SceneTree` script headless), las lambdas inline que capturan variables locales de `_arrancar` NO se invocan (el `connect` acepta la lambda pero el `emit` nunca la llama). El bloque `comprobar` usa campos de la instancia (`_emitido_1`/`_valido_1`/`_mensaje_1`/`_emitido_2`) — patrón ya usado en `test_main_barra.gd` — con la misma semántica y etiquetas.
+
+Ejecutar `--script res://tests/test_link_checker_timeout.gd` → 20 checks `  OK:` y `TESTS OK` (GREEN directo; los helpers ya existen).
 
 ### Step 3 — Commit
 
