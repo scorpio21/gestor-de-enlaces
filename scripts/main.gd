@@ -395,7 +395,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 
 
 func _borrar_captura_si_huerfana(ruta: String) -> void:
-	if not ruta.begins_with("res://Assets/png/"):
+	if not (ruta.begins_with("res://Assets/png/") or ruta.begins_with("res://Assets/jpg/")):
 		return
 	if not ruta.get_file().begins_with("img_"):
 		return
@@ -581,7 +581,7 @@ func _confirmar_borrado() -> void:
 			_entradas.remove_at(i)
 
 	item.queue_free()
-	if imagen_borrada.begins_with("res://Assets/png/") and imagen_borrada != "res://Assets/png/no-disponible.png":
+	if (imagen_borrada.begins_with("res://Assets/png/") or imagen_borrada.begins_with("res://Assets/jpg/")) and imagen_borrada != "res://Assets/png/no-disponible.png":
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(imagen_borrada))
 	progreso.text = "Enlace eliminado"
 	_aplicar_filtro()

@@ -78,6 +78,45 @@ func _arrancar() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(lt2))
 	DirAccess.remove_absolute(txt)
 
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://Assets/jpg"))
+	var origen_jpg := BASE + "/origen.jpg"
+	var img_j := Image.create_empty(8, 8, false, Image.FORMAT_RGBA8)
+	img_j.fill(Color.VIOLET)
+	img_j.save_jpg(origen_jpg, 0.9)
+	var rj: Dictionary = GestorImagenesScript.copiar(origen_jpg)
+	var destino_j := str(rj.get("destino", ""))
+	_check(rj.get("ok", false) and destino_j.begins_with("res://Assets/jpg/img_") and destino_j.ends_with(".jpg"), "copiar jpg guarda en Assets/jpg con extensión .jpg")
+	_check(FileAccess.file_exists(destino_j) and not Image.load_from_file(destino_j).is_empty(), "el jpg copiado existe y se decodifica")
+	if FileAccess.file_exists(destino_j):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(destino_j))
+
+	var origen_jpeg := BASE + "/origen.jpeg"
+	img_j.save_jpg(origen_jpeg, 0.9)
+	var rjpeg: Dictionary = GestorImagenesScript.copiar(origen_jpeg)
+	_check(str(rjpeg.get("destino", "")).begins_with("res://Assets/jpg/img_") and str(rjpeg.get("destino", "")).ends_with(".jpg"), "copiar jpeg también termina en .jpg")
+	var destino_jp := str(rjpeg.get("destino", ""))
+	if FileAccess.file_exists(destino_jp):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(destino_jp))
+
+	var origen_webp := BASE + "/origen.webp"
+	img_j.save_webp(origen_webp, false)
+	var rw: Dictionary = GestorImagenesScript.copiar(origen_webp)
+	var destino_w := str(rw.get("destino", ""))
+	_check(rw.get("ok", false) and destino_w.begins_with("res://Assets/png/img_") and destino_w.ends_with(".png") and not Image.load_from_file(destino_w).is_empty(), "copiar webp lo reconvierte a png en Assets/png")
+	if FileAccess.file_exists(destino_w):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(destino_w))
+
+	var r_ext: Dictionary = GestorImagenesScript.copiar(BASE + "/origen.gif")
+	_check(not r_ext.get("ok", true) and str(r_ext.get("error", "")).contains("Formato no soportado."), "extensión desconocida no se copia")
+
+	var jpg_ref := "res://Assets/jpg/img_test_ref.jpg"
+	var jpg_huerfana := "res://Assets/jpg/img_test_huerfana.jpg"
+	img_j.save_jpg(ProjectSettings.globalize_path(jpg_ref), 0.9)
+	img_j.save_jpg(ProjectSettings.globalize_path(jpg_huerfana), 0.9)
+	var rl_j := GestorImagenesScript.limpiar_huerfanas([jpg_ref])
+	_check(rl_j.get("ok", false) and int(rl_j.get("borradas", -1)) == 1 and FileAccess.file_exists(ProjectSettings.globalize_path(jpg_ref)) and not FileAccess.file_exists(ProjectSettings.globalize_path(jpg_huerfana)), "limpiar_huerfanas elimina la jpg no referida y conserva la referida")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(jpg_ref))
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

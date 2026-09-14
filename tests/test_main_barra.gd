@@ -203,6 +203,22 @@ func _arrancar() -> void:
 
 	_limpiar_capturas()
 
+	# Catálogo: captura jpg huérfana se borra / se conserva (#33)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://Assets/jpg"))
+	var jpg_borra := "res://Assets/jpg/img_test_borrable.jpg"
+	var img_j2 := Image.create_empty(4, 4, false, Image.FORMAT_RGB8)
+	img_j2.fill(Color.BLUE)
+	img_j2.save_jpg(ProjectSettings.globalize_path(jpg_borra), 0.9)
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": "res://Assets/png/img_test_otra.png"}]
+	main_script._borrar_captura_si_huerfana(jpg_borra)
+	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(jpg_borra)), "captura jpg no referenciada se borra (#33)")
+	var jpg_ref2 := "res://Assets/jpg/img_test_referida.jpg"
+	img_j2.save_jpg(ProjectSettings.globalize_path(jpg_ref2), 0.9)
+	main_script._entradas[0]["img"] = jpg_ref2
+	main_script._borrar_captura_si_huerfana(jpg_ref2)
+	_check(FileAccess.file_exists(ProjectSettings.globalize_path(jpg_ref2)), "captura jpg referenciada se conserva (#33)")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(jpg_ref2))
+
 	# Catálogo: limpieza de capturas huérfanas
 	var sin_huerfana := _crear_captura("img_test_ok.png")
 	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": sin_huerfana}]
