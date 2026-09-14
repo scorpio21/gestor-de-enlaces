@@ -636,7 +636,7 @@ Commitear `tests/test_link_checker_timeout.gd` (+ `.gd.uid` si cambió).
    - `test_link_checker_timeout` 20
    - `test_config_store` 5
    - `test_gestor_archivo` 15
-2. **Smoke headless:** `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" res://scenes/Main.tscn --quit-after 60` → exit 0 sin errores; y `--check-only` → exit 0.
+2. **Smoke headless:** `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" res://scenes/Main.tscn --quit-after 60` → exit 0 sin errores. `--check-only` exige `--script` en 4.7.x (sin él se cuelga): `& ... --headless --path ... --script res://scripts/main.gd --check-only` → exit 0, y repetir con `link_checker.gd` y `gestor_archivo.gd`.
 3. Si falla algo en la batería, arreglar según `systematic-debugging` y `verification-before-completion` ANTES de commitear el plan integrado.
 
 ## Components
