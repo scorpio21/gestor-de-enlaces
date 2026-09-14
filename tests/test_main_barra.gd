@@ -378,6 +378,14 @@ func _arrancar() -> void:
 	main_script._unhandled_input(ev_esc)
 	_check(not main.get_node("%VentanaAgregar").visible, "Esc cierra la ventana Agregar enlace")
 
+	# Regresión: ventanas nativas y arrastrables (por defecto embebidas en 4.7.2)
+	main_script._persistir = false
+	_check(
+		ProjectSettings.has_setting("display/window/subwindows/embed_subwindows") \
+		and not ProjectSettings.get_setting("display/window/subwindows/embed_subwindows"),
+		"embed_subwindows está en false (ventanas no embebidas)"
+	)
+
 	_cerrar()
 
 
