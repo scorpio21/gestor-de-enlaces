@@ -309,6 +309,34 @@ func _arrancar() -> void:
 			visibles_todas.append(hijo.url)
 	_check(visibles_todas == ["https://srv.test", "https://cli.test"], "categoría Todas no filtra por categoría y mantiene el estado")
 
+	# Importar/Exportar: menú y flujos (#3)
+	main_script._persistir = false
+	var diag_imp: FileDialog = main.get_node("%DialogoImportar")
+	var diag_exp: FileDialog = main.get_node("%DialogoExportar")
+	main_script._on_file_id(1)
+	_check(diag_imp.visible, "Archivo > Importar… abre el diálogo de importación")
+	diag_imp.hide()
+	main_script._on_file_id(2)
+	_check(diag_exp.visible, "Archivo > Exportar… abre el diálogo de exportación")
+	diag_exp.hide()
+
+	var ruta_imp := "user://__test_import_export__.json"
+	var f_imp := FileAccess.open(ruta_imp, FileAccess.WRITE)
+	f_imp.store_string(JSON.stringify([
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
+		{"nombre": "B", "desc": "", "url": "https://bb.test", "img": ""},
+		{"nombre": "C", "desc": "", "url": "https://cc.test", "img": ""},
+	], "\t"))
+	f_imp.close()
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""}]
+	main_script._on_importar_elegido(ruta_imp)
+	_check(main_script._entradas.size() == 3, "importar fusiona añadiendo solo las nuevas")
+	_check(main.get_node("%Progreso").text == "2 importados, 1 omitidos.", "importar informa importados y omitidos")
+
+	var ruta_exp := "user://__test_import_export_export__.json"
+	main_script._on_exportar_elegido(ruta_exp)
+	_check(FileAccess.file_exists(ruta_exp) and (JSON.parse_string(FileAccess.get_file_as_string(ruta_exp)) as Array).size() == 3, "exportar escribe un JSON con el catálogo")
+
 	_cerrar()
 
 

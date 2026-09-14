@@ -8,6 +8,7 @@ const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
+const GestorArchivoScript := preload("res://scripts/gestor_archivo.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -66,6 +67,8 @@ func _ready() -> void:
 	_paralelismo = clampi(int(cfg.get("paralelismo", 3)), 1, 8)
 	_timeout = clampf(float(cfg.get("timeout", 10.0)), 3.0, 60.0)
 	preferencias.aplicado.connect(_aplicar_preferencias)
+	%DialogoImportar.file_selected.connect(_on_importar_elegido)
+	%DialogoExportar.file_selected.connect(_on_exportar_elegido)
 	_refrescar_vista()
 	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
 	_actualizar_status()
@@ -74,7 +77,10 @@ func _ready() -> void:
 func _configurar_menus() -> void:
 	var menu_file: PopupMenu = %File
 	menu_file.clear()
-	menu_file.add_item("Salir", 0)
+	menu_file.add_item("Importar…", 1)
+	menu_file.add_item("Exportar…", 2)
+	menu_file.add_separator()
+	menu_file.add_item("Salir", 3)
 	menu_file.id_pressed.connect(_on_file_id)
 
 	var menu_util: PopupMenu = %Utilidades
@@ -86,8 +92,44 @@ func _configurar_menus() -> void:
 
 
 func _on_file_id(id: int) -> void:
-	if id == 0:
-		get_tree().quit()
+	match id:
+		1:
+			%DialogoImportar.popup_centered()
+		2:
+			%DialogoExportar.popup_centered()
+		3:
+			get_tree().quit()
+
+
+func _on_importar_elegido(ruta: String) -> void:
+	var res: Dictionary = GestorArchivoScript.importar(ruta, _urls_existentes())
+	if not res.get("ok", false):
+		progreso.text = str(res.get("error", "No se pudo importar el catálogo."))
+		return
+	var entradas: Array = res.get("entradas", [])
+	var omitidas := int(res.get("omitidas", 0))
+	if entradas.is_empty():
+		progreso.text = "%d omitidos (ya existían o sin URL válida)." % omitidas
+		return
+	var importados := entradas.size()
+	for entrada in entradas:
+		_entradas.append(entrada)
+	if not _guardar_datos():
+		_cargar_datos()
+		_refrescar_vista()
+		progreso.text = "No se pudo guardar el catálogo."
+		return
+	_refrescar_vista()
+	_actualizar_status()
+	progreso.text = "%d importados, %d omitidos." % [importados, omitidas]
+
+
+func _on_exportar_elegido(ruta: String) -> void:
+	var res: Dictionary = GestorArchivoScript.exportar(ruta, _entradas)
+	if not res.get("ok", false):
+		progreso.text = str(res.get("error", "No se pudo exportar el catálogo."))
+		return
+	progreso.text = "Catálogo exportado (%d enlaces)." % int(res.get("total", 0))
 
 
 func _on_utilidades_id(id: int) -> void:
