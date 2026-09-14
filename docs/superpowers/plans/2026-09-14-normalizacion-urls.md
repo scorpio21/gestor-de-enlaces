@@ -434,6 +434,7 @@ En `tests/test_gestor_contadores.gd`, cambiar las claves de `estados` (líneas 1
 
 En `tests/test_main_barra.gd`:
 - Bloque de recompra (línea 50): `var estado_memoria: Dictionary = main_script._estados.get(GestorCatalogoScript.clave_unica(item.url), {})`
+- Bloque de recompra (línea 54): la limpieza pasa a clave canónica para no dejar residuos en `estados.json` del usuario: `main_script._estado_store.borrar_estado(GestorCatalogoScript.clave_unica(item.url))`
 - Bloque de filtro/categorías (líneas 243-247): claves de `_estados` → sin esquema: `{"srv.test": {...}, "srv2.test": {...}, "cli.test": {...}}`. Las listas de `visibles`/`visibles_todas` (líneas 256 y 263) NO cambian (comparan `hijo.url` = URL canónica completa).
 
 Run ambos tests.
