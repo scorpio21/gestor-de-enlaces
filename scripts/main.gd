@@ -152,24 +152,25 @@ func _cargar_datos() -> void:
 		var urls := {}
 		for entrada in _entradas:
 			if typeof(entrada) == TYPE_DICTIONARY:
-				urls[str(entrada.get("url", ""))] = true
+				urls[GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))] = true
 		for entrada in usuario:
 			if typeof(entrada) != TYPE_DICTIONARY:
 				continue
 			var url := str(entrada.get("url", ""))
-			if url.is_empty() or urls.has(url):
+			if url.is_empty() or urls.has(GestorCatalogoScript.clave_unica(url)):
 				continue
 			_entradas.append(entrada)
-			urls[url] = true
+			urls[GestorCatalogoScript.clave_unica(url)] = true
 
 	_estado_store = EstadoStoreScript.new()
 	var datos: Dictionary = _estado_store.cargar()
 	_estados = datos.get("estados", {})
 	_borrados = datos.get("borrados", [])
+	_normalizar_urls()
 	_entradas = _entradas.filter(
 		func(entrada: Variant) -> bool:
 			return typeof(entrada) != TYPE_DICTIONARY \
-				or not _borrados.has(str(entrada.get("url", "")))
+				or not _borrados.has(GestorCatalogoScript.clave_unica(str(entrada.get("url", ""))))
 	)
 	_normalizar_categorias()
 
@@ -178,6 +179,26 @@ func _normalizar_categorias() -> void:
 	for entrada in _entradas:
 		if typeof(entrada) == TYPE_DICTIONARY:
 			entrada["cat"] = GestorCatalogoScript.normalizar_categoria(entrada.get("cat", ""))
+
+
+func _normalizar_urls() -> void:
+	var estados := {}
+	for url_clave in _estados:
+		estados[GestorCatalogoScript.clave_unica(str(url_clave))] = _estados[url_clave]
+	_estados = estados
+	var borrados_unicos := {}
+	var borrados: Array = []
+	for b in _borrados:
+		var clave_b := GestorCatalogoScript.clave_unica(str(b))
+		if clave_b.is_empty():
+			continue
+		if not borrados_unicos.has(clave_b):
+			borrados_unicos[clave_b] = true
+			borrados.append(clave_b)
+	_borrados = borrados
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY:
+			entrada["url"] = GestorCatalogoScript.normalizar_url(str(entrada.get("url", "")))
 
 
 func _leer_array(path: String) -> Array:
@@ -213,10 +234,12 @@ func _escribir_archivo(path: String, texto: String) -> bool:
 
 
 func _on_enlace_guardado(datos: Dictionary) -> void:
-	var url_nueva := str(datos.get("url", ""))
-	if _url_existe(url_nueva):
-		progreso.text = "Ya existe: %s" % url_nueva
+	var url_nueva := GestorCatalogoScript.normalizar_url(str(datos.get("url", "")))
+	var existente := _url_existente(url_nueva)
+	if not existente.is_empty():
+		progreso.text = "Ya existe: %s" % existente
 		return
+	datos["url"] = url_nueva
 	datos["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", "otro"))
 	_entradas.append(datos)
 	if not _guardar_datos():
@@ -228,14 +251,14 @@ func _on_enlace_guardado(datos: Dictionary) -> void:
 
 
 func _on_lote_guardado(urls: Array) -> void:
-	var normales: Array = []
+	var canonicas: Array = []
 	for linea in urls:
-		var u: String = linea.strip_edges() if typeof(linea) == TYPE_STRING else ""
+		var u: String = GestorCatalogoScript.normalizar_url(linea.strip_edges() if typeof(linea) == TYPE_STRING else "")
 		if not u.is_empty():
-			normales.append(u)
+			canonicas.append(u)
 	var validas: Array = []
 	var invalidas: Array = []
-	for u in normales:
+	for u in canonicas:
 		if u.begins_with("http://") or u.begins_with("https://"):
 			validas.append(u)
 		else:
@@ -282,9 +305,14 @@ func _urls_existentes() -> Array:
 	return urls
 
 
-func _url_existe(url: String) -> bool:
-	var res := GestorCatalogoScript.separar([url], _urls_existentes())
-	return not (res.get("repetidas", []) as Array).is_empty()
+func _url_existente(url: String) -> String:
+	var clave := GestorCatalogoScript.clave_unica(url)
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY:
+			var c := GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))
+			if not c.is_empty() and c == clave:
+				return str(entrada.get("url", ""))
+	return ""
 
 
 func _on_editar_pedido(item: Button) -> void:
@@ -314,7 +342,7 @@ func _cambios_url_validos(url_original: String, url_nueva: String) -> bool:
 
 
 func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
-	var url_nueva := str(datos.get("url", ""))
+	var url_nueva := GestorCatalogoScript.normalizar_url(str(datos.get("url", "")))
 	var indice := -1
 	for i in range(_entradas.size()):
 		if typeof(_entradas[i]) == TYPE_DICTIONARY and str(_entradas[i].get("url", "")) == url_original:
@@ -333,13 +361,15 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 		ventana_agregar.abrir_edicion(datos_reabrir, url_original)
 		return
 	if url_nueva != url_original:
-		_estado_store.renombrar(url_original, url_nueva)
-		if _estados.has(url_original):
-			_estados[url_nueva] = _estados[url_original]
-			_estados.erase(url_original)
+		var clave_original := GestorCatalogoScript.clave_unica(url_original)
+		var clave_nueva := GestorCatalogoScript.clave_unica(url_nueva)
+		_estado_store.renombrar(clave_original, clave_nueva)
+		if _estados.has(clave_original):
+			_estados[clave_nueva] = _estados[clave_original]
+			_estados.erase(clave_original)
 		for i_b in range(_borrados.size()):
-			if str(_borrados[i_b]) == url_original:
-				_borrados[i_b] = url_nueva
+			if str(_borrados[i_b]) == clave_original:
+				_borrados[i_b] = clave_nueva
 	var destino := str(datos.get("img", ""))
 	if datos.has("img_pendiente"):
 		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]))

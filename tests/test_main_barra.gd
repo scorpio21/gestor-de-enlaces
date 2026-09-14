@@ -8,6 +8,7 @@ class _FakeStore extends RefCounted:
 
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
+const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 
 var _fallos := 0
 var _imgs_iniciales: Array = []
@@ -76,14 +77,14 @@ func _arrancar() -> void:
 
 	# Catálogo: edición con cambio de URL remapea
 	main_script._estado_store = _FakeStore.new()
-	main_script._estados = {"https://a.test": {"valido": true, "mensaje": "OK (200)", "codigo": 200, "fecha": 1}}
-	main_script._borrados = ["https://a.test"]
+	main_script._estados = {"a.test": {"valido": true, "mensaje": "OK (200)", "codigo": 200, "fecha": 1}}
+	main_script._borrados = ["a.test"]
 	main_script._entradas = [{"nombre": "A", "desc": "D", "url": "https://a.test", "img": ""}]
 	main_script._on_enlace_editado({"nombre": "A2", "desc": "D2", "url": "https://a2.test", "img": ""}, "https://a.test")
 	_check(main_script._entradas[0].get("url") == "https://a2.test" and main_script._entradas[0].get("nombre") == "A2", "editar sustituye los campos de la entrada")
-	_check(main_script._estados.has("https://a2.test") and not main_script._estados.has("https://a.test"), "editar remapea el estado en memoria")
-	_check(main_script._borrados == ["https://a2.test"], "editar remapea los borrados en memoria")
-	_check(main_script._estado_store.ultima_renombrar == ["https://a.test", "https://a2.test"], "editar pide el remapeo persistido al store")
+	_check(main_script._estados.has("a2.test") and not main_script._estados.has("a.test"), "editar remapea el estado en memoria")
+	_check(main_script._borrados == ["a2.test"], "editar remapea los borrados en memoria")
+	_check(main_script._estado_store.ultima_renombrar == ["a.test", "a2.test"], "editar pide el remapeo persistido al store")
 	_check(main.get_node("%Progreso").text == "Enlace actualizado: A2", "editar confirma en la barra")
 
 	# Catálogo: edición con colisión de URL no modifica
@@ -100,6 +101,36 @@ func _arrancar() -> void:
 	_check(main_script._entradas[0].get("url") == "https://a.test", "editar con URL que colisiona no modifica")
 	_check(main.get_node("%Progreso").text == "Ya existe: https://c.test", "editar con colisión informa en la barra")
 	_check(ventana.visible, "editar con colisión reabre el diálogo")
+
+	# Catálogo: normalización de URLs (#25)
+	main_script._persistir = false
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "http://x.test", "img": ""}]
+	main_script._on_enlace_guardado({"nombre": "B", "desc": "", "url": "https://X.test/", "img": ""})
+	_check(main_script._entradas.size() == 1, "alta con https://X.test/ colisiona con http://x.test")
+	_check(main.get_node("%Progreso").text == "Ya existe: http://x.test", "la colisión muestra la URL canónica existente")
+	main_script._entradas = []
+	main_script._on_lote_guardado(["HTTP://X.test/", "https://x.test"])
+	_check(main_script._entradas.size() == 1, "el lote normaliza y deduplica variantes")
+	_check(str(main_script._entradas[0].get("url", "")) == "http://x.test", "el lote guarda la URL canónica")
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "http://a.test", "img": ""},
+		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""},
+	]
+	main_script._estados = {"a.test": {"valido": true, "mensaje": "OK (200)", "codigo": 200, "fecha": 1}}
+	main_script._borrados = []
+	ventana.abrir_edicion({"nombre": "A", "desc": "", "url": "http://a.test", "img": ""}, "http://a.test")
+	ventana.get_node("%Url").text = "https://c.test/"
+	ventana.get_node("%BotonGuardar").pressed.emit()
+	_check(str(main_script._entradas[0].get("url", "")) == "http://a.test", "editar a una clave existente no modifica")
+	_check(main.get_node("%Progreso").text == "Ya existe: https://c.test", "editar colisionado informa con la URL canónica")
+	_check(ventana.visible, "editar colisionado reabre el diálogo")
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "HTTP://Migrada.TEST/", "img": ""}]
+	main_script._estados = {"https://migrada.test": {"valido": true, "mensaje": "OK", "codigo": 200, "fecha": 1}, "http://migrada.test/": {"valido": false, "mensaje": "X", "codigo": 0, "fecha": 2}}
+	main_script._borrados = ["https://migrada.test/", "https://migrada.test"]
+	main_script._normalizar_urls()
+	_check(str(main_script._entradas[0].get("url", "")) == "http://migrada.test", "la migración normaliza las URLs de las entradas")
+	_check(main_script._estados.size() == 1 and main_script._estados.has("migrada.test"), "la migración colapsa los estados a clave única")
+	_check(main_script._borrados == ["migrada.test"], "la migración re-aja y deduplica los borrados")
 
 	# Catálogo: capturas (cambiar / quitar / compartir)
 	main_script._persistir = false
