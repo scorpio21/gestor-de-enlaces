@@ -179,7 +179,7 @@ git commit -m "feat: normalizar_url y clave_unica en gestor_catalogo para dedupl
 ### Task 2: main.gd — migración y escrituras de entradas
 
 **Files:**
-- Modify: `scripts/main.gd` (`_cargar_datos` 147, `_url_existe` 285, `_on_enlace_guardado` 215, `_on_lote_guardado` 230, `_on_enlace_editado` 316, `_cambios_url_validos` 307)
+- Modify: `scripts/main.gd` (`_cargar_datos` 147, `_url_existe` 285, `_on_enlace_guardado` 215, `_on_lote_guardado` 230, `_on_enlace_editado` 316)
 - Modify: `tests/test_main_barra.gd`
 
 **Interfaces:**
@@ -754,9 +754,9 @@ func _borrar_captura_si_huerfana(ruta: String) -> void:
 Guard de borrado directo en `_confirmar_borrado` (línea 551):
 
 ```gdscript
-	if caught and (imagen_borrada.begins_with("res://Assets/png/") or imagen_borrada.begins_with("res://Assets/jpg/")) and imagen_borrada != "res://Assets/png/no-disponible.png":
+	if (imagen_borrada.begins_with("res://Assets/png/") or imagen_borrada.begins_with("res://Assets/jpg/")) and imagen_borrada != "res://Assets/png/no-disponible.png":
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(imagen_borrada))
 ```
-(equivalente: ampliar la condición actual con `or imagen_borrada.begins_with("res://Assets/jpg/")`).
 
 - [ ] **Step 4: Ejecutar y verificar GREEN**
 
