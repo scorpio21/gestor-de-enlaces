@@ -1,5 +1,7 @@
 extends RefCounted
 
+const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
+
 
 static func contar(entradas: Array, estados: Dictionary) -> Dictionary:
 	var total := 0
@@ -9,7 +11,7 @@ static func contar(entradas: Array, estados: Dictionary) -> Dictionary:
 		if typeof(entrada) != TYPE_DICTIONARY:
 			continue
 		total += 1
-		var estado: Dictionary = estados.get(str(entrada.get("url", "")), {})
+		var estado: Dictionary = estados.get(GestorCatalogoScript.clave_unica(str(entrada.get("url", ""))), {})
 		if estado.get("valido") == true:
 			activos += 1
 		elif estado.get("valido") == false:

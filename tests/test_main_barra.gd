@@ -48,10 +48,10 @@ func _arrancar() -> void:
 		item.mensaje = "No existe"
 		main_script._entradas.append({"nombre": "Prueba", "url": "https://prueba-ejemplo.test"})
 		main_script._persistir_recompra(item)
-		var estado_memoria: Dictionary = main_script._estados.get(item.url, {})
+		var estado_memoria: Dictionary = main_script._estados.get(GestorCatalogoScript.clave_unica(item.url), {})
 		_check(estado_memoria.has("codigo") and int(estado_memoria.get("codigo", -1)) == 0, "el estado en memoria conserva el código tras re-comprobar")
 		_check(int(estado_memoria.get("fecha", 0)) > 0, "el estado en memoria conserva la fecha tras re-comprobar")
-		main_script._estado_store.borrar_estado(item.url)
+		main_script._estado_store.borrar_estado(GestorCatalogoScript.clave_unica(item.url))
 		_check(main.get_node("%Rotos").text == "Rotos: 1", "Rotos se actualiza tras nueva comprobación")
 		item.free()
 
@@ -272,9 +272,9 @@ func _arrancar() -> void:
 		{"nombre": "COK", "url": "https://cli.test", "cat": "cliente"},
 	]
 	main_script._estados = {
-		"https://srv.test": {"valido": true},
-		"https://srv2.test": {"valido": false},
-		"https://cli.test": {"valido": true},
+		"srv.test": {"valido": true},
+		"srv2.test": {"valido": false},
+		"cli.test": {"valido": true},
 	}
 	main_script._refrescar_vista()
 	main.get_node("%FiltroEstado").select(1)

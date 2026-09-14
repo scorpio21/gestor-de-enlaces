@@ -443,7 +443,7 @@ func _mostrar_lista(entradas: Array) -> void:
 		)
 		item.configurar_timeout(_timeout)
 		var url_item := str(entrada.get("url", ""))
-		var estado: Dictionary = _estados.get(url_item, {})
+		var estado: Dictionary = _estados.get(GestorCatalogoScript.clave_unica(url_item), {})
 		if not estado.is_empty():
 			item.aplicar_estado(
 				estado.get("valido"),
@@ -511,8 +511,9 @@ func _on_item_terminado(item: Button) -> void:
 	progreso.text = "Comprobando %d/%d…" % [_hechos, _total]
 	var ahora := int(Time.get_unix_time_from_system())
 	if is_instance_valid(item):
-		_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje, item.codigo)
-		_estados[item.url] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
+		var clave_estado := GestorCatalogoScript.clave_unica(item.url)
+		_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
+		_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
 	_aplicar_filtro()
 	_actualizar_status()
 	if not _cola.is_empty() or _en_vuelo > 0:
@@ -542,8 +543,9 @@ func _persistir_recompra(item: Button) -> void:
 	if not is_instance_valid(item):
 		return
 	var ahora := int(Time.get_unix_time_from_system())
-	_estado_store.guardar_estado(item.url, item.valido == true, item.mensaje, item.codigo)
-	_estados[item.url] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
+	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
+	_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
+	_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
 	_aplicar_filtro()
 	_actualizar_status()
 
@@ -567,9 +569,10 @@ func _confirmar_borrado() -> void:
 	if not is_instance_valid(item):
 		return
 
-	_estado_store.marcar_borrado(item.url)
-	_estado_store.borrar_estado(item.url)
-	_estados.erase(item.url)
+	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
+	_estado_store.marcar_borrado(clave_estado)
+	_estado_store.borrar_estado(clave_estado)
+	_estados.erase(clave_estado)
 
 	var imagen_borrada := ""
 	for i in range(_entradas.size() - 1, -1, -1):
