@@ -23,7 +23,7 @@
 6. **`data/data.json` está commiteado y hoy es v0 (array plano):** la primera ejecución con `GestorDatosScript.cargar` lo reescribe a v1. Ese archivo migrado se commitea como parte de la Task 2 (es el formato que el repo debe quedar).
 7. Los `.gd.uid` nuevos generados por Godot al primer parseo **se commitean** junto al `.gd`.
 8. Commit por tarea con los mensajes indicados; no mezclar cambios de tareas distintas.
-9. **Batería final:** 12 suites / **269 checks**: agregar_enlace 30, config_store 5, estado_store 12, gestor_archivo 15, gestor_catalogo 32, gestor_contadores 8, **gestor_datos 19 (nuevo)**, gestor_imagenes 19, link_checker_timeout 20, list_item 21, **main_barra 84**, preferencias 4.
+9. **Batería final:** 12 suites / **270 checks**: agregar_enlace 30, config_store 5, estado_store 12, gestor_archivo 15, gestor_catalogo 32, gestor_contadores 8, **gestor_datos 20 (nuevo)**, gestor_imagenes 19, link_checker_timeout 20, list_item 21, **main_barra 84**, preferencias 4.
 
 ---
 
@@ -35,7 +35,7 @@
 **Interfaces:**
 - Produces (lo consume la Task 2): `const SCHEMA_ACTUAL := 1`; `static func version_de(ruta: String) -> int`; `static func cargar(ruta: String) -> Array`; `static func guardar(ruta: String, enlaces: Array) -> bool`; `static func hay_copia(ruta: String) -> bool`; `static func restaurar_copia(ruta: String) -> bool`. Todas reciben rutas estilo `user://…`/`res://…`.
 
-- [ ] **Step 1: RED — escribir `tests/test_gestor_datos.gd` (19 checks)**
+- [ ] **Step 1: RED — escribir `tests/test_gestor_datos.gd` (20 checks)**
 
 Rutas bajo `user://__test_gestor_datos__/` (se crea el directorio con `make_dir_recursive_absolute`). No limpiar al final (igual que el resto de suites del repo).
 
@@ -106,6 +106,13 @@ func _arrancar() -> void:
 	_check(GestorDatosScript.restaurar_copia(RUTA) and str(GestorDatosScript.cargar(RUTA)[0].get("url", "")) == "https://a.test", "restaurar_copia recupera el catálogo anterior desde el .bak")
 	_check(not GestorDatosScript.restaurar_copia(BASE + "/no-existe.json"), "restaurar_copia sin copia falla")
 
+	var f_bak_malo := FileAccess.open(BASE + "/malo-bak.json", FileAccess.WRITE)
+	f_bak_malo.store_string(JSON.stringify({"schema_version": 1, "enlaces": {"no": "array"}}, "\t"))
+	f_bak_malo.close()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(BASE + "/malo-bak.json.bak"))
+	DirAccess.rename_absolute(ProjectSettings.globalize_path(BASE + "/malo-bak.json"), ProjectSettings.globalize_path(BASE + "/malo-bak.json.bak"))
+	_check(not GestorDatosScript.restaurar_copia(BASE + "/malo-bak.json"), "restaurar_copia rechaza una copia v1 cuyo enlaces no es array")
+
 	_cerrar()
 
 
@@ -175,6 +182,9 @@ static func guardar(ruta: String, enlaces: Array) -> bool:
 		return false
 	archivo.store_string(texto)
 	archivo.close()
+	if archivo.get_error() != OK:
+		DirAccess.remove_absolute(abs_tmp)
+		return false
 	if FileAccess.file_exists(ruta):
 		if FileAccess.file_exists(ruta + ".bak"):
 			DirAccess.remove_absolute(abs_bak)
@@ -198,7 +208,10 @@ static func restaurar_copia(ruta: String) -> bool:
 	if typeof(parseado) == TYPE_ARRAY:
 		return guardar(ruta, parseado)
 	if typeof(parseado) == TYPE_DICTIONARY and int(parseado.get("schema_version", -1)) == SCHEMA_ACTUAL:
-		return guardar(ruta, parseado.get("enlaces", []))
+		var enlaces: Variant = parseado.get("enlaces", [])
+		if typeof(enlaces) != TYPE_ARRAY:
+			return false
+		return guardar(ruta, enlaces)
 	return false
 
 
@@ -213,7 +226,7 @@ static func _parsear(ruta: String) -> Variant:
 
 - [ ] **Step 4: Verificar que pasa (GREEN)**
 
-Run el mismo comando del Step 2. Expected: 19 `  OK:` y `TESTS OK`, exit 0.
+Run el mismo comando del Step 2. Expected: 20 `  OK:` y `TESTS OK`, exit 0.
 
 - [ ] **Step 5: Commit**
 
@@ -357,7 +370,7 @@ Run:
 ```
 Expected: 84 `  OK:` y `TESTS OK`.
 
-Run la batería completa (los 12 archivos de `tests/`): todos `TESTS OK` y exit 0, con los recuentos de la constraint 9 (total 269). La primera ejecución de cualquier suite que instancie `Main` reescribe `res://data/data.json` a v1 y crea `data/data.json.bak`/`.tmp` (ignorados por el `.gitignore` nuevo).
+Run la batería completa (los 12 archivos de `tests/`): todos `TESTS OK` y exit 0, con los recuentos de la constraint 9 (total 270). La primera ejecución de cualquier suite que instancie `Main` reescribe `res://data/data.json` a v1 y crea `data/data.json.bak`/`.tmp` (ignorados por el `.gitignore` nuevo).
 
 Comprobar: `git status --short` debe mostrar `data/data.json` modificado (ahora v1) y NADA más.
 
@@ -379,7 +392,7 @@ Asegurarse de que `data/data.json.bak` / `*.tmp` NO se agregan (ignorados). Si a
 
 ## Verification (final)
 
-Ejecutar la batería completa: **12 suites**, todos `TESTS OK`, exit 0, sumando **269 checks**:
+Ejecutar la batería completa: **12 suites**, todos `TESTS OK`, exit 0, sumando **270 checks**:
 
 | suite | checks |
 |---|---|
@@ -389,7 +402,7 @@ Ejecutar la batería completa: **12 suites**, todos `TESTS OK`, exit 0, sumando 
 | test_gestor_archivo.gd | 15 |
 | test_gestor_catalogo.gd | 32 |
 | test_gestor_contadores.gd | 8 |
-| test_gestor_datos.gd | 19 |
+| test_gestor_datos.gd | 20 |
 | test_gestor_imagenes.gd | 19 |
 | test_link_checker_timeout.gd | 20 |
 | test_list_item.gd | 21 |
