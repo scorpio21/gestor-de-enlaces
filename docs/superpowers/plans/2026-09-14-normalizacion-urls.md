@@ -384,7 +384,7 @@ El resto de `_on_enlace_editado` (imagen, campos, `entrada["url"] = url_nueva`, 
 - [ ] **Step 3: Ejecutar y verificar GREEN**
 
 Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_main_barra.gd 2>&1`
-Expected: `TESTS OK`, EXIT 0 (todo el bloque, con los checks actualizados y los 12 nuevos).
+Expected: `TESTS OK`, EXIT 0 (todo el bloque, con los checks actualizados y los 10 nuevos).
 
 - [ ] **Step 4: Batería de scripts tocados + smoke y commit**
 
@@ -792,7 +792,7 @@ Run:
 & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://scripts/main.gd --check-only 2>&1
 & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" res://scenes/Main.tscn --quit-after 60 2>&1
 ```
-Expected: 10× `TESTS OK` (72+73+20+30+8+12+…), ningún `Parse Error|SCRIPT ERROR|ERROR`.
+Expected: 10× `TESTS OK` (32+71+20+30+8+12+21+4+4+5 = 207 checks), ningún `Parse Error|SCRIPT ERROR|ERROR`.
 
 Verificación manual (la hace el implementador): abrir la ventana Agregar enlace → botón Guardar visible sin redimensionar (#32); seleccionar un `.JPG` real del sistema → aparece la vista previa y se guarda como `Assets/jpg/img_*.jpg` (#33); probar un `.JPG` no decodificable (renombrado) → error visible "No se pudo cargar la imagen.". Confirmar `data/data.json.bak` y `data/data2.json` intactos.
 
