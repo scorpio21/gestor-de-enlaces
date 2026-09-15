@@ -21,6 +21,16 @@ func _initialize() -> void:
 	_check(renombrar_actualiza_borrados(), "renombrar() reemplaza la URL en los borrados")
 	_check(renombrar_sin_clave(), "renombrar() sin clave previa no falla")
 	_check(renombrar_misma_url(), "renombrar() con la misma URL no borra el estado")
+	_check(guardar_crea_historial(), "guardar_estado() crea el historial con la primera comprobación")
+	_check(historial_nuevos_primero(), "guardar_estado() añade los cambios siempre al principio")
+	_limpiar()
+	_check(entrada_identica_no_duplica(), "una comprobación idéntica a la última no duplica el historial")
+	_check(fecha_cabecera_se_actualiza(), "fecha de cabecera se actualiza aunque la comprobación sea idéntica")
+	_check(historial_truncado_50(), "el historial se trunca al límite de 50 entradas")
+	_check(historial_de_desconocida(), "historial_de() devuelve array vacío para URL desconocida")
+	_check(historial_de_sin_campo(), "historial_de() devuelve array vacío para una entrada antigua sin historial")
+	_limpiar()
+	_check(borrar_estado_limpia_historial(), "borrar_estado() elimina también el historial")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -120,6 +130,68 @@ func renombrar_misma_url() -> bool:
 	var datos := store.cargar()
 	return datos["estados"].has("https://misma.com") \
 		and int(datos["estados"]["https://misma.com"].get("codigo", -1)) == 200
+
+
+func guardar_crea_historial() -> bool:
+	var store := EstadoStore.new(BASE)
+	if not store.guardar_estado("https://hist.com", true, "OK (200)", 200):
+		return false
+	var e: Dictionary = store.cargar()["estados"].get("https://hist.com", {})
+	var h: Array = e.get("historial", [])
+	return h.size() == 1 and int(h[0].get("fecha", 0)) > 0 \
+		and h[0].get("valido") == true and h[0].get("codigo") == 200
+
+
+func historial_nuevos_primero() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://hist.com", true, "OK (200)", 200)
+	store.guardar_estado("https://hist.com", false, "No existe (404)", 404)
+	var h: Array = store.cargar()["estados"]["https://hist.com"]["historial"]
+	return h.size() == 2 and h[0].get("codigo") == 404 and h[1].get("codigo") == 200
+
+
+func entrada_identica_no_duplica() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://hist.com", false, "No existe (404)", 404)
+	store.guardar_estado("https://hist.com", false, "No existe (404)", 404)
+	var e: Dictionary = store.cargar()["estados"]["https://hist.com"]
+	return int(e.get("historial", []).size()) == 1
+
+
+func fecha_cabecera_se_actualiza() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://hist.com", false, "No existe (404)", 404)
+	var f1 := int(store.cargar()["estados"]["https://hist.com"].get("fecha", 0))
+	store.guardar_estado("https://hist.com", false, "No existe (404)", 404)
+	var f2 := int(store.cargar()["estados"]["https://hist.com"].get("fecha", 0))
+	return f2 >= f1 and f2 > 0
+
+
+func historial_truncado_50() -> bool:
+	var store := EstadoStore.new(BASE)
+	for i in range(55):
+		store.guardar_estado("https://hist.com", true, "OK (200)", 100 + i)
+	var h: Array = store.cargar()["estados"]["https://hist.com"]["historial"]
+	return h.size() == 50 and h[0].get("codigo") == 154
+
+
+func historial_de_desconocida() -> bool:
+	return EstadoStore.new(BASE).historial_de("https://fantasma.com") == []
+
+
+func historial_de_sin_campo() -> bool:
+	var store := EstadoStore.new(BASE)
+	FileAccess.open(BASE + "/estados.json", FileAccess.WRITE).store_string(
+		'{"https://vieja.com": {"valido": true, "mensaje": "OK", "codigo": 200, "fecha": 1}}'
+	)
+	return store.historial_de("https://vieja.com") == []
+
+
+func borrar_estado_limpia_historial() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://hist.com", true, "OK (200)", 200)
+	store.borrar_estado("https://hist.com")
+	return store.cargar()["estados"] == {}
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

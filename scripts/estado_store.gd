@@ -15,15 +15,41 @@ func cargar() -> Dictionary:
 	}
 
 
+const LIMITE_HISTORIAL := 50
+
+
 func guardar_estado(url: String, valido: bool, mensaje: String, codigo := 0) -> bool:
 	var estados := _leer_estados()
+	var ahora := int(Time.get_unix_time_from_system())
+	var previa: Dictionary = estados.get(url, {})
+	var hist: Variant = previa.get("historial", [])
+	var historial: Array = hist if typeof(hist) == TYPE_ARRAY else []
+	var nuevo := {"fecha": ahora, "valido": valido, "mensaje": mensaje, "codigo": codigo}
+	if historial.is_empty() or not _estados_iguales(historial[0], nuevo):
+		historial.push_front(nuevo)
+		if historial.size() > LIMITE_HISTORIAL:
+			historial.resize(LIMITE_HISTORIAL)
 	estados[url] = {
 		"valido": valido,
 		"mensaje": mensaje,
 		"codigo": codigo,
-		"fecha": int(Time.get_unix_time_from_system()),
+		"fecha": ahora,
+		"historial": historial,
 	}
 	return _escribir_json(_ruta("estados.json"), estados)
+
+
+func historial_de(url: String) -> Array:
+	var estados := _leer_estados()
+	var e: Dictionary = estados.get(url, {})
+	var h: Variant = e.get("historial", [])
+	return h if typeof(h) == TYPE_ARRAY else []
+
+
+func _estados_iguales(a: Dictionary, b: Dictionary) -> bool:
+	return a.get("valido") == b.get("valido") \
+		and a.get("mensaje") == b.get("mensaje") \
+		and a.get("codigo") == b.get("codigo")
 
 
 func marcar_borrado(url: String) -> bool:
