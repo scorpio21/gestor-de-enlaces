@@ -765,7 +765,7 @@ Añadir tras el bloque de `Ctrl+R` dispara la comprobación (línea ~388), antes
 	var fila_hist: Button = main.get_node("%ListaContenedor").get_child(0)
 	main_script._on_historial_pedido(fila_hist)
 	_check(main.has_node("%DialogoHistorial") and main.get_node("%DialogoHistorial").visible, "el historial de la fila abre el diálogo")
-	_check(main.get_node("%ListaHistorial").get_child_count() == 1, "el diálogo muestra una fila por entrada del historial")
+	_check(main.get_node("%DialogoHistorial").get_node("%ListaHistorial").get_child_count() == 1, "el diálogo muestra una fila por entrada del historial")
 	main.get_node("%DialogoHistorial").hide()
 
 	# Disponibilidad: auto-escaneo desactivado en headless/intervalo 0 (#8)
