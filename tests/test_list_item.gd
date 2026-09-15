@@ -23,7 +23,7 @@ func _arrancar() -> void:
 	root.add_child(valido)
 	root.add_child(fresco)
 	await process_frame
-	_check(_menu_completo(caido), "la fila construye el menú con 4 opciones")
+	_check(_menu_completo(caido), "la fila construye el menú con 5 opciones")
 	_check(_menu_completo(valido), "la fila válida también construye el menú")
 
 	var con_imagen := _crear_item()
@@ -71,12 +71,26 @@ func _arrancar() -> void:
 	sin_estado.setup("Nom", "Desc", "https://ejemplo.com/p")
 	_check(sin_estado.tooltip_text == "https://ejemplo.com/p\nSin comprobar", "fila sin comprobar muestra URL y 'Sin comprobar'")
 
+	var fecha_label := _crear_item()
+	fecha_label.setup("Nom", "Desc", "https://ejemplo.com/fl")
+	root.add_child(fecha_label)
+	await process_frame
+	_check(fecha_label.get_node("%FechaLabel").text == "Sin comprobar", "la fila sin comprobar muestra 'Sin comprobar' en FechaLabel")
+
+	var fecha_formateada := _crear_item()
+	fecha_formateada.setup("Nom", "Desc", "https://ejemplo.com/ff")
+	fecha_formateada.aplicar_estado(true, "OK (200)", 200, 1000000000)
+	root.add_child(fecha_formateada)
+	await process_frame
+	_check(fecha_formateada.get_node("%FechaLabel").text == ListItemScript.formatear_fecha(1000000000), "la fila con fecha muestra la fecha formateada en FechaLabel")
+
 	var item := _crear_item()
 	item.setup("Nom", "Desc", "https://ejemplo.com/menu")
 	var emitido: Array = []
 	item.editar_pedido.connect(func() -> void: emitido.append("editar"))
 	item.recomprobar_pedido.connect(func() -> void: emitido.append("recomprobar"))
 	item.copiar_pedido.connect(func(u: String) -> void: emitido.append(["copiar", u]))
+	item.historial_pedido.connect(func() -> void: emitido.append("historial"))
 	item.eliminar_pedido.connect(func() -> void: emitido.append("eliminar"))
 	root.add_child(item)
 	await process_frame
@@ -95,7 +109,9 @@ func _arrancar() -> void:
 	item.get_node("%MenuContexto").id_pressed.emit(2)
 	_check(emitido == ["editar", "recomprobar", ["copiar", "https://ejemplo.com/menu"]], "la opción Copiar URL emite copiar_pedido con la URL")
 	item.get_node("%MenuContexto").id_pressed.emit(3)
-	_check(emitido == ["editar", "recomprobar", ["copiar", "https://ejemplo.com/menu"], "eliminar"], "la opción Eliminar emite eliminar_pedido")
+	_check(emitido == ["editar", "recomprobar", ["copiar", "https://ejemplo.com/menu"], "historial"], "la opción Historial emite historial_pedido")
+	item.get_node("%MenuContexto").id_pressed.emit(4)
+	_check(emitido == ["editar", "recomprobar", ["copiar", "https://ejemplo.com/menu"], "historial", "eliminar"], "la opción Eliminar emite eliminar_pedido")
 
 	var cat_cliente := _crear_item()
 	cat_cliente.setup("Nom", "Desc", "https://ejemplo.com/cat1", "", "cliente")
@@ -131,7 +147,7 @@ func _crear_item() -> Control:
 
 func _menu_completo(item: Control) -> bool:
 	var menu: PopupMenu = item.get_node("%MenuContexto")
-	return menu != null and menu.get_item_count() == 4
+	return menu != null and menu.get_item_count() == 5
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

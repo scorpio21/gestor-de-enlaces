@@ -5,6 +5,7 @@ signal eliminar_pedido
 signal recomprobar_pedido
 signal copiar_pedido(url: String)
 signal editar_pedido
+signal historial_pedido
 
 var mensaje: String = ""
 var codigo := 0
@@ -27,7 +28,8 @@ func _ready() -> void:
 	menu.add_item("Editar…", 0)
 	menu.add_item("Volver a comprobar", 1)
 	menu.add_item("Copiar URL", 2)
-	menu.add_item("Eliminar", 3)
+	menu.add_item("Historial…", 3)
+	menu.add_item("Eliminar", 4)
 	menu.id_pressed.connect(_on_menu)
 	gui_input.connect(_on_gui_input)
 
@@ -38,6 +40,7 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "", ca
 	_actualizar_tooltip()
 	%NombreLabel.text = nombre
 	%DescripcionLabel.text = descripcion
+	%FechaLabel.text = "Sin comprobar"
 	_pintar_estado("Sin comprobar", Color(0.55, 0.55, 0.55, 1))
 	self.categoria = GestorCatalogoScript.normalizar_categoria(categoria)
 	%CategoriaLabel.text = GestorCatalogoScript.categoria_display(self.categoria)
@@ -52,6 +55,7 @@ func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva :
 	mensaje = texto
 	codigo = codigo_nuevo
 	fecha = fecha_nueva
+	_pintar_fecha()
 	if ok == true:
 		estado = "ok"
 		_pintar_estado(texto, Color(0.35, 0.85, 0.45, 1))
@@ -110,6 +114,7 @@ func verificar() -> void:
 func _on_check_terminado(ok: bool, texto: String) -> void:
 	codigo = _checker.codigo
 	fecha = int(Time.get_unix_time_from_system())
+	_pintar_fecha()
 	_checker = null
 	valido = ok
 	estado = "ok" if ok else "caido"
@@ -145,4 +150,13 @@ func _on_menu(id: int) -> void:
 		2:
 			copiar_pedido.emit(url)
 		3:
+			historial_pedido.emit()
+		4:
 			eliminar_pedido.emit()
+
+
+func _pintar_fecha() -> void:
+	if fecha > 0:
+		%FechaLabel.text = formatear_fecha(fecha)
+	else:
+		%FechaLabel.text = "Sin comprobar"
