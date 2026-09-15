@@ -6,6 +6,9 @@ const PARALELO_MIN := 1
 const PARALELO_MAX := 8
 const TIMEOUT_MIN := 3.0
 const TIMEOUT_MAX := 60.0
+const AUTO_ABRIR_DEFAULT := true
+const INTERVALO_DEFAULT := 0
+const INTERVALOS_VALIDOS := [0, 15, 30, 60]
 
 var _base: String
 
@@ -17,19 +20,39 @@ func _init(base := "user://") -> void:
 func cargar() -> Dictionary:
 	var v: Variant = _leer_json(_ruta("config.json"))
 	if typeof(v) != TYPE_DICTIONARY:
-		return {"paralelismo": PARALELO_DEFAULT, "timeout": TIMEOUT_DEFAULT}
+		return {
+			"paralelismo": PARALELO_DEFAULT,
+			"timeout": TIMEOUT_DEFAULT,
+			"auto_abrir": AUTO_ABRIR_DEFAULT,
+			"intervalo": INTERVALO_DEFAULT,
+		}
 	return {
 		"paralelismo": _paralelismo_ok(v.get("paralelismo", PARALELO_DEFAULT)),
 		"timeout": _timeout_ok(v.get("timeout", TIMEOUT_DEFAULT)),
+		"auto_abrir": _auto_abrir_ok(v.get("auto_abrir", AUTO_ABRIR_DEFAULT)),
+		"intervalo": _intervalo_ok(v.get("intervalo", INTERVALO_DEFAULT)),
 	}
 
 
-func guardar(paralelismo: int, timeout: float) -> bool:
+func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT) -> bool:
 	var dato := {
 		"paralelismo": clampi(int(paralelismo), PARALELO_MIN, PARALELO_MAX),
 		"timeout": clampf(float(timeout), TIMEOUT_MIN, TIMEOUT_MAX),
+		"auto_abrir": typeof(auto_abrir) == TYPE_BOOL and bool(auto_abrir),
+		"intervalo": _intervalo_ok(intervalo),
 	}
 	return _escribir_json(_ruta("config.json"), dato)
+
+
+func _auto_abrir_ok(v: Variant) -> bool:
+	return v if typeof(v) == TYPE_BOOL else AUTO_ABRIR_DEFAULT
+
+
+func _intervalo_ok(v: Variant) -> int:
+	if typeof(v) != TYPE_INT and typeof(v) != TYPE_FLOAT:
+		return INTERVALO_DEFAULT
+	var n := int(v)
+	return n if INTERVALOS_VALIDOS.has(n) else INTERVALO_DEFAULT
 
 
 func _paralelismo_ok(v: Variant) -> int:

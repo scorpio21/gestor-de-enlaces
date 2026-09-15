@@ -10,10 +10,14 @@ func _initialize() -> void:
 	DirAccess.make_dir_recursive_absolute(BASE)
 	_limpiar()
 	_check(cargar_vacio(), "sin fichero devuelve defaults")
-	_check(guardar_y_recuperar(), "guardar() persiste y cargar() lo recupera")
 	_check(config_rota_no_rompe(), "JSON roto devuelve defaults")
 	_check(clamp_fuera_de_rango(), "valores fuera de rango se clampean")
 	_check(tipos_incorrectos(), "tipos incorrectos devuelven defaults")
+	_check(guardar_y_recuperar(), "guardar() persiste y cargar() lo recupera")
+	_check(guardar_y_recuperar_auto(), "guardar() persiste auto_abrir e intervalo")
+	_check(intervalo_invalido_normaliza(), "intervalo no válido se normaliza a 0")
+	_check(auto_invalido_default(), "auto_abrir no booleano vuelve al default true")
+	_check(guardar_defaults_auto(), "guardar() sin auto_abrir/intervalo persiste los defaults")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -25,7 +29,8 @@ func _initialize() -> void:
 
 func cargar_vacio() -> bool:
 	var c := ConfigStore.new(BASE).cargar()
-	return c.get("paralelismo") == 3 and is_equal_approx(c.get("timeout", -1.0), 10.0)
+	return c.get("paralelismo") == 3 and is_equal_approx(c.get("timeout", -1.0), 10.0) \
+		and c.get("auto_abrir") == true and c.get("intervalo") == 0
 
 
 func guardar_y_recuperar() -> bool:
@@ -33,25 +38,55 @@ func guardar_y_recuperar() -> bool:
 	if not store.guardar(5, 20.0):
 		return false
 	var c := store.cargar()
-	return c.get("paralelismo") == 5 and is_equal_approx(c.get("timeout", -1.0), 20.0)
+	return c.get("paralelismo") == 5 and is_equal_approx(c.get("timeout", -1.0), 20.0) \
+		and c.get("auto_abrir") == true and c.get("intervalo") == 0
+
+
+func guardar_y_recuperar_auto() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(5, 20.0, false, 60):
+		return false
+	var c := store.cargar()
+	return c.get("auto_abrir") == false and c.get("intervalo") == 60
 
 
 func config_rota_no_rompe() -> bool:
 	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string("{no es json")
 	var c := ConfigStore.new(BASE).cargar()
-	return c.get("paralelismo") == 3 and is_equal_approx(c.get("timeout", -1.0), 10.0)
+	return c.get("paralelismo") == 3 and is_equal_approx(c.get("timeout", -1.0), 10.0) \
+		and c.get("auto_abrir") == true and c.get("intervalo") == 0
 
 
 func clamp_fuera_de_rango() -> bool:
 	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"paralelismo": 99, "timeout": 0.5}')
 	var c := ConfigStore.new(BASE).cargar()
-	return c.get("paralelismo") == 8 and is_equal_approx(c.get("timeout", -1.0), 3.0)
+	return c.get("paralelismo") == 8 and is_equal_approx(c.get("timeout", -1.0), 3.0) \
+		and c.get("auto_abrir") == true and c.get("intervalo") == 0
 
 
 func tipos_incorrectos() -> bool:
 	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"paralelismo": "muchos", "timeout": "lento"}')
 	var c := ConfigStore.new(BASE).cargar()
-	return c.get("paralelismo") == 3 and is_equal_approx(c.get("timeout", -1.0), 10.0)
+	return c.get("paralelismo") == 3 and is_equal_approx(c.get("timeout", -1.0), 10.0) \
+		and c.get("auto_abrir") == true and c.get("intervalo") == 0
+
+
+func intervalo_invalido_normaliza() -> bool:
+	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"auto_abrir": true, "intervalo": 7}')
+	return ConfigStore.new(BASE).cargar().get("intervalo") == 0
+
+
+func auto_invalido_default() -> bool:
+	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"auto_abrir": "si", "intervalo": 30}')
+	var c := ConfigStore.new(BASE).cargar()
+	return c.get("auto_abrir") == true and c.get("intervalo") == 30
+
+
+func guardar_defaults_auto() -> bool:
+	var store := ConfigStore.new(BASE)
+	store.guardar(4, 12.0)
+	var c := store.cargar()
+	return c.get("auto_abrir") == true and c.get("intervalo") == 0
 
 
 func _check(condicion: bool, etiqueta: String) -> void:
