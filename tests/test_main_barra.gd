@@ -6,6 +6,10 @@ class _FakeStore extends RefCounted:
 		ultima_renombrar = [url_antigua, url_nueva]
 		return true
 
+class _FakeHistorial extends RefCounted:
+	func historial_de(_url: String) -> Array:
+		return [{"fecha": 1000000000, "valido": true, "mensaje": "OK (200)", "codigo": 200}]
+
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
@@ -386,6 +390,64 @@ func _arrancar() -> void:
 	ev_r.pressed = true
 	main_script._unhandled_input(ev_r)
 	_check(main.get_node("%Progreso").text == "Nada que comprobar", "Ctrl+R dispara la comprobación")
+
+	# Disponibilidad: selector de orden por fecha (#9)
+	main.get_node("%FiltroEstado").select(0)
+	_check(main.has_node("%OrdenFecha"), "la barra tiene el selector de orden")
+	var orden: OptionButton = main.get_node("%OrdenFecha")
+	_check(orden.get_item_count() == 3 and orden.get_item_text(0) == "Sin ordenar" \
+		and orden.get_item_text(1) == "Más recientes" and orden.get_item_text(2) == "Más antiguos", "el selector de orden ofrece las 3 opciones")
+
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
+		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
+		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""},
+	]
+	main_script._estados = {
+		"a.test": {"valido": true, "mensaje": "OK", "codigo": 200, "fecha": 1000},
+		"b.test": {"valido": true, "mensaje": "OK", "codigo": 200, "fecha": 2000},
+	}
+	main_script._refrescar_vista()
+	await process_frame
+	orden.select(1)
+	main_script._aplicar_filtro()
+	var orden_recientes: Array = []
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		if hijo.visible:
+			orden_recientes.append(hijo.url)
+	_check(orden_recientes == ["https://b.test", "https://a.test", "https://c.test"], "Más recientes ordena por fecha y deja lo sin comprobar al final")
+
+	orden.select(2)
+	main_script._aplicar_filtro()
+	var orden_antiguos: Array = []
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		if hijo.visible:
+			orden_antiguos.append(hijo.url)
+	_check(orden_antiguos == ["https://a.test", "https://b.test", "https://c.test"], "Más antiguos invierte el orden con lo sin comprobar al final")
+
+	orden.select(0)
+	main_script._aplicar_filtro()
+	var orden_natural: Array = []
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		if hijo.visible:
+			orden_natural.append(hijo.url)
+	_check(orden_natural == ["https://a.test", "https://b.test", "https://c.test"], "Sin ordenar conserva el orden de inserción")
+
+	# Disponibilidad: historial desde la fila (#10)
+	main_script._estado_store = _FakeHistorial.new()
+	var fila_hist: Button = main.get_node("%ListaContenedor").get_child(0)
+	main_script._on_historial_pedido(fila_hist)
+	_check(main.has_node("%DialogoHistorial") and main.get_node("%DialogoHistorial").visible, "el historial de la fila abre el diálogo")
+	_check(main.get_node("%DialogoHistorial").get_node("%ListaHistorial").get_child_count() == 1, "el diálogo muestra una fila por entrada del historial")
+	main.get_node("%DialogoHistorial").hide()
+
+	# Disponibilidad: auto-escaneo desactivado en headless/intervalo 0 (#8)
+	main_script._intervalo_auto = 0
+	main_script._rearmar_auto_escaneo()
+	_check(main.get_node("%AutoEscaneo").is_stopped(), "intervalo 0 deja el Timer detenido")
+	main_script._intervalo_auto = 15
+	main_script._rearmar_auto_escaneo()
+	_check(main.get_node("%AutoEscaneo").is_stopped(), "en headless el intervalo no arranca el Timer")
 
 	var ev_esc := InputEventKey.new()
 	ev_esc.keycode = KEY_ESCAPE

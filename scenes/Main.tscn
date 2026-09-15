@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://bgestormain001"]
+[gd_scene load_steps=5 format=3 uid="uid://bgestormain001"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/AgregarEnlace.tscn" id="2_agregar"]
 [ext_resource type="PackedScene" path="res://scenes/Preferencias.tscn" id="3_preferencias"]
+[ext_resource type="PackedScene" path="res://scenes/Historial.tscn" id="4_historial"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -94,6 +95,18 @@ unique_name_in_owner = true
 layout_mode = 2
 selected = 0
 
+[node name="OrdenFecha" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "Sin ordenar"
+popup/item_0/id = 0
+popup/item_1/text = "Más recientes"
+popup/item_1/id = 1
+popup/item_2/text = "Más antiguos"
+popup/item_2/id = 2
+
 [node name="Progreso" type="Label" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -139,6 +152,12 @@ ok_button_text = "Restaurar"
 dialog_text = "¿Restaurar el catálogo desde la copia de seguridad?"
 
 [node name="VentanaPreferencias" parent="." instance=ExtResource("3_preferencias")]
+unique_name_in_owner = true
+
+[node name="DialogoHistorial" parent="." instance=ExtResource("4_historial")]
+unique_name_in_owner = true
+
+[node name="AutoEscaneo" type="Timer" parent="."]
 unique_name_in_owner = true
 
 [node name="BarraEstado" type="PanelContainer" parent="ColumnaApp"]

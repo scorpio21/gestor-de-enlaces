@@ -23,6 +23,9 @@ const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
 @onready var total_label: Label = %Total
 @onready var version_label: Label = %Version
 @onready var barra_progreso: ProgressBar = %BarraProgreso
+@onready var orden_fecha: OptionButton = %OrdenFecha
+@onready var dialogo_historial: Window = %DialogoHistorial
+@onready var timer_auto: Timer = %AutoEscaneo
 
 var _entradas: Array = []
 var _cola: Array[Button] = []
@@ -33,6 +36,8 @@ var _estado_store: RefCounted
 var _config_store: RefCounted
 var _paralelismo := 3
 var _timeout := 10.0
+var _auto_abrir := true
+var _intervalo_auto := 0
 var _estados := {}
 var _borrados: Array = []
 var _item_pendiente_borrar: Button = null
@@ -60,6 +65,13 @@ func _ready() -> void:
 		filtro_cat.add_item(GestorCatalogoScript.categoria_display(GestorCatalogoScript.CATEGORIAS[i]), i + 1)
 	filtro_cat.select(0)
 	filtro_cat.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
+	orden_fecha.clear()
+	orden_fecha.add_item("Sin ordenar", 0)
+	orden_fecha.add_item("Más recientes", 1)
+	orden_fecha.add_item("Más antiguos", 2)
+	orden_fecha.select(0)
+	orden_fecha.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
+	timer_auto.timeout.connect(_on_auto_timer)
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
 	ventana_agregar.lote_guardado.connect(_on_lote_guardado)
 	ventana_agregar.editado.connect(_on_enlace_editado)
@@ -68,12 +80,16 @@ func _ready() -> void:
 	var cfg: Dictionary = _config_store.cargar()
 	_paralelismo = clampi(int(cfg.get("paralelismo", 3)), 1, 8)
 	_timeout = clampf(float(cfg.get("timeout", 10.0)), 3.0, 60.0)
+	_auto_abrir = cfg.get("auto_abrir", true) == true
+	_intervalo_auto = int(cfg.get("intervalo", 0))
 	preferencias.aplicado.connect(_aplicar_preferencias)
 	%DialogoImportar.file_selected.connect(_on_importar_elegido)
 	%DialogoExportar.file_selected.connect(_on_exportar_elegido)
 	_refrescar_vista()
 	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
 	_actualizar_status()
+	_rearmar_auto_escaneo()
+	_iniciar_auto_escaneo()
 
 
 func _configurar_menus() -> void:
@@ -141,7 +157,7 @@ func _on_utilidades_id(id: int) -> void:
 	if id == 0:
 		ventana_agregar.abrir()
 	elif id == 1:
-		preferencias.abrir(_paralelismo, _timeout)
+		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto)
 	elif id == 2:
 		_solicitar_limpieza_capturas()
 
@@ -528,6 +544,7 @@ func _mostrar_lista(entradas: Array) -> void:
 		item.recomprobar_pedido.connect(_on_recomprobar_pedido.bind(item))
 		item.copiar_pedido.connect(_on_copiar_pedido.bind(item))
 		item.editar_pedido.connect(_on_editar_pedido.bind(item))
+		item.historial_pedido.connect(_on_historial_pedido.bind(item))
 		lista.add_child(item)
 
 	_aplicar_filtro()
@@ -678,6 +695,15 @@ func _aplicar_filtro() -> void:
 				visible_estado = hijo.valido == null
 		hijo.visible = visible_estado and (cat_id == 0 or hijo.categoria == clave_cat)
 
+	var modo_orden := orden_fecha.get_selected_id()
+	if modo_orden > 0:
+		var hijos: Array = lista.get_children()
+		hijos.sort_custom(func(a: Button, b: Button) -> bool:
+			return _comparar_orden(a, b, modo_orden)
+		)
+		for hijo in hijos:
+			lista.move_child(hijo, -1)
+
 
 func _on_busqueda_changed(_texto: String) -> void:
 	_refrescar_vista()
@@ -690,8 +716,62 @@ func _actualizar_status() -> void:
 	total_label.text = "Total: %d" % c.get("total", 0)
 
 
-func _aplicar_preferencias(paralelismo: int, timeout: float) -> void:
+func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0) -> void:
 	_paralelismo = paralelismo
 	_timeout = timeout
-	if not _config_store.guardar(paralelismo, timeout):
+	_auto_abrir = auto_abrir
+	_intervalo_auto = intervalo
+	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo):
 		progreso.text = "No se pudo guardar la configuración."
+	_rearmar_auto_escaneo()
+	if _auto_abrir and _puede_auto_escanear():
+		_comprobar_visibles()
+
+
+func _es_headless() -> bool:
+	return DisplayServer.get_name() == "headless"
+
+
+func _rearmar_auto_escaneo() -> void:
+	if _es_headless() or _intervalo_auto <= 0:
+		timer_auto.stop()
+		return
+	timer_auto.wait_time = float(_intervalo_auto * 60)
+	timer_auto.start()
+
+
+func _iniciar_auto_escaneo() -> void:
+	if _es_headless() or not _auto_abrir:
+		return
+	await get_tree().create_timer(0.5).timeout
+	if _puede_auto_escanear():
+		_comprobar_visibles()
+	_rearmar_auto_escaneo()
+
+
+func _puede_auto_escanear() -> bool:
+	return not _es_headless() and _cola.is_empty() and _en_vuelo == 0
+
+
+func _on_auto_timer() -> void:
+	if _puede_auto_escanear():
+		_comprobar_visibles()
+
+
+func _comparar_orden(a: Button, b: Button, modo: int) -> bool:
+	var fa := int(a.fecha)
+	var fb := int(b.fecha)
+	if fa == fb:
+		return a.url < b.url
+	if fa == 0:
+		return false
+	if fb == 0:
+		return true
+	return fa > fb if modo == 1 else fa < fb
+
+
+func _on_historial_pedido(item: Button) -> void:
+	if not is_instance_valid(item):
+		return
+	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
+	dialogo_historial.abrir(_estado_store.historial_de(clave_estado))
