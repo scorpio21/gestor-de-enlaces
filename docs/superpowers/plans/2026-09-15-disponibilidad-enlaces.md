@@ -434,7 +434,7 @@ func _on_guardar() -> void:
 		int(paralelismo_spin.value),
 		float(timeout_spin.value),
 		auto_abrir_box.button_pressed,
-		intervalo_auto.get_item_id(intervalo_auto.get_selected_index())
+		intervalo_auto.get_selected_id()
 	)
 	hide()
 ```
