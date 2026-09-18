@@ -1004,7 +1004,7 @@ Nota: si el editor regenera el archivo (campo a campo) al abrirse, el contenido 
 
 - Los 3 presets presentes con `platform=` correctos.
 - Windows exporta `.exe`, Linux binario, macOS `.app` (la tpz no genera `.dmg`; CI lo comprime, ver workflow).
-- La tpz de export templates se extrae directamente en `~/.local/share/godot/export_templates/4.7.2.stable/` (no hay subcarpeta `templates/` dentro).
+- La tpz de export templates contiene una subcarpeta `templates/` (con `version.txt` y los ficheros por plataforma); para instalarla hay que extraerla a un temporal y mover `templates/*` a `~/.local/share/godot/export_templates/<version>.stable/` (el editor de Godot hace lo mismo: ignora la carpeta contenedora y escribe el contenido directamente en la carpeta de versión, ver `export_template_manager.cpp`). Extraer la tpz directamente dentro de `.../4.7.2.stable/` produciría `.../4.7.2.stable/templates/*`, estructura que Godot NO encuentra.
 
 - [ ] **Step 4: Crea tests/run_battery.sh**
 
@@ -1076,8 +1076,9 @@ jobs:
           mv ~/godot-bin/Godot_v4.7.2-stable_linux.x86_64 ~/godot-bin/godot
           chmod +x ~/godot-bin/godot
           curl -L -o /tmp/templates.tpz https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
+          unzip -o /tmp/templates.tpz -d /tmp/templates
           mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
-          unzip -o /tmp/templates.tpz -d ~/.local/share/godot/export_templates/4.7.2.stable/
+          mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.7.2.stable/
 
       - name: Run headless battery
         run: |
@@ -1101,7 +1102,7 @@ jobs:
           path: build/
 ```
 
-Nota de mantenimiento: la tpz de export templates se extrae directamente a `~/.local/share/godot/export_templates/4.7.2.stable/`; Godot solo acepta templates si esa estructura es exacta — `--export-release` fallaría en CI si la estructura no está bien puesta. La exportación de macOS produce un `.app` (en Linux no se genera `.dmg`); el workflow lo comprime a zip.
+Nota de mantenimiento: la tpz de export templates tiene dentro una subcarpeta `templates/`; se extrae a un temporal y se mueve `templates/*` a `~/.local/share/godot/export_templates/4.7.2.stable/` (el contenido de la tpz debe quedar DIRECTAMENTE en esa carpeta de versión, sin la carpeta `templates/` intermedia). Godot solo acepta templates si esa estructura es exacta — `--export-release` fallaría en CI si la estructura no está bien puesta. La exportación de macOS produce un `.app` (en Linux no se genera `.dmg`); el workflow lo comprime a zip.
 
 - [ ] **Step 6: Crea AGENTS.md**
 
