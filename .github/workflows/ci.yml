@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot-bin
+            ~/.local/share/godot/export_templates
+          key: godot-4.7.2
+
+      - name: Download Godot and export templates
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euxo pipefail
+          mkdir -p ~/godot-bin
+          curl -L -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -o /tmp/godot.zip -d ~/godot-bin
+          mv ~/godot-bin/Godot_v4.7.2-stable_linux.x86_64 ~/godot-bin/godot
+          chmod +x ~/godot-bin/godot
+          curl -L -o /tmp/templates.tpz https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
+          unzip -o /tmp/templates.tpz -d /tmp/templates
+          mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
+          mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.7.2.stable/
+
+      - name: Run headless battery
+        run: |
+          export GODOT_BIN="$HOME/godot-bin/godot"
+          bash tests/run_battery.sh
+
+      - name: Export bundles
+        run: |
+          set -euxo pipefail
+          G="$HOME/godot-bin/godot"
+          mkdir -p build
+          "$G" --headless --path . --export-release "Windows" build/gestor-de-enlaces.exe
+          "$G" --headless --path . --export-release "Linux/X11" build/gestor-de-enlaces.x86_64
+          "$G" --headless --path . --export-release "macOS" build/gestor-de-enlaces_macos.app
+          (cd build && zip -r gestor-de-enlaces-macos.zip gestor-de-enlaces_macos.app)
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gestor-de-enlaces-builds
+          path: build/
