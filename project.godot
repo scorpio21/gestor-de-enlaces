@@ -7,14 +7,15 @@
 ;   param=value ; assign values to parameters
 
 config_version=5
+display/window/title="GestorAO v0.1.0"
 
 [application]
 
 config/name="GestorAO"
-config/version="0.0.1"
+config/version="0.1.0"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://Assets/icon/icon.svg"
 
 [display]
 
