@@ -3,3 +3,6 @@
 /android/
 /data/*.bak
 /data/*.tmp
+
+# Superpowers workspace (SDD/brainstorm sessions)
+.superpowers/
