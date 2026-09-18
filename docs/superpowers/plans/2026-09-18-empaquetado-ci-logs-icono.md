@@ -359,7 +359,7 @@ const CONST_SVG := """<svg xmlns="http://www.w3.org/2000/svg" width="256" height
 """
 
 
-func generar(destino := "res://Assets/icon") -> Dictionary:
+static func generar(destino := "res://Assets/icon") -> Dictionary:
 	DirAccess.make_dir_recursive_absolute(destino)
 	var svg_bytes := CONST_SVG.to_utf8_buffer()
 	var im := Image.new()
@@ -381,7 +381,7 @@ class Var:
 			f.store_buffer(data)
 
 
-func _png_en(tam: int) -> PackedByteArray:
+static func _png_en(tam: int) -> PackedByteArray:
 	var base := Image.new()
 	var err := base.load_svg_from_buffer(CONST_SVG.to_utf8_buffer(), float(tam) / 256.0)
 	if err != OK:
@@ -389,7 +389,7 @@ func _png_en(tam: int) -> PackedByteArray:
 	return base.save_png_to_buffer()
 
 
-func _fichero_ico(im: Image) -> PackedByteArray:
+static func _fichero_ico(im: Image) -> PackedByteArray:
 	var tam := PackedInt32Array([16, 32, 48, 256])
 	var blobs: Array[PackedByteArray] = []
 	for t in tam:
@@ -418,7 +418,7 @@ func _fichero_ico(im: Image) -> PackedByteArray:
 	return salida
 
 
-func _fichero_icns(im: Image) -> PackedByteArray:
+static func _fichero_icns(im: Image) -> PackedByteArray:
 	var entradas := [
 		["icp4", 16], ["icp5", 32], ["ic07", 128], ["ic08", 256], ["ic09", 512],
 	]
@@ -451,7 +451,7 @@ func _initialize() -> void:
 	quit(0)
 ```
 
-Nota: GDScript estático apoya `class Var` interno con `static func write_bytes`. Los números LE se añaden byte a byte (append de 8 bits). `im.load_svg_from_buffer(buffer, scale)` escala el SVG completo; para `_png_en` se re-renderiza desde el SVG a la escala exacta (escala = tamaño objetivo / 120 del viewBox). Escribimos `icon_256.png` desde `im` (256 px).
+Nota: GDScript estático apoya `class Var` interno con `static func write_bytes`. Los números LE se añaden byte a byte (append de 8 bits). `im.load_svg_from_buffer(buffer, scale)` escala el SVG completo a escala `tam/256.0` (el `width`/`height` del SVG es 256, no el viewBox 120); para `_png_en` se re-renderiza desde el SVG a la escala exacta. Escribimos `icon_256.png` desde `im` (256 px). Todos los helpers (`generar`, `_png_en`, `_fichero_ico`, `_fichero_icns`) deben ser `static`: el test llama `GenerarIconos.generar(...)` sin instanciar el script, y `static` no puede llamar a `func` de instancia.
 
 - [ ] **Step 4: Modifica project.godot**
 
