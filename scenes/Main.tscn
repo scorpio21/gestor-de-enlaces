@@ -207,3 +207,9 @@ unique_name_in_owner = true
 title = "Exportar catálogo JSON"
 file_mode = 4
 filters = PackedStringArray("*.json ; Archivo JSON")
+
+[node name="DialogoDiagnostico" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Exportar diagnóstico"
+file_mode = 4
+filters = PackedStringArray("*.zip ; Archivo ZIP")

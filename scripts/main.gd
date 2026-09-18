@@ -10,6 +10,8 @@ const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
 const GestorArchivoScript := preload("res://scripts/gestor_archivo.gd")
 const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
+const LoggerScript := preload("res://scripts/logger.gd")
+const DiagnosticoScript := preload("res://scripts/diagnostico.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -34,6 +36,7 @@ var _hechos := 0
 var _total := 0
 var _estado_store: RefCounted
 var _config_store: RefCounted
+var _logger = null
 var _paralelismo := 3
 var _timeout := 10.0
 var _auto_abrir := true
@@ -85,6 +88,10 @@ func _ready() -> void:
 	preferencias.aplicado.connect(_aplicar_preferencias)
 	%DialogoImportar.file_selected.connect(_on_importar_elegido)
 	%DialogoExportar.file_selected.connect(_on_exportar_elegido)
+	if not _es_headless():
+		_logger = LoggerScript.new("user://")
+		_log_app("inicio", "aplicación iniciada")
+	%DialogoDiagnostico.file_selected.connect(_on_diag_elegido)
 	_refrescar_vista()
 	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
 	_actualizar_status()
@@ -107,6 +114,7 @@ func _configurar_menus() -> void:
 	menu_util.add_item("Agregar", 0)
 	menu_util.add_item("Preferencias…", 1)
 	menu_util.add_item("Limpiar capturas huérfanas…", 2)
+	menu_util.add_item("Exportar diagnóstico…", 3)
 	menu_util.id_pressed.connect(_on_utilidades_id)
 
 
@@ -153,6 +161,32 @@ func _on_exportar_elegido(ruta: String) -> void:
 	progreso.text = "Catálogo exportado (%d enlaces)." % int(res.get("total", 0))
 
 
+func _on_diag_elegido(ruta: String) -> void:
+	var base := "user://"
+	if _logger != null:
+		base = _logger_base()
+	var res := DiagnosticoScript.exportar(ruta, base, str(ProjectSettings.get_setting("application/config/version", "0.0.1")), _entradas.size())
+	if not res.get("ok", false):
+		progreso.text = "No se pudo exportar el diagnóstico (%d errores)." % int(res.get("errores", 0))
+		return
+	_log_app("diagnostico", "diagnóstico exportado a " + ruta)
+	progreso.text = "Diagnóstico guardado en %s." % ruta
+
+
+func _logger_base() -> String:
+	return _logger.get("_base") if _logger != null else "user://"
+
+
+func _log_app(tipo: String, msg: String) -> void:
+	if _logger != null:
+		_logger.app(tipo, msg)
+
+
+func _log_scan(url: String, resultado: String, detalle := "") -> void:
+	if _logger != null:
+		_logger.scan(url, resultado, detalle)
+
+
 func _on_utilidades_id(id: int) -> void:
 	if id == 0:
 		ventana_agregar.abrir()
@@ -160,6 +194,8 @@ func _on_utilidades_id(id: int) -> void:
 		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto)
 	elif id == 2:
 		_solicitar_limpieza_capturas()
+	elif id == 3:
+		%DialogoDiagnostico.popup_centered()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -604,6 +640,7 @@ func _on_item_terminado(item: Button) -> void:
 		var clave_estado := GestorCatalogoScript.clave_unica(item.url)
 		_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
 		_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
+		_log_scan(item.url, "valido" if item.valido == true else "caido", item.mensaje)
 	_aplicar_filtro()
 	_actualizar_status()
 	if not _cola.is_empty() or _en_vuelo > 0:
@@ -636,6 +673,7 @@ func _persistir_recompra(item: Button) -> void:
 	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
 	_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
 	_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
+	_log_scan(item.url, "valido" if item.valido == true else "caido", item.mensaje)
 	_aplicar_filtro()
 	_actualizar_status()
 

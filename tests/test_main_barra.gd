@@ -464,6 +464,31 @@ func _arrancar() -> void:
 		"embed_subwindows está en false (ventanas no embebidas)"
 	)
 
+	_check(main.get_node("%DialogoDiagnostico") != null, "existe el diálogo DialogoDiagnostico")
+	var menu_util: PopupMenu = main.get_node("%Utilidades")
+	var tiene_diag := false
+	for i in range(menu_util.item_count):
+		if menu_util.get_item_text(i) == "Exportar diagnóstico…":
+			tiene_diag = true
+	_check(tiene_diag, "el menú Utilidades tiene la opción Exportar diagnóstico…")
+	if main_script.has_method("_on_diag_elegido"):
+		var ruta_zip := "user://__test_diag_main__.zip"
+		var l = (load("res://scripts/logger.gd") as GDScript).new("user://__test_diag_main__")
+		l.app("inicio", "arranque de prueba")
+		l.scan("https://a.test", "valido", "OK (200)")
+		l.flush()
+		main_script._logger = l
+		main_script._entradas = [{"nombre": "A", "url": "https://a.test"}]
+		main_script._on_diag_elegido(ruta_zip)
+		var z := ZIPReader.new()
+		var ok_zip := z.open(ruta_zip) == OK
+		if ok_zip:
+			ok_zip = ("info.txt" in z.get_files()) and ("app.log" in z.get_files()) and ("scan.log" in z.get_files())
+			z.close()
+		_check(ok_zip, "_on_diag_elegido genera zip con info.txt y logs")
+		DirAccess.remove_absolute("user://__test_diag_main__")
+		DirAccess.remove_absolute(ruta_zip)
+
 	_cerrar()
 
 
