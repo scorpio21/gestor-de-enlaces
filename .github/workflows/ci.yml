@@ -35,6 +35,10 @@ jobs:
           mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
           mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.7.2.stable/
 
+      - name: Import project assets
+        run: |
+          "$HOME/godot-bin/godot" --headless --path . --import
+
       - name: Run headless battery
         run: |
           export GODOT_BIN="$HOME/godot-bin/godot"

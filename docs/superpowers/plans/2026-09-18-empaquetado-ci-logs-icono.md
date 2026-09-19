@@ -1080,6 +1080,10 @@ jobs:
           mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
           mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.7.2.stable/
 
+      - name: Import project assets
+        run: |
+          "$HOME/godot-bin/godot" --headless --path . --import
+
       - name: Run headless battery
         run: |
           export GODOT_BIN="$HOME/godot-bin/godot"
@@ -1102,7 +1106,7 @@ jobs:
           path: build/
 ```
 
-Nota de mantenimiento: la tpz de export templates tiene dentro una subcarpeta `templates/`; se extrae a un temporal y se mueve `templates/*` a `~/.local/share/godot/export_templates/4.7.2.stable/` (el contenido de la tpz debe quedar DIRECTAMENTE en esa carpeta de versión, sin la carpeta `templates/` intermedia). Godot solo acepta templates si esa estructura es exacta — `--export-release` fallaría en CI si la estructura no está bien puesta. La exportación de macOS produce un `.app` (en Linux no se genera `.dmg`); el workflow lo comprime a zip.
+Nota de mantenimiento: la tpz de export templates tiene dentro una subcarpeta `templates/`; se extrae a un temporal y se mueve `templates/*` a `~/.local/share/godot/export_templates/4.7.2.stable/` (el contenido de la tpz debe quedar DIRECTAMENTE en esa carpeta de versión, sin la carpeta `templates/` intermedia). Godot solo acepta templates si esa estructura es exacta — `--export-release` fallaría en CI si la estructura no está bien puesta. La exportación de macOS produce un `.app` (en Linux no se genera `.dmg`); el workflow lo comprime a zip. En CI el checkout es fresco (sin `.godot/`): antes de la batería es obligatorio un `--headless --path . --import` (5s) para generar `.godot/`; sin él la primera suite se cuelga (el import en modo juego de una escena headless no escribe el cache).
 
 - [ ] **Step 6: Crea AGENTS.md**
 
