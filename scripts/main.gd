@@ -14,6 +14,7 @@ const LoggerScript := preload("res://scripts/logger.gd")
 const DiagnosticoScript := preload("res://scripts/diagnostico.gd")
 const ColaStoreScript := preload("res://scripts/cola_store.gd")
 const InformeStoreScript := preload("res://scripts/informe_store.gd")
+const TemaStoreScript := preload("res://scripts/tema_store.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -91,6 +92,7 @@ func _ready() -> void:
 	_timeout = clampf(float(cfg.get("timeout", 10.0)), 3.0, 60.0)
 	_auto_abrir = cfg.get("auto_abrir", true) == true
 	_intervalo_auto = int(cfg.get("intervalo", 0))
+	TemaStoreScript.aplicar(String(cfg.get("tema", "oscuro")), self)
 	preferencias.aplicado.connect(_aplicar_preferencias)
 	%DialogoImportar.file_selected.connect(_on_importar_elegido)
 	%DialogoExportar.file_selected.connect(_on_exportar_elegido)
@@ -239,7 +241,7 @@ func _on_utilidades_id(id: int) -> void:
 	if id == 0:
 		ventana_agregar.abrir()
 	elif id == 1:
-		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto)
+		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "oscuro")))
 	elif id == 2:
 		_solicitar_limpieza_capturas()
 	elif id == 3:
@@ -871,13 +873,15 @@ func _actualizar_status() -> void:
 	total_label.text = "Total: %d" % c.get("total", 0)
 
 
-func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0) -> void:
+func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "oscuro") -> void:
 	_paralelismo = paralelismo
 	_timeout = timeout
 	_auto_abrir = auto_abrir
 	_intervalo_auto = intervalo
-	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo):
+	TemaStoreScript.aplicar(tema, self)
+	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema):
 		progreso.text = "No se pudo guardar la configuración."
+	_refrescar_vista()
 	_rearmar_auto_escaneo()
 	if _auto_abrir and _puede_auto_escanear():
 		_comprobar_visibles()

@@ -13,6 +13,7 @@ class _FakeHistorial extends RefCounted:
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
+const TemaStoreScript := preload("res://scripts/tema_store.gd")
 
 var _fallos := 0
 var _imgs_iniciales: Array = []
@@ -537,6 +538,18 @@ func _arrancar() -> void:
 		_check(ok_zip, "_on_diag_elegido genera zip con info.txt y logs")
 		DirAccess.remove_absolute("user://__test_diag_main__")
 		DirAccess.remove_absolute(ruta_zip)
+
+	# Tema claro/oscuro (#19)
+	TemaStoreScript.aplicar("oscuro", main)
+	_check(TemaStoreScript.color_estado(true) == Color(0.35, 0.85, 0.45, 1), "la paleta por defecto es la oscura")
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "claro")
+	_check(main_script._config_store.cargar().get("tema", "") == "claro", "preferencias guardan el tema claro")
+	_check(TemaStoreScript.color_estado(true) == Color(0.1, 0.55, 0.25, 1), "aplicar claro deja la paleta clara activa")
+	var fondo_principal: ColorRect = main.get_node("Fondo")
+	_check(fondo_principal.color == Color(0.95, 0.95, 0.95, 1), "aplicar claro pinta el fondo de la ventana principal")
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro")
+	_check(main_script._config_store.cargar().get("tema", "") == "oscuro", "preferencias guardan el tema oscuro")
+	_check(fondo_principal.color == Color(0.1, 0.1, 0.1, 1), "aplicar oscuro restaura el fondo original")
 
 	_cerrar()
 

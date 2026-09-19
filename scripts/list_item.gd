@@ -13,6 +13,7 @@ var fecha := 0
 
 const LinkCheckerScript := preload("res://scripts/link_checker.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
+const TemaStoreScript := preload("res://scripts/tema_store.gd")
 
 var url: String = ""
 var estado: String = "pendiente"
@@ -41,7 +42,7 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "", ca
 	%NombreLabel.text = nombre
 	%DescripcionLabel.text = descripcion
 	%FechaLabel.text = "Sin comprobar"
-	_pintar_estado("Sin comprobar", Color(0.55, 0.55, 0.55, 1))
+	_pintar_estado("Sin comprobar", TemaStoreScript.color_estado(null))
 	self.categoria = GestorCatalogoScript.normalizar_categoria(categoria)
 	%CategoriaLabel.text = GestorCatalogoScript.categoria_display(self.categoria)
 	if imagen != "" and FileAccess.file_exists(imagen):
@@ -58,13 +59,13 @@ func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva :
 	_pintar_fecha()
 	if ok == true:
 		estado = "ok"
-		_pintar_estado(texto, Color(0.35, 0.85, 0.45, 1))
+		_pintar_estado(texto, TemaStoreScript.color_estado(true))
 	elif ok == false:
 		estado = "caido"
-		_pintar_estado(texto, Color(0.95, 0.35, 0.35, 1))
+		_pintar_estado(texto, TemaStoreScript.color_estado(false))
 	else:
 		estado = "pendiente"
-		_pintar_estado("Sin comprobar", Color(0.55, 0.55, 0.55, 1))
+		_pintar_estado("Sin comprobar", TemaStoreScript.color_estado(null))
 	_actualizar_tooltip()
 
 
