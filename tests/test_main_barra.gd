@@ -285,6 +285,23 @@ func _arrancar() -> void:
 	item_c.free()
 	main_script._cola.clear()
 	main_script._cola_store.limpiar()
+
+	# Reanudación (#13)
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
+		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
+	]
+	main_script._refrescar_vista()
+	await process_frame
+	_check(main.has_node("%ConfirmarReanudar"), "el diálogo ConfirmarReanudar existe en Main.tscn")
+	main_script._cola.clear()
+	main_script._rearmar_cola_pendiente(["https://b.test"])
+	_check(main_script._cola.size() == 1 and main_script._cola[0].url == "https://b.test", "reanudar reconstruye la cola con solo las urls pendientes")
+	main_script._cola.clear()
+
+	main_script._cola_store.guardar(["https://nope.test"])
+	main_script._reanudar_escaneo()
+	_check(main_script._cola.is_empty() and (main_script._cola_store.cargar().get("urls", []) as Array).is_empty(), "reanudar con urls inexistentes descarta y limpia")
 	DirAccess.remove_absolute("user://__test_main__")
 
 	# Catálogo: categorías (persistencia y normalización)

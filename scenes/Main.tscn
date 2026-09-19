@@ -151,6 +151,13 @@ title = "Restaurar copia"
 ok_button_text = "Restaurar"
 dialog_text = "¿Restaurar el catálogo desde la copia de seguridad?"
 
+[node name="ConfirmarReanudar" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Reanudar escaneo"
+ok_button_text = "Reanudar"
+cancel_button_text = "Descartar"
+dialog_text = "Hay una comprobación pendiente. ¿Reanudar el escaneo?"
+
 [node name="VentanaPreferencias" parent="." instance=ExtResource("3_preferencias")]
 unique_name_in_owner = true
 

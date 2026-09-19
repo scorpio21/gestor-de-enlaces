@@ -57,6 +57,8 @@ func _ready() -> void:
 	%ConfirmarBorrado.confirmed.connect(_confirmar_borrado)
 	%ConfirmarLimpieza.confirmed.connect(_confirmar_limpieza)
 	%ConfirmarRestaurar.confirmed.connect(_confirmar_restaurar)
+	%ConfirmarReanudar.confirmed.connect(_reanudar_escaneo)
+	%ConfirmarReanudar.canceled.connect(_descartar_cola_pendiente)
 	filtro.clear()
 	filtro.add_item("Todos", 0)
 	filtro.add_item("Válidos", 1)
@@ -98,6 +100,7 @@ func _ready() -> void:
 	_refrescar_vista()
 	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
 	_actualizar_status()
+	_revisar_cola_pendiente()
 	_rearmar_auto_escaneo()
 	_iniciar_auto_escaneo()
 
@@ -671,6 +674,61 @@ func _on_item_terminado(item: Button) -> void:
 			caidos += 1
 	_marcar_barra_final(caidos)
 	progreso.text = "Listo: %d caídos de %d" % [caidos, _total]
+
+
+func _revisar_cola_pendiente() -> void:
+	if _cola_store == null:
+		return
+	var pendientes: Array = _cola_store.cargar().get("urls", [])
+	if pendientes.is_empty():
+		return
+	var set_catalogo := {}
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY:
+			set_catalogo[GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))] = true
+	var validas: Array = []
+	for url in pendientes:
+		if set_catalogo.has(GestorCatalogoScript.clave_unica(str(url))):
+			validas.append(str(url))
+	if validas.is_empty():
+		_cola_store.limpiar()
+		return
+	%ConfirmarReanudar.dialog_text = "¿Reanudar escaneo de %d enlaces?" % validas.size()
+	%ConfirmarReanudar.popup_centered()
+
+
+func _reanudar_escaneo() -> void:
+	if _cola_store == null:
+		return
+	var pendientes: Array = _cola_store.cargar().get("urls", [])
+	if pendientes.is_empty():
+		return
+	_en_vuelo = 0
+	_rearmar_cola_pendiente(pendientes)
+	_total = _cola.size()
+	if _total == 0:
+		_cola_store.limpiar()
+		%BotonComprobar.disabled = false
+		return
+	_hechos = 0
+	%BotonComprobar.disabled = true
+	%BarraProgreso.visible = true
+	%BarraProgreso.remove_theme_stylebox_override("fill")
+	_actualizar_barra(0, _total)
+	progreso.text = "Comprobando 0/%d…" % _total
+	_lanzar_siguiente()
+
+
+func _rearmar_cola_pendiente(pendientes: Array) -> void:
+	_cola.clear()
+	for hijo in lista.get_children():
+		if is_instance_valid(hijo) and pendientes.has(hijo.url):
+			_cola.append(hijo)
+
+
+func _descartar_cola_pendiente() -> void:
+	if _cola_store != null:
+		_cola_store.limpiar()
 
 
 func _on_recomprobar_pedido(item: Button) -> void:

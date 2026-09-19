@@ -11,6 +11,7 @@ func _initialize() -> void:
 
 
 func _arrancar() -> void:
+	limpiar_base()
 	var store := ColaStore.new(BASE)
 
 	var vacio: Dictionary = store.cargar()
@@ -34,7 +35,7 @@ func _arrancar() -> void:
 	var b := ColaStore.new(BASE)
 	_check((b.cargar().get("urls", []) as Array) == ["x"], "store B (nueva instancia) recupera lo guardado por A")
 
-	DirAccess.remove_absolute(BASE)
+	DirAccess.remove_absolute(BASE + "/colas.json")
 	_cerrar()
 
 
@@ -44,6 +45,13 @@ func _check(cond: bool, nombre: String) -> void:
 	else:
 		_fallos += 1
 		printerr("  check FALLIDO — ", nombre)
+
+
+func limpiar_base() -> void:
+	if FileAccess.file_exists(BASE + "/colas.json"):
+		DirAccess.remove_absolute(BASE + "/colas.json")
+	if DirAccess.dir_exists_absolute(BASE):
+		DirAccess.remove_absolute(BASE)
 
 
 func _cerrar() -> void:
