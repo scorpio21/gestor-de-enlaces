@@ -982,7 +982,7 @@ debug/export_console_wrapper=1
 binary_format/embed_pck=true
 texture_format/s3tc_bptc=true
 texture_format/etc2_astc=false
-binary_format/architecture="x86_64"
+binary_format/architecture="universal"
 application/icon="res://Assets/icon/icon.icns"
 application/icon_interpolation=4
 application/bundle_identifier="com.gestor.gestorao"
@@ -1106,7 +1106,7 @@ jobs:
           path: build/
 ```
 
-Nota de mantenimiento: la tpz de export templates tiene dentro una subcarpeta `templates/`; se extrae a un temporal y se mueve `templates/*` a `~/.local/share/godot/export_templates/4.7.2.stable/` (el contenido de la tpz debe quedar DIRECTAMENTE en esa carpeta de versión, sin la carpeta `templates/` intermedia). Godot solo acepta templates si esa estructura es exacta — `--export-release` fallaría en CI si la estructura no está bien puesta. La exportación de macOS produce un `.app` (en Linux no se genera `.dmg`); el workflow lo comprime a zip. En CI el checkout es fresco (sin `.godot/`): antes de la batería es obligatorio un `--headless --path . --import` (5s) para generar `.godot/`; sin él la primera suite se cuelga (el import en modo juego de una escena headless no escribe el cache).
+Nota de mantenimiento: la tpz de export templates tiene dentro una subcarpeta `templates/`; se extrae a un temporal y se mueve `templates/*` a `~/.local/share/godot/export_templates/4.7.2.stable/` (el contenido de la tpz debe quedar DIRECTAMENTE en esa carpeta de versión, sin la carpeta `templates/` intermedia). Godot solo acepta templates si esa estructura es exacta — `--export-release` fallaría en CI si la estructura no está bien puesta. La exportación de macOS produce un `.app` (en Linux no se genera `.dmg`); el workflow lo comprime a zip. En CI el checkout es fresco (sin `.godot/`): antes de la batería es obligatorio un `--headless --path . --import` (5s) para generar `.godot/`; sin él la primera suite se cuelga (el import en modo juego de una escena headless no escribe el cache). El preset macOS usa `binary_format/architecture="universal"`: las templates oficiales de macOS en Godot 4.7 son `godot_macos_release.universal`, no hay binario `x86_64`; con `"x86_64"` el export falla con «Requested template binary not found».
 
 - [ ] **Step 6: Crea AGENTS.md**
 
