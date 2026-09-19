@@ -86,6 +86,19 @@ popup/item_2/id = 30
 popup/item_3/text = "Cada 1 hora"
 popup/item_3/id = 60
 
+[node name="EtiquetaTema" type="Label" parent="Margen/Columna"]
+layout_mode = 2
+text = "Tema"
+
+[node name="Tema" type="OptionButton" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "Oscuro"
+popup/item_0/id = 0
+popup/item_1/text = "Claro"
+popup/item_1/id = 1
+
 [node name="Error" type="Label" parent="Margen/Columna"]
 unique_name_in_owner = true
 layout_mode = 2

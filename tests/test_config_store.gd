@@ -18,6 +18,9 @@ func _initialize() -> void:
 	_check(intervalo_invalido_normaliza(), "intervalo no válido se normaliza a 0")
 	_check(auto_invalido_default(), "auto_abrir no booleano vuelve al default true")
 	_check(guardar_defaults_auto(), "guardar() sin auto_abrir/intervalo persiste los defaults")
+	_check(tema_default_sin_fichero(), "sin fichero devuelve tema oscuro")
+	_check(tema_persistido(), "guardar() persiste el tema claro")
+	_check(tema_invalido_normaliza(), "tema no válido se normaliza a oscuro")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -87,6 +90,23 @@ func guardar_defaults_auto() -> bool:
 	store.guardar(4, 12.0)
 	var c := store.cargar()
 	return c.get("auto_abrir") == true and c.get("intervalo") == 0
+
+
+func tema_default_sin_fichero() -> bool:
+	return ConfigStore.new(BASE).cargar().get("tema", "") == "oscuro"
+
+
+func tema_persistido() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(4, 12.0, true, 30, "claro"):
+		return false
+	return store.cargar().get("tema", "") == "claro"
+
+
+func tema_invalido_normaliza() -> bool:
+	var store := ConfigStore.new(BASE)
+	store.guardar(4, 12.0, true, 30, "chocolate")
+	return store.cargar().get("tema", "") == "oscuro"
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

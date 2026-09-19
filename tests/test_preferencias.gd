@@ -15,20 +15,21 @@ func _arrancar() -> void:
 	root.add_child(ventana)
 	await process_frame
 
-	ventana.aplicado.connect(func(p: int, t: float, a: bool, i: int) -> void: _aplicado = [p, t, a, i])
-	ventana.abrir(5, 20.0, false, 15)
+	ventana.aplicado.connect(func(p: int, t: float, a: bool, i: int, tm: String) -> void: _aplicado = [p, t, a, i, tm])
+	ventana.abrir(5, 20.0, false, 15, "oscuro")
 	await process_frame
 	_check(is_equal_approx(ventana.get_node("%Paralelismo").value, 5.0), "abrir precarga el paralelismo")
 	_check(is_equal_approx(ventana.get_node("%Timeout").value, 20.0), "abrir precarga el timeout")
 	_check(ventana.get_node("%AutoAbrir").button_pressed == false \
 		and ventana.get_node("%IntervaloAuto").get_selected_id() == 15, "abrir precarga auto_abrir e intervalo")
+	_check(ventana.get_node("%Tema").get_selected_id() == 0, "abrir precarga el tema")
 	_check(ventana.size.y >= ventana.get_node("Margen/Columna").get_combined_minimum_size().y, \
 		"la ventana ajusta su alto al contenido (no desborda ni solapa)")
 
 	ventana.get_node("%BotonCancelar").pressed.emit()
 	_check(_aplicado == null and not ventana.visible, "cancelar no emite aplicado y oculta")
 
-	ventana.abrir(5, 20.0, true, 30)
+	ventana.abrir(5, 20.0, true, 30, "claro")
 	ventana.get_node("%Paralelismo").value = 7
 	ventana.get_node("%Timeout").value = 15.0
 	ventana.get_node("%AutoAbrir").button_pressed = true
@@ -36,6 +37,7 @@ func _arrancar() -> void:
 	ventana.get_node("%BotonGuardar").pressed.emit()
 	_check(_aplicado != null and _aplicado[0] == 7 and is_equal_approx(_aplicado[1], 15.0), "guardar emite aplicado con paralelismo y timeout")
 	_check(_aplicado != null and _aplicado[2] == true and _aplicado[3] == 60, "guardar emite aplicado con auto_abrir e intervalo")
+	_check(_aplicado != null and _aplicado[4] == "claro", "guardar emite el tema elegido")
 
 	ventana.free()
 	_cerrar()
