@@ -215,6 +215,12 @@ title = "Exportar catálogo JSON"
 file_mode = 4
 filters = PackedStringArray("*.json ; Archivo JSON")
 
+[node name="DialogoInforme" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Guardar informe de disponibilidad"
+file_mode = 4
+filters = PackedStringArray("*.csv ; Archivo CSV (*.csv)", "*.html ; Archivo HTML (*.html)")
+
 [node name="DialogoDiagnostico" type="FileDialog" parent="."]
 unique_name_in_owner = true
 title = "Exportar diagnóstico"

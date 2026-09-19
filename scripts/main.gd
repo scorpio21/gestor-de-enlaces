@@ -13,6 +13,7 @@ const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
 const LoggerScript := preload("res://scripts/logger.gd")
 const DiagnosticoScript := preload("res://scripts/diagnostico.gd")
 const ColaStoreScript := preload("res://scripts/cola_store.gd")
+const InformeStoreScript := preload("res://scripts/informe_store.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -93,6 +94,7 @@ func _ready() -> void:
 	preferencias.aplicado.connect(_aplicar_preferencias)
 	%DialogoImportar.file_selected.connect(_on_importar_elegido)
 	%DialogoExportar.file_selected.connect(_on_exportar_elegido)
+	%DialogoInforme.file_selected.connect(_on_informe_elegido)
 	if not _es_headless():
 		_logger = LoggerScript.new("user://")
 		_log_app("inicio", "aplicación iniciada")
@@ -110,6 +112,7 @@ func _configurar_menus() -> void:
 	menu_file.clear()
 	menu_file.add_item("Importar…", 1)
 	menu_file.add_item("Exportar…", 2)
+	menu_file.add_item("Informe de disponibilidad…", 5)
 	menu_file.add_separator()
 	menu_file.add_item("Restaurar copia…", 4)
 	menu_file.add_item("Salir", 3)
@@ -130,6 +133,8 @@ func _on_file_id(id: int) -> void:
 			%DialogoImportar.popup_centered()
 		2:
 			%DialogoExportar.popup_centered()
+		5:
+			%DialogoInforme.popup_centered()
 		3:
 			get_tree().quit()
 		4:
@@ -165,6 +170,43 @@ func _on_exportar_elegido(ruta: String) -> void:
 		progreso.text = str(res.get("error", "No se pudo exportar el catálogo."))
 		return
 	progreso.text = "Catálogo exportado (%d enlaces)." % int(res.get("total", 0))
+
+
+func _on_informe_elegido(ruta: String) -> void:
+	var formato := _formato_informe(ruta)
+	if not ruta.to_lower().ends_with(".csv") and not ruta.to_lower().ends_with(".html"):
+		ruta += ".csv"
+	var filas: Array = []
+	for entrada in _entradas:
+		if typeof(entrada) != TYPE_DICTIONARY:
+			continue
+		var url := str(entrada.get("url", ""))
+		var estado: Dictionary = _estados.get(GestorCatalogoScript.clave_unica(url), {})
+		var estado_texto := "Sin comprobar"
+		var fecha := 0
+		var mensaje := ""
+		if not estado.is_empty():
+			estado_texto = "Válido" if estado.get("valido") == true else "Caído"
+			fecha = int(estado.get("fecha", 0))
+			mensaje = str(estado.get("mensaje", ""))
+		filas.append({
+			"nombre": str(entrada.get("nombre", "")),
+			"url": url,
+			"estado": estado_texto,
+			"fecha": fecha,
+			"mensaje": mensaje,
+		})
+	var res: Dictionary = InformeStoreScript.exportar_html(ruta, filas) if formato == "html" else InformeStoreScript.exportar_csv(ruta, filas)
+	if not res.get("ok", false):
+		progreso.text = str(res.get("error", "No se pudo guardar el informe."))
+		return
+	progreso.text = "Informe %s guardado (%d enlaces)." % [formato.to_upper(), int(res.get("total", 0))]
+
+
+func _formato_informe(ruta: String) -> String:
+	if ruta.to_lower().ends_with(".html"):
+		return "html"
+	return "csv"
 
 
 func _on_diag_elegido(ruta: String) -> void:

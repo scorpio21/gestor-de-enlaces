@@ -358,6 +358,21 @@ func _arrancar() -> void:
 	_check(diag_exp.visible, "Archivo > Exportar… abre el diálogo de exportación")
 	diag_exp.hide()
 
+	# Informe de disponibilidad (#11)
+	var menu_file_inf: PopupMenu = main.get_node("%File")
+	var hay_informe := false
+	for i in menu_file_inf.get_item_count():
+		if menu_file_inf.get_item_id(i) == 5 and menu_file_inf.get_item_text(i) == "Informe de disponibilidad…":
+			hay_informe = true
+	_check(hay_informe, "Archivo > Informe de disponibilidad… está en el menú")
+	_check(main.has_node("%DialogoInforme"), "el diálogo DialogoInforme existe en Main.tscn")
+	main_script._on_file_id(5)
+	_check(main.get_node("%DialogoInforme").visible, "Archivo > Informe de disponibilidad… abre el diálogo de guardado")
+	main.get_node("%DialogoInforme").hide()
+	_check(main_script._formato_informe("informe.html") == "html", "_formato_informe deduce html por extensión")
+	_check(main_script._formato_informe("informe.csv") == "csv", "_formato_informe deduce csv por extensión")
+	_check(main_script._formato_informe("informe") == "csv", "_formato_informe asume csv sin extensión")
+
 	# Restaurar copia (#23, #24)
 	var menu_file: PopupMenu = main.get_node("%File")
 	var hay_restaurar := false
