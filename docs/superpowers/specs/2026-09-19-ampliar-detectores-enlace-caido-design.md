@@ -17,8 +17,10 @@ Todo el cambio vive en `scripts/link_checker.gd` (194 líneas, sin cambios en la
 
 ### 1. Constante `MARCAS_POR_HOST: Dictionary`
 
+> Nota: aunque la intención es un dict de solo lectura, GDScript no permite diccionarios `const` con valores `PackedStringArray` (la llamada `PackedStringArray([...])` no es expresión constante), por eso se declara `var MARCAS_POR_HOST: Dictionary = {...}` y se trata como inmutable por convención.
+
 ```gdscript
-const MARCAS_POR_HOST: Dictionary = {
+var MARCAS_POR_HOST: Dictionary = {
 	"mega.nz": PackedStringArray([
 		"this file is no longer available",
 		"file not available",

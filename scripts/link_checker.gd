@@ -15,6 +15,46 @@ const MARCAS_MUERTO: PackedStringArray = [
 	"the file you are looking for is no longer",
 	"page not found",
 ]
+var MARCAS_POR_HOST: Dictionary = {
+	"mega.nz": PackedStringArray([
+		"this file is no longer available",
+		"file not available",
+		"no longer available for download",
+	]),
+	"mediafire.com": PackedStringArray([
+		"file cannot be found",
+		"has been removed due to inactivity",
+		"file has been deleted by the user",
+	]),
+	"drive.google.com": PackedStringArray([
+		"the file you have selected does not exist",
+		"the file was deleted",
+		"the owner has removed this item",
+		"has been removed by the owner",
+	]),
+	"sites.google.com": PackedStringArray([
+		"the requested page could not be found",
+	]),
+	"dropbox.com": PackedStringArray([
+		"file can't be found",
+		"there's nothing here",
+		"the file or folder has been deleted",
+		"link has expired",
+	]),
+	"wetransfer.com": PackedStringArray([
+		"this transfer has expired",
+		"link has expired",
+		"the transfer link you are looking for is no longer available",
+	]),
+}
+
+func _marcas_para_host(host: String) -> PackedStringArray:
+	for clave in MARCAS_POR_HOST:
+		if host.ends_with(String(clave)):
+			var marcas := MARCAS_MUERTO.duplicate()
+			marcas.append_array(MARCAS_POR_HOST[clave])
+			return marcas
+	return MARCAS_MUERTO
 
 var _cliente := HTTPClient.new()
 var _url := ""

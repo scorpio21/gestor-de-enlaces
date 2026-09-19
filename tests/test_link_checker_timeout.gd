@@ -41,6 +41,21 @@ func _arrancar() -> void:
 	_check(cpm._parece_muerto(200, "<html>normal</html>") == false, "_parece_muerto: 200 sin marcador no es muerto")
 	cpm.free()
 
+	# Marcas por host (#12)
+	var mh := LinkChecker.new()
+	var marcas_mega: PackedStringArray = mh._marcas_para_host("mega.nz")
+	_check(marcas_mega.has("this file is no longer available"), "_marcas_para_host('mega.nz') incluye marca específica")
+	_check(marcas_mega.has("page not found"), "_marcas_para_host('mega.nz') conserva genéricas (unión)")
+	_check(marcas_mega.size() == LinkChecker.MARCAS_MUERTO.size() + 3, "_marcas_para_host('mega.nz') suma 3 específicas a las genéricas")
+
+	var marcas_drive: PackedStringArray = mh._marcas_para_host("www.drive.google.com")
+	_check(marcas_drive.has("the file you have selected does not exist"), "_marcas_para_host con subdominio resuelve por sufijo")
+
+	var marcas_otro: PackedStringArray = mh._marcas_para_host("otro.host")
+	_check(marcas_otro == LinkChecker.MARCAS_MUERTO, "_marcas_para_host host desconocido devuelve solo genéricas")
+	_check(mh._marcas_para_host("") == LinkChecker.MARCAS_MUERTO, "_marcas_para_host('') devuelve genéricas")
+	mh.free()
+
 	# Parseo de URL (#31)
 	var cp := LinkChecker.new()
 	var p1 := cp._parsear_url("https://example.com")
