@@ -66,9 +66,9 @@ Ambas devuelven `{"ok": true, "total": int}` o `{"ok": false, "error": String}` 
      - `fecha` y `mensaje` del estado (o vacíos).
   3. `var res := InformeStoreScript.exportar_csv(ruta, filas)` o `exportar_html` según formato.
   4. Éxito → `progreso.text = "Informe %s guardado (%d enlaces)." % [formato.to_upper(), total]`; error → `progreso.text = error`.
-- `_formato_informe(ruta: String) -> String`: si `ruta.to_lower().ends_with(".html")` → `"html"`; si `ruta.to_lower().ends_with(".csv")` → `"csv"`; si no → `"csv"` (y si falta extensión se añade `.csv` al llamar al store).
+- `_formato_informe(ruta: String) -> String`: si `ruta.to_lower().ends_with(".html")` → `"html"`; si `ruta.to_lower().ends_with(".csv")` → `"csv"`; en cualquier otro caso → `"csv"`. Al llamar al store, si el path no acaba en `.csv` ni `.html` se le añade `.csv` (así un nombre sin extensión produce `informe.csv`).
 
-> Detalle de robustez: si el usuario elige un nombre sin extensión en el FileDialog, se fuerza `.csv` para que el fichero se abra bien en Excel.
+> Detalle de robustez: si el usuario elige un nombre sin extensión en el FileDialog, `_formato_informe` devuelve `"csv"` y se añade `.csv` al path antes de escribir, para que el fichero se abra bien en Excel.
 
 ### 3. `scenes/Main.tscn` — nuevo `%DialogoInforme`
 
