@@ -270,6 +270,23 @@ func _arrancar() -> void:
 	_check(not main.get_node("%BarraProgreso").visible, "sin enlaces visibles la barra se oculta")
 	_check(main.get_node("%Progreso").text == "Nada que comprobar", "sin enlaces visibles se muestra el aviso")
 
+	# Cola persistida (#13)
+	main_script._cola_store = (load("res://scripts/cola_store.gd") as GDScript).new("user://__test_main__")
+	var item_a: Button = LIST_ITEM_SCENE.instantiate()
+	item_a.url = "https://a.test"
+	main_script._cola.append(item_a)
+	var item_c: Button = LIST_ITEM_SCENE.instantiate()
+	item_c.url = "https://c.test"
+	main_script._cola.append(item_c)
+	main_script._persistir_cola()
+	var cola_guardada: Array = main_script._cola_store.cargar().get("urls", [])
+	_check(cola_guardada.size() == 2 and "https://a.test" in cola_guardada and "https://c.test" in cola_guardada, "persistir cola guarda las urls de los items")
+	item_a.free()
+	item_c.free()
+	main_script._cola.clear()
+	main_script._cola_store.limpiar()
+	DirAccess.remove_absolute("user://__test_main__")
+
 	# Catálogo: categorías (persistencia y normalización)
 	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""}]
 	main_script._on_lote_guardado(["https://nueva.test"])

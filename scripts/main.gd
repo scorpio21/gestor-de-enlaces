@@ -12,6 +12,7 @@ const GestorArchivoScript := preload("res://scripts/gestor_archivo.gd")
 const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
 const LoggerScript := preload("res://scripts/logger.gd")
 const DiagnosticoScript := preload("res://scripts/diagnostico.gd")
+const ColaStoreScript := preload("res://scripts/cola_store.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -46,6 +47,7 @@ var _borrados: Array = []
 var _item_pendiente_borrar: Button = null
 var _persistir := true
 var _limpieza_resultado: Dictionary = {}
+var _cola_store: RefCounted = null
 
 
 func _ready() -> void:
@@ -80,6 +82,7 @@ func _ready() -> void:
 	ventana_agregar.editado.connect(_on_enlace_editado)
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new()
+	_cola_store = ColaStoreScript.new()
 	var cfg: Dictionary = _config_store.cargar()
 	_paralelismo = clampi(int(cfg.get("paralelismo", 3)), 1, 8)
 	_timeout = clampf(float(cfg.get("timeout", 10.0)), 3.0, 60.0)
@@ -598,6 +601,16 @@ func _marcar_barra_final(caidos: int) -> void:
 	%BarraProgreso.add_theme_stylebox_override("fill", estilo)
 
 
+func _persistir_cola() -> void:
+	if _cola_store == null:
+		return
+	var urls: Array = []
+	for item in _cola:
+		if is_instance_valid(item):
+			urls.append(item.url)
+	_cola_store.guardar(urls)
+
+
 func _comprobar_visibles() -> void:
 	_cola.clear()
 	for hijo in lista.get_children():
@@ -617,6 +630,7 @@ func _comprobar_visibles() -> void:
 	%BarraProgreso.remove_theme_stylebox_override("fill")
 	_actualizar_barra(0, _total)
 	progreso.text = "Comprobando 0/%d…" % _total
+	_persistir_cola()
 	_lanzar_siguiente()
 
 
@@ -645,9 +659,12 @@ func _on_item_terminado(item: Button) -> void:
 	_actualizar_status()
 	if not _cola.is_empty() or _en_vuelo > 0:
 		_lanzar_siguiente()
+		_persistir_cola()
 		return
 
 	%BotonComprobar.disabled = false
+	if _cola_store != null:
+		_cola_store.limpiar()
 	var caidos := 0
 	for hijo in lista.get_children():
 		if is_instance_valid(hijo) and hijo.valido == false:
