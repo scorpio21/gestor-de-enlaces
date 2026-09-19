@@ -5,6 +5,7 @@
 [node name="VentanaPreferencias" type="Window"]
 title = "Preferencias"
 initial_position = 2
+wrap_controls = true
 size = Vector2i(400, 340)
 unresizable = true
 exclusive = true

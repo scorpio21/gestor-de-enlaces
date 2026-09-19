@@ -17,10 +17,13 @@ func _arrancar() -> void:
 
 	ventana.aplicado.connect(func(p: int, t: float, a: bool, i: int) -> void: _aplicado = [p, t, a, i])
 	ventana.abrir(5, 20.0, false, 15)
+	await process_frame
 	_check(is_equal_approx(ventana.get_node("%Paralelismo").value, 5.0), "abrir precarga el paralelismo")
 	_check(is_equal_approx(ventana.get_node("%Timeout").value, 20.0), "abrir precarga el timeout")
 	_check(ventana.get_node("%AutoAbrir").button_pressed == false \
 		and ventana.get_node("%IntervaloAuto").get_selected_id() == 15, "abrir precarga auto_abrir e intervalo")
+	_check(ventana.size.y >= ventana.get_node("Margen/Columna").get_combined_minimum_size().y, \
+		"la ventana ajusta su alto al contenido (no desborda ni solapa)")
 
 	ventana.get_node("%BotonCancelar").pressed.emit()
 	_check(_aplicado == null and not ventana.visible, "cancelar no emite aplicado y oculta")

@@ -7,7 +7,6 @@
 ;   param=value ; assign values to parameters
 
 config_version=5
-display/window/title="GestorAO v0.1.0"
 
 [application]
 
@@ -19,9 +18,10 @@ config/icon="res://Assets/icon/icon.svg"
 
 [display]
 
+window/subwindows/embed_subwindows=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/subwindows/embed_subwindows=false
+window/title="GestorAO v0.1.0"
 
 [input]
 
@@ -47,5 +47,5 @@ atajo_comprobar={
 
 [rendering]
 
-textures/vram_compression/import_etc2_astc=true
 rendering_device/driver.windows="d3d12"
+textures/vram_compression/import_etc2_astc=true
