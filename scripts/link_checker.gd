@@ -62,10 +62,12 @@ var _transcurrido := 0.0
 var _redirects := 0
 var _pedido_enviado := false
 var _activo := false
+var _host_actual := ""
 
 
 func comprobar(url: String) -> void:
 	_url = url.strip_edges()
+	_host_actual = str(_parsear_url(_url).get("host", ""))
 	_transcurrido = 0.0
 	_redirects = 0
 	_pedido_enviado = false
@@ -146,6 +148,7 @@ func _leer_respuesta() -> void:
 			return
 		_redirects += 1
 		_url = _resolver_redirect(_url, destino)
+		_host_actual = str(_parsear_url(_url).get("host", ""))
 		_transcurrido = 0.0
 		_conectar(_url)
 		return
@@ -173,7 +176,7 @@ func _parece_muerto(codigo: int, html: String) -> bool:
 		return true
 	if html.is_empty():
 		return false
-	for marca in MARCAS_MUERTO:
+	for marca in _marcas_para_host(_host_actual):
 		if marca in html:
 			return true
 	return false

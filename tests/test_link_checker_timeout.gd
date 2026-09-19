@@ -56,6 +56,15 @@ func _arrancar() -> void:
 	_check(mh._marcas_para_host("") == LinkChecker.MARCAS_MUERTO, "_marcas_para_host('') devuelve genéricas")
 	mh.free()
 
+	# _parece_muerto con host (#12)
+	var cpi := LinkChecker.new()
+	cpi._host_actual = "mega.nz"
+	_check(cpi._parece_muerto(200, "note: this file is no longer available") == true, "_parece_muerto host conocido con marca específica es muerto")
+	_check(cpi._parece_muerto(200, "<html>normal</html>") == false, "_parece_muerto host conocido sin marcas no es muerto")
+	_check(cpi._parece_muerto(200, "page not found") == true, "_parece_muerto host conocido con marca genérica es muerto (unión)")
+	_check(cpi._parece_muerto(200, "this transfer has expired") == false, "_parece_muerto marca específica de otro host no aplica")
+	cpi.free()
+
 	# Parseo de URL (#31)
 	var cp := LinkChecker.new()
 	var p1 := cp._parsear_url("https://example.com")
