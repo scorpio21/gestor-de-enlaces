@@ -67,10 +67,32 @@ La escena principal es `res://scenes/Main.tscn`.
 | `user://enlaces.json` | Enlaces añadidos por el usuario |
 | `user://estados.json` | Resultados del último escaneo por URL |
 | `user://borrados.json` | URLs eliminadas definitivamente |
+| `user://logs/` | Logs rotativos de aplicación (`app_*.log`) y de escaneo (`scan_*.log`) |
 | `Assets/png/` | Capturas de imagen de los enlaces (carpeta versionada) |
 | `data/data.json.bak` | Copia de seguridad local (no versionada) |
 
 > `user://` equivale a la carpeta de datos del usuario del sistema según el sistema operativo.
+
+---
+
+## Registro de actividad y diagnóstico
+
+- **Logger rotativo** — la aplicación escribe logs a `user://logs/` con rotación por tamaño; por un lado la actividad de la app y por otro los escaneos de enlaces. En *entornos de desarrollo* (sin exportar) el logger también vuelca a consola.
+- **Exportar diagnóstico** — menú *Utilidades → Exportar diagnóstico…* genera un ZIP (fecha/hora en el nombre) con los logs, los datos (`data.json`, `enlaces.json`, `estados.json`, `borrados.json`) y un fichero `info.txt` con versión de la app, SO, motor y rutas, para reportar incidencias.
+
+---
+
+## Empaquetado y CI
+
+- **Presets de exportación** (`export_presets.cfg`) — Windows (exe), Linux/X11 (x86_64) y macOS (`.app` universal). La escena principal y los iconos (SVG/PNG/ICO/ICNS) se generan con `scripts/generar_iconos.gd`.
+- **GitHub Actions** (`.github/workflows/ci.yml`) — en cada push a `main`: descarga Godot 4.7.2 y las export templates (versión fija `4.7.2.stable`), importa el proyecto, ejecuta la batería de tests headless y exporta los 3 presets a `build/` (el `.app` de macOS se comprime a ZIP). Los artefactos quedan publicados en la página del run.
+- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 17 suites en orden; local (Windows, pwsh):
+
+  ```bash
+  & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_<area>.gd
+  ```
+
+  En CI el checkout es fresco (no trae `.godot/`): antes de la batería se ejecuta `godot --headless --path . --import` para generar el cache de importación.
 
 ---
 
@@ -79,6 +101,8 @@ La escena principal es `res://scenes/Main.tscn`.
 ```
 gestor-de-enlaces/
 ├── project.godot            # Configuración del proyecto
+├── export_presets.cfg       # Presets de exportación Windows/Linux/macOS
+├── .github/workflows/ci.yml # CI: tests headless + export de los 3 bundles
 ├── scenes/
 │   ├── Main.tscn            # Escena principal (UI completa)
 │   ├── AgregarEnlace.tscn   # Ventana para añadir enlaces
@@ -88,13 +112,25 @@ gestor-de-enlaces/
 │   ├── list_item.gd         # Fila: estado, verificación y apertura
 │   ├── link_checker.gd      # Verificador HTTP (redirecciones, timeouts…)
 │   ├── agregar_enlace.gd    # Formulario de nuevo enlace (+ captura)
+│   ├── logger.gd            # Logs rotativos app/scan en user://logs
+│   ├── diagnostico.gd       # Exporta ZIP de logs+datos con info.txt
 │   ├── estado_store.gd      # Persistencia de estados y borrados (user://)
-│   └── gestor_imagenes.gd   # Copia de capturas a Assets/png
+│   ├── gestor_catalogo.gd   # Catálogo base y enlaces de usuario
+│   ├── gestor_datos.gd      # Carga/guardado JSON con backups
+│   ├── gestor_contadores.gd # Contadores de la barra de estado
+│   ├── config_store.gd      # Preferencias persistentes (user://)
+│   ├── historial.gd         # Historial de escaneos del catálogo
+│   ├── preferencias.gd      # Ventana de preferencias
+│   ├── gestor_archivo.gd    # Selección y copia de capturas
+│   ├── gestor_imagenes.gd   # Copia de capturas a Assets/png
+│   └── generar_iconos.gd    # Regenera Assets/icon (svg/png/ico/icns)
+├── tests/
+│   ├── run_battery.sh       # Ejecuta las 17 suites headless (Linux/CI)
+│   └── test_<area>.gd       # 17 suites SceneTree (TESTS OK / quit(0))
 ├── data/
 │   └── data.json            # Catálogo base de enlaces
 ├── Assets/
-│   └── png/
-│       └── no-disponible.png  # Marcador cuando un enlace no tiene captura
+│   └── icon/                # Iconos generados (svg/png/ico/icns)
 └── docs/superpowers/        # Specs y planes de diseño
 ```
 
@@ -109,6 +145,9 @@ gestor-de-enlaces/
 - [x] **Eliminación de enlaces caídos** con confirmación y control de URL eliminadas (`user://borrados.json`)
 - [x] Re-verificación individual por enlace
 - [x] **Captura/imagen por enlace** — al añadir se puede adjuntar una imagen local que se muestra como miniatura (o el marcador `no-disponible`)
+- [x] **Logs rotativos y diagnóstico en ZIP** — logger app/scan en `user://logs/` + *Utilidades → Exportar diagnóstico…* (`#28`)
+- [x] **Icono propio y metadatos 0.1.0** — Assets/icon (svg/png/ico/icns) generado por script (`#29`)
+- [x] **Empaquetado y CI** — presets Windows/Linux/macOS + GitHub Actions que testea y exporta los 3 bundles (#26)
 
 > El diseño de cada funcionalidad está especificado en `docs/superpowers/specs/` (`2026-09-05-estado-escaneo-enlaces-design.md`, `2026-09-05-captura-enlaces-design.md`).
 
