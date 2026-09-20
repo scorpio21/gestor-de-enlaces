@@ -23,7 +23,7 @@ func _arrancar() -> void:
 	root.add_child(valido)
 	root.add_child(fresco)
 	await process_frame
-	_check(_menu_completo(caido), "la fila construye el menú con 5 opciones")
+	_check(_menu_completo(caido), "la fila construye el menú con 7 opciones")
 	_check(_menu_completo(valido), "la fila válida también construye el menú")
 
 	var con_imagen := _crear_item()
@@ -113,6 +113,29 @@ func _arrancar() -> void:
 	item.get_node("%MenuContexto").id_pressed.emit(4)
 	_check(emitido == ["editar", "recomprobar", ["copiar", "https://ejemplo.com/menu"], "historial", "eliminar"], "la opción Eliminar emite eliminar_pedido")
 
+	var item_reorden := _crear_item()
+	item_reorden.setup("Nom", "Desc", "https://ejemplo.com/reorden")
+	var emitido_reorden: Array = []
+	item_reorden.subir_pedido.connect(func() -> void: emitido_reorden.append("subir"))
+	item_reorden.bajar_pedido.connect(func() -> void: emitido_reorden.append("bajar"))
+	root.add_child(item_reorden)
+	await process_frame
+
+	item_reorden.get_node("%MenuContexto").id_pressed.emit(5)
+	_check(emitido_reorden == ["subir"], "la opción Subir emite subir_pedido")
+	item_reorden.get_node("%MenuContexto").id_pressed.emit(6)
+	_check(emitido_reorden == ["subir", "bajar"], "la opción Bajar emite bajar_pedido")
+
+	var menu_reorden: PopupMenu = item_reorden.get_node("%MenuContexto")
+	menu_reorden.set_item_disabled(menu_reorden.get_item_index(5), true)
+	menu_reorden.set_item_disabled(menu_reorden.get_item_index(6), true)
+	item_reorden.fijar_estado_reorden(true, true)
+	_check(not menu_reorden.is_item_disabled(menu_reorden.get_item_index(5)), "fijar_estado_reorden(true,true) habilita Subir")
+	_check(not menu_reorden.is_item_disabled(menu_reorden.get_item_index(6)), "fijar_estado_reorden(true,true) habilita Bajar")
+	item_reorden.fijar_estado_reorden(false, false)
+	_check(menu_reorden.is_item_disabled(menu_reorden.get_item_index(5)), "fijar_estado_reorden(false,false) deshabilita Subir")
+	_check(menu_reorden.is_item_disabled(menu_reorden.get_item_index(6)), "fijar_estado_reorden(false,false) deshabilita Bajar")
+
 	var cat_cliente := _crear_item()
 	cat_cliente.setup("Nom", "Desc", "https://ejemplo.com/cat1", "", "cliente")
 	var cat_codigos := _crear_item()
@@ -147,7 +170,18 @@ func _crear_item() -> Control:
 
 func _menu_completo(item: Control) -> bool:
 	var menu: PopupMenu = item.get_node("%MenuContexto")
-	return menu != null and menu.get_item_count() == 5
+	if menu == null:
+		return false
+	var opciones := 0
+	for i in range(menu.get_item_count()):
+		if not menu.is_item_separator(i):
+			opciones += 1
+	if opciones != 7:
+		return false
+	for id in [0, 1, 2, 3, 4, 5, 6]:
+		if menu.get_item_index(id) == -1:
+			return false
+	return true
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

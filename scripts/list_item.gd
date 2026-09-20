@@ -6,6 +6,9 @@ signal recomprobar_pedido
 signal copiar_pedido(url: String)
 signal editar_pedido
 signal historial_pedido
+signal subir_pedido
+signal bajar_pedido
+signal menu_solicitado
 
 var mensaje: String = ""
 var codigo := 0
@@ -27,6 +30,10 @@ var _timeout := 10.0
 func _ready() -> void:
 	var menu: PopupMenu = %MenuContexto
 	menu.add_item("Editar…", 0)
+	menu.add_separator()
+	menu.add_item("Subir", 5)
+	menu.add_item("Bajar", 6)
+	menu.add_separator()
 	menu.add_item("Volver a comprobar", 1)
 	menu.add_item("Copiar URL", 2)
 	menu.add_item("Historial…", 3)
@@ -90,6 +97,12 @@ func configurar_timeout(segundos: float) -> void:
 	_timeout = segundos
 
 
+func fijar_estado_reorden(arriba: bool, abajo: bool) -> void:
+	var menu: PopupMenu = %MenuContexto
+	menu.set_item_disabled(menu.get_item_index(5), not arriba)
+	menu.set_item_disabled(menu.get_item_index(6), not abajo)
+
+
 func verificar() -> void:
 	if _checker != null:
 		return
@@ -139,6 +152,7 @@ func _pressed() -> void:
 
 func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		menu_solicitado.emit()
 		%MenuContexto.popup(Rect2i(Vector2i(event.global_position), Vector2i.ZERO))
 
 
@@ -154,6 +168,10 @@ func _on_menu(id: int) -> void:
 			historial_pedido.emit()
 		4:
 			eliminar_pedido.emit()
+		5:
+			subir_pedido.emit()
+		6:
+			bajar_pedido.emit()
 
 
 func _pintar_fecha() -> void:
