@@ -11,6 +11,7 @@ const INTERVALO_DEFAULT := 0
 const INTERVALOS_VALIDOS := [0, 15, 30, 60]
 const TEMA_DEFAULT := "oscuro"
 const TEMAS_VALIDOS := ["claro", "oscuro"]
+const ULTIMA_VERSION_DEFAULT := ""
 
 var _base: String
 
@@ -28,6 +29,7 @@ func cargar() -> Dictionary:
 			"auto_abrir": AUTO_ABRIR_DEFAULT,
 			"intervalo": INTERVALO_DEFAULT,
 			"tema": TEMA_DEFAULT,
+			"ultima_version_vista": ULTIMA_VERSION_DEFAULT,
 		}
 	return {
 		"paralelismo": _paralelismo_ok(v.get("paralelismo", PARALELO_DEFAULT)),
@@ -35,16 +37,18 @@ func cargar() -> Dictionary:
 		"auto_abrir": _auto_abrir_ok(v.get("auto_abrir", AUTO_ABRIR_DEFAULT)),
 		"intervalo": _intervalo_ok(v.get("intervalo", INTERVALO_DEFAULT)),
 		"tema": _tema_ok(v.get("tema", TEMA_DEFAULT)),
+		"ultima_version_vista": _string_ok(v.get("ultima_version_vista", ULTIMA_VERSION_DEFAULT)),
 	}
 
 
-func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT) -> bool:
+func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT) -> bool:
 	var dato := {
 		"paralelismo": clampi(int(paralelismo), PARALELO_MIN, PARALELO_MAX),
 		"timeout": clampf(float(timeout), TIMEOUT_MIN, TIMEOUT_MAX),
 		"auto_abrir": typeof(auto_abrir) == TYPE_BOOL and bool(auto_abrir),
 		"intervalo": _intervalo_ok(intervalo),
 		"tema": _tema_ok(tema),
+		"ultima_version_vista": _string_ok(ultima_version_vista),
 	}
 	return _escribir_json(_ruta("config.json"), dato)
 
@@ -63,6 +67,10 @@ func _intervalo_ok(v: Variant) -> int:
 func _tema_ok(v: Variant) -> String:
 	var modo := str(v)
 	return modo if TEMAS_VALIDOS.has(modo) else TEMA_DEFAULT
+
+
+func _string_ok(v: Variant) -> String:
+	return str(v) if typeof(v) == TYPE_STRING else ""
 
 
 func _paralelismo_ok(v: Variant) -> int:

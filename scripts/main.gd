@@ -15,6 +15,7 @@ const DiagnosticoScript := preload("res://scripts/diagnostico.gd")
 const ColaStoreScript := preload("res://scripts/cola_store.gd")
 const InformeStoreScript := preload("res://scripts/informe_store.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
+const ActualizadorScript := preload("res://scripts/actualizador.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -50,6 +51,9 @@ var _item_pendiente_borrar: Button = null
 var _persistir := true
 var _limpieza_resultado: Dictionary = {}
 var _cola_store: RefCounted = null
+var _aviso_url := ""
+var _dialogo_version := ""
+var _dialogo_con_aviso := false
 
 
 func _ready() -> void:
@@ -107,6 +111,9 @@ func _ready() -> void:
 	_revisar_cola_pendiente()
 	_rearmar_auto_escaneo()
 	_iniciar_auto_escaneo()
+	%DialogoActualizacion.confirmed.connect(_on_actualizacion_ver)
+	%DialogoActualizacion.canceled.connect(_on_actualizacion_cerrar)
+	_lanzar_comprobacion_auto()
 
 
 func _configurar_menus() -> void:
@@ -126,6 +133,7 @@ func _configurar_menus() -> void:
 	menu_util.add_item("Preferencias…", 1)
 	menu_util.add_item("Limpiar capturas huérfanas…", 2)
 	menu_util.add_item("Exportar diagnóstico…", 3)
+	menu_util.add_item("Comprobar actualizaciones…", 4)
 	menu_util.id_pressed.connect(_on_utilidades_id)
 
 
@@ -246,6 +254,8 @@ func _on_utilidades_id(id: int) -> void:
 		_solicitar_limpieza_capturas()
 	elif id == 3:
 		%DialogoDiagnostico.popup_centered()
+	elif id == 4:
+		_comprobar_actualizaciones(true)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -889,6 +899,92 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 
 func _es_headless() -> bool:
 	return DisplayServer.get_name() == "headless"
+
+
+func _lanzar_comprobacion_auto() -> void:
+	if _es_headless():
+		return
+	await get_tree().create_timer(1.0).timeout
+	_comprobar_actualizaciones(false)
+
+
+func _comprobar_actualizaciones(manual: bool) -> void:
+	if _es_headless():
+		if manual:
+			_mostrar_aviso("error", "", "")
+		return
+	var actualizador: Node = ActualizadorScript.new()
+	add_child(actualizador)
+	actualizador.terminado.connect(func(r: Dictionary) -> void: _on_actualizacion_terminado(r, manual))
+	actualizador.comprobar()
+
+
+func _on_actualizacion_terminado(resultado: Dictionary, manual: bool) -> void:
+	var nueva: bool = resultado.get("nueva") == true
+	var version := str(resultado.get("version", ""))
+	var url := str(resultado.get("url", ""))
+	if nueva and version != str(_config_store.cargar().get("ultima_version_vista", "")):
+		_mostrar_aviso("nueva", version, url)
+	elif manual and not nueva and str(resultado.get("error", "")).is_empty():
+		_mostrar_aviso("al_dia", str(ProjectSettings.get_setting("application/config/version", "0.0.1")), "")
+	elif manual:
+		_mostrar_aviso("error", "", "")
+
+
+func _mostrar_aviso(modo: String, version: String, url: String) -> void:
+	var dialogo: ConfirmationDialog = %DialogoActualizacion
+	if modo == "nueva":
+		dialogo.title = "Nueva versión disponible"
+		dialogo.dialog_text = "Hay una nueva versión: %s" % version
+		dialogo.ok_button_text = "Ver release"
+		dialogo.get_cancel_button().visible = true
+		_aviso_url = url
+		_dialogo_version = version
+		_dialogo_con_aviso = true
+	elif modo == "al_dia":
+		dialogo.title = "Comprobar actualizaciones"
+		dialogo.dialog_text = "Estás al día (v%s)" % version
+		dialogo.ok_button_text = "Cerrar"
+		dialogo.get_cancel_button().visible = false
+		_dialogo_con_aviso = false
+	else:
+		dialogo.title = "Comprobar actualizaciones"
+		dialogo.dialog_text = "No se pudo comprobar actualizaciones."
+		dialogo.ok_button_text = "Cerrar"
+		dialogo.get_cancel_button().visible = false
+		_dialogo_con_aviso = false
+	dialogo.popup_centered()
+
+
+func _on_actualizacion_ver() -> void:
+	if not _aviso_url.is_empty():
+		OS.shell_open(_aviso_url)
+	_persistir_version_vista()
+	_limpiar_aviso()
+
+
+func _on_actualizacion_cerrar() -> void:
+	if _dialogo_con_aviso:
+		_persistir_version_vista()
+	_limpiar_aviso()
+
+
+func _persistir_version_vista() -> void:
+	var cfg: Dictionary = _config_store.cargar()
+	_config_store.guardar(
+		int(cfg.get("paralelismo", 3)),
+		float(cfg.get("timeout", 10.0)),
+		bool(cfg.get("auto_abrir", true)),
+		int(cfg.get("intervalo", 0)),
+		str(cfg.get("tema", "oscuro")),
+		_dialogo_version,
+	)
+
+
+func _limpiar_aviso() -> void:
+	_aviso_url = ""
+	_dialogo_version = ""
+	_dialogo_con_aviso = false
 
 
 func _rearmar_auto_escaneo() -> void:

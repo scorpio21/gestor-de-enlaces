@@ -21,6 +21,9 @@ func _initialize() -> void:
 	_check(tema_default_sin_fichero(), "sin fichero devuelve tema oscuro")
 	_check(tema_persistido(), "guardar() persiste el tema claro")
 	_check(tema_invalido_normaliza(), "tema no válido se normaliza a oscuro")
+	_check(ultima_default_sin_fichero(), "sin fichero ultima_version_vista vacía")
+	_check(ultima_persistida(), "guardar persiste ultima_version_vista")
+	_check(ultima_no_string_normaliza(), "ultima_version_vista no-string cae a vacía")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -107,6 +110,22 @@ func tema_invalido_normaliza() -> bool:
 	var store := ConfigStore.new(BASE)
 	store.guardar(4, 12.0, true, 30, "chocolate")
 	return store.cargar().get("tema", "") == "oscuro"
+
+
+func ultima_default_sin_fichero() -> bool:
+	return ConfigStore.new(BASE).cargar().get("ultima_version_vista", "#") == ""
+
+
+func ultima_persistida() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(4, 12.0, true, 30, "oscuro", "2.0"):
+		return false
+	return store.cargar().get("ultima_version_vista", "#") == "2.0"
+
+
+func ultima_no_string_normaliza() -> bool:
+	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"ultima_version_vista": 42}')
+	return ConfigStore.new(BASE).cargar().get("ultima_version_vista", "#") == ""
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

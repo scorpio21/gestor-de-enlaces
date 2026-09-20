@@ -158,6 +158,12 @@ ok_button_text = "Reanudar"
 cancel_button_text = "Descartar"
 dialog_text = "Hay una comprobación pendiente. ¿Reanudar el escaneo?"
 
+[node name="DialogoActualizacion" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Comprobar actualizaciones"
+ok_button_text = "Cerrar"
+cancel_button_text = "Cerrar"
+
 [node name="VentanaPreferencias" parent="." instance=ExtResource("3_preferencias")]
 unique_name_in_owner = true
 
