@@ -38,3 +38,4 @@ Regenera `Assets/icon/*` (svg/png/ico/icns) desde el SVG incrustado en el script
 - Sin comentarios; tabs; UI en español; preload-const en lugar de class_name (nuevo código).
 - `main.gd` es el punto de integración; los stores viven en `scripts/` con test propio.
 - Los tests usan bases `user://__test_*__` y se limpian.
+- Al terminar un issue o varios, cerrar el/los issue(s) en GitHub al final del trabajo (`gh issue close N --repo scorpio21/gestor-de-enlaces --comment "resumen + commits"`).
