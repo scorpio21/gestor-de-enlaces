@@ -1,6 +1,6 @@
 # Ordenación por columnas (#17) — Plan de implementación
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Permitir ordenar la lista por nombre, estado, fecha o presencia de imagen desde 4 cabeceras clicables, sustituyendo el selector `OrdenFecha`, con persistencia del criterio en `config_store`.
 
@@ -28,7 +28,7 @@
 **Interfaces:**
 - Produces: `cargar()` devuelve `orden_columna` (String validado) y `orden_direccion` (int, -1 o 1). `guardar(paralelismo, timeout, auto_abrir, intervalo, tema, ultima_version_vista, orden_columna, orden_direccion)` acepta los dos nuevos args opcionales al final (no rompe callers existentes).
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 En `tests/test_config_store.gd` el array de checks de `_initialize()` (tras la línea 26 `_check(ultima_no_string_normaliza(), ...)`), añadir:
 
@@ -67,7 +67,7 @@ func orden_direccion_invalida_normaliza() -> bool:
 	return store.cargar().get("orden_direccion", 0) == 1
 ```
 
-- [ ] **Step 2: Ejecutar para verificar que fallan**
+- [x] **Step 2: Ejecutar para verificar que fallan**
 
 ```bash
 Get-Process -Name "Godot*" -ErrorAction SilentlyContinue | Stop-Process -Force; & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_config_store.gd --quit-after 700
@@ -75,7 +75,7 @@ Get-Process -Name "Godot*" -ErrorAction SilentlyContinue | Stop-Process -Force; 
 
 Expected: FAIL con `TESTS FALLIDOS: 4` (los checks leen claves inexistentes → valores por defecto `"#"`/`0`).
 
-- [ ] **Step 3: Implementación mínima en config_store.gd**
+- [x] **Step 3: Implementación mínima en config_store.gd**
 
 Añadir constantes tras `ULTIMA_VERSION_DEFAULT` (línea 14):
 
@@ -126,11 +126,11 @@ func _orden_direccion_ok(v: Variant) -> int:
 	return -1 if int(v) < 0 else 1
 ```
 
-- [ ] **Step 4: Ejecutar para verificar que pasan**
+- [x] **Step 4: Ejecutar para verificar que pasan**
 
 Mismo comando que Step 2. Expected: `TESTS OK`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/config_store.gd tests/test_config_store.gd
@@ -148,7 +148,7 @@ git commit -m "feat(config): #17 persistir criterio de ordenacion por columnas"
 **Interfaces:**
 - Produces: las filas (`Button`) expondrán `nombre: String` y `img: String` tras `setup()`. Los comparadores de `main.gd` (Task 4) los usan.
 
-- [ ] **Step 1: Escribir el test que falla**
+- [x] **Step 1: Escribir el test que falla**
 
 En `tests/test_list_item.gd`, en el bloque de `con_imagen`/`sin_imagen` (líneas 29-34), cambiar para usar la ruta del png temporal y añadir el check tras la línea 43:
 
@@ -171,7 +171,7 @@ En `tests/test_list_item.gd`, en el bloque de `con_imagen`/`sin_imagen` (líneas
 	_check(_miniatura_es(con_imagen, false), "miniatura muestra la imagen elegida")
 ```
 
-- [ ] **Step 2: Ejecutar para verificar que falla**
+- [x] **Step 2: Ejecutar para verificar que falla**
 
 ```bash
 Get-Process -Name "Godot*" -ErrorAction SilentlyContinue | Stop-Process -Force; & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_list_item.gd --quit-after 700
@@ -179,7 +179,7 @@ Get-Process -Name "Godot*" -ErrorAction SilentlyContinue | Stop-Process -Force; 
 
 Expected: FAIL con `TESTS FALLIDOS` (y `Invalid access to property 'nombre'/'img'`).
 
-- [ ] **Step 3: Implementación mínima en list_item.gd**
+- [x] **Step 3: Implementación mínima en list_item.gd**
 
 Añadir, junto a `var url: String = ""` (línea 21):
 
@@ -195,11 +195,11 @@ En `setup()` (línea 45), al inicio del cuerpo setear antes de sobreescribir el 
 	self.img = imagen
 ```
 
-- [ ] **Step 4: Ejecutar para verificar que pasa**
+- [x] **Step 4: Ejecutar para verificar que pasa**
 
 Mismo comando que Step 2. Expected: `TESTS OK`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/list_item.gd tests/test_list_item.gd
@@ -218,7 +218,7 @@ git commit -m "feat(list_item): #17 exponer nombre e imagen para comparar"
 - Consumes: nodos únicos `%CabNombre`, `%CabEstado`, `%CabFecha`, `%CabImagen` (Task 4 los conecta).
 - Nota: `OrdenFecha` se retira en la Task 4 (mismo commit que la lógica), para no romper `main.gd` a mitad.
 
-- [ ] **Step 1: Escribir el test que falla**
+- [x] **Step 1: Escribir el test que falla**
 
 En `tests/test_main_barra.gd`, al inicio del bloque de la línea 450 (`# Disponibilidad: selector de orden por fecha (#9)`), añadir un check de disponibilidad de cabeceras (antes de la línea 452 que aún valida OrdenFecha):
 
@@ -227,7 +227,7 @@ En `tests/test_main_barra.gd`, al inicio del bloque de la línea 450 (`# Disponi
 		and main.has_node("%CabFecha") and main.has_node("%CabImagen"), "la barra muestra las 4 cabeceras de columna")
 ```
 
-- [ ] **Step 2: Ejecutar para verificar que falla**
+- [x] **Step 2: Ejecutar para verificar que falla**
 
 ```bash
 & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_main_barra.gd --quit-after 700
@@ -235,7 +235,7 @@ En `tests/test_main_barra.gd`, al inicio del bloque de la línea 450 (`# Disponi
 
 Expected: FAIL con "la barra muestra las 4 cabeceras de columna".
 
-- [ ] **Step 3: Añadir la fila de cabeceras en scenes/Main.tscn**
+- [x] **Step 3: Añadir la fila de cabeceras en scenes/Main.tscn**
 
 Insertar entre el fin de `BarraAcciones` (tras `BarraProgreso`, línea ~120) y el nodo `ScrollContainer` (línea 122), como hijo de `ColumnaApp/Margen/Columna` (mismo nivel que `BarraAcciones`):
 
@@ -270,11 +270,11 @@ toggle_mode = true
 text = "Imagen"
 ```
 
-- [ ] **Step 4: Ejecutar para verificar que pasa**
+- [x] **Step 4: Ejecutar para verificar que pasa**
 
 Mismo comando que Step 2. Expected: `TESTS OK`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scenes/Main.tscn tests/test_main_barra.gd
@@ -294,7 +294,7 @@ git commit -m "feat(ui): #17 cabeceras de ordenacion por columnas en la escena"
 - Consumes: `config_store.guardar(...)` con 8 args (Task 1), filas con `nombre`/`img` (Task 2), cabeceras `%Cab*` (Task 3).
 - Produces: `_orden_columna: String`, `_orden_direccion: int`, `_pulsar_cabecera(columna: String)`, `_pintar_cabeceras()`, `_comparar_orden(a, b) -> bool`, `_persistir_orden() -> bool`, `_peso_estado(v) -> int`, `_direccion_por_defecto(columna) -> int`, `CONFIG_BASE: String` (inyectable, default `"user://"`).
 
-- [ ] **Step 1: Reescribir el bloque de tests del selector (RED)**
+- [x] **Step 1: Reescribir el bloque de tests del selector (RED)**
 
 En `tests/test_main_barra.gd`, sustituir el bloque completo de la disponibilidad de OrdenFecha y el bloque de ordenación por fecha (líneas 452-490) por:
 
@@ -336,7 +336,7 @@ En `tests/test_main_barra.gd`, sustituir el bloque completo de la disponibilidad
 	_check(_urls_visibles(main) == ["https://a.test", "https://b.test", "https://c.test"], "sin columna conserva el orden de inserción")
 ```
 
-- [ ] **Step 2: Añadir los tests de los demás criterios (RED)**
+- [x] **Step 2: Añadir los tests de los demás criterios (RED)**
 
 Tras el bloque del Step 1 (y antes del comentario `# Disponibilidad: historial desde la fila (#10)`), insertar:
 
@@ -395,7 +395,7 @@ Tras el bloque del Step 1 (y antes del comentario `# Disponibilidad: historial d
 	_check(main_script._orden_columna == "", "3 clics en Estado vuelven a sin ordenar")
 ```
 
-- [ ] **Step 3: Añadir tests de guard, persistencia, restauración y rollback (RED)**
+- [x] **Step 3: Añadir tests de guard, persistencia, restauración y rollback (RED)**
 
 Reemplazar el bloque de guard existente (líneas 679-685, `main_script.orden_fecha.select(1) ...`) — que ya no compila al eliminar la var `orden_fecha` — por:
 
@@ -480,7 +480,7 @@ En `_arrancar()` (línea 29), hacer inyectable la base de config antes de `add_c
 	root.add_child(main)
 ```
 
-- [ ] **Step 4: Ejecutar para verificar que todo lo nuevo falla**
+- [x] **Step 4: Ejecutar para verificar que todo lo nuevo falla**
 
 ```bash
 & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_main_barra.gd --quit-after 700
@@ -488,7 +488,7 @@ En `_arrancar()` (línea 29), hacer inyectable la base de config antes de `add_c
 
 Expected: fallos de parseo (`orden_fecha` no existe, `pressed`/`_pulsar_cabecera` no existen, `CONFIG_BASE` no existe, etc.).
 
-- [ ] **Step 5: Implementar main.gd**
+- [x] **Step 5: Implementar main.gd**
 
 **5a. Eliminar la var del selector.** Quitar la línea 32 `@onready var orden_fecha: OptionButton = %OrdenFecha` y sustituirla por (junto a los otros `@onready`):
 
@@ -648,11 +648,11 @@ func _comparar_orden(a: Button, b: Button) -> bool:
 	)
 ```
 
-- [ ] **Step 6: Retirar OrdenFecha de la escena**
+- [x] **Step 6: Retirar OrdenFecha de la escena**
 
 En `scenes/Main.tscn`, eliminar el bloque completo del nodo `OrdenFecha` (líneas 97-107, desde `[node name="OrdenFecha"...` hasta la línea `popup/item_2/id = 2`).
 
-- [ ] **Step 7: Ejecutar para verificar que pasa**
+- [x] **Step 7: Ejecutar para verificar que pasa**
 
 ```bash
 Get-Process -Name "Godot*" -ErrorAction SilentlyContinue | Stop-Process -Force; & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_main_barra.gd --quit-after 700
@@ -660,7 +660,7 @@ Get-Process -Name "Godot*" -ErrorAction SilentlyContinue | Stop-Process -Force; 
 
 Expected: `TESTS OK`. Si algún check falla, depurar: (a) `progreso` es un `@onready` accesible en `_pulsar_cabecera`; (b) `_urls_visibles` recibe el nodo correcto; (c) `ConfigStoreScript` está preloadado en el test; (d) la base `user://__test_main_barra__` de config no interfiere porque `_cerrar()` borra la carpeta completa.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add scripts/main.gd scenes/Main.tscn tests/test_main_barra.gd
@@ -674,7 +674,7 @@ git commit -m "feat(ui): #17 ordenacion por columnas con persistencia"
 **Files:**
 - Test: batería completa de `tests/test_*.gd`
 
-- [ ] **Step 1: Ejecutar la batería completa (21 suites)**
+- [x] **Step 1: Ejecutar la batería completa (21 suites)**
 
 ```bash
 Get-Process -Name "Godot*" -ErrorAction SilentlyContinue | Stop-Process -Force; foreach ($t in (Get-ChildItem tests/test_*.gd | Select-Object -ExpandProperty BaseName)) { "== $t =="; & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script "res://tests/$t.gd" --quit-after 700 }
@@ -682,7 +682,7 @@ Get-Process -Name "Godot*" -ErrorAction SilentlyContinue | Stop-Process -Force; 
 
 Expected: `TESTS OK` en las 21 suites (`test_main_barra`, `test_config_store`, `test_list_item` incluidos).
 
-- [ ] **Step 2: Boot headless sin errores**
+- [x] **Step 2: Boot headless sin errores**
 
 ```bash
 Get-Process -Name "Godot*" -ErrorAction SilentlyContinue | Stop-Process -Force; & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --quit-after 500
@@ -690,9 +690,9 @@ Get-Process -Name "Godot*" -ErrorAction SilentlyContinue | Stop-Process -Force; 
 
 Expected: arranque limpio sin errores de parseo ni nodos faltantes.
 
-- [ ] **Step 3: Marcar los checkboxes de este plan**
+- [x] **Step 3: Marcar los checkboxes de este plan**
 
-Sustituir todos los `- [ ]` de este archivo por `- [x]` y commitear:
+Sustituir todos los `- [x]` de este archivo por `- [x]` y commitear:
 
 ```bash
 git add docs/superpowers/plans/2026-09-23-ordenacion-columnas.md
