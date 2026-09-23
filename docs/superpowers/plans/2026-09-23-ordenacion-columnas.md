@@ -706,3 +706,10 @@ git commit -m "docs(plan): #17 ordenacion por columnas completado (checkboxes)"
 - **Spec → Task:** cabeceras (`Task 3`+`Task 4`), criterios nombre/estado/fecha/imagen (`Task 4` comparador + tests), dirección por defecto por columna (`_direccion_por_defecto`), toggle en la misma cabecera (`_pulsar_cabecera`), desactivación y vuelta al orden manual (3er clic, test), guard de Subir/Bajar con columna activa (Step 3), reemplazo de OrdenFecha (5a/6), persistencia + restauración (5d/5i + tests), rollback de guardar fallido (5e + test). Cubierto.
 - **Placeholders:** ninguna — todos los pasos tienen código literal.
 - **Consistencia de tipos:** `_comparar_orden(a, b)` con 2 args en `_aplicar_filtro` y test; `guardar(...)` 8 args con los 2 últimos opcionales; `CONFIG_BASE` usado en `_ready()` (5d) y en el test (Step 3 de Task 4). Nombres de métodos/props idénticos en todas las tareas.
+
+## Correcciones durante la ejecución
+
+- **5f, columna "estado" (bug de lógica):** el literal del plan `return ea > eb if dir == 1 else ea < eb` contradecía sus propios tests (default de estado = -1, caídos primero). Implementado `ea > eb if dir == -1 else ea < eb`.
+- **5f, inferencia de tipo:** `var na := a.nombre if ... else a.url` no compila (GDScript no infiere el tipo de un ternario sobre propiedad dinámica). Tipado explícito `var na: String`.
+- **Escena:** `scenes/Main.tscn` se stageó con técnica selectiva (`git archive` + `hash-object`) para no incluir el re-serializado ajeno del editor; `git add` literal habría mezclado trabajo sin commitear.
+- **Task 2:** se aplicó el texto del plan, no el bloque literal (evita duplicar el check existente de miniatura).
