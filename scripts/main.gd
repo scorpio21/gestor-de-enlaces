@@ -641,6 +641,9 @@ func _mostrar_lista(entradas: Array) -> void:
 		item.copiar_pedido.connect(_on_copiar_pedido.bind(item))
 		item.editar_pedido.connect(_on_editar_pedido.bind(item))
 		item.historial_pedido.connect(_on_historial_pedido.bind(item))
+		item.subir_pedido.connect(_on_mover_pedido.bind(item, -1))
+		item.bajar_pedido.connect(_on_mover_pedido.bind(item, 1))
+		item.menu_solicitado.connect(_on_menu_solicitado.bind(item))
 		lista.add_child(item)
 
 	_aplicar_filtro()
@@ -1030,3 +1033,53 @@ func _on_historial_pedido(item: Button) -> void:
 		return
 	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
 	dialogo_historial.abrir(_estado_store.historial_de(clave_estado))
+
+
+func _filas_visibles() -> Array:
+	var visibles: Array = []
+	for hijo in lista.get_children():
+		if hijo.visible:
+			visibles.append(hijo)
+	return visibles
+
+
+func _indice_entrada(url: String) -> int:
+	for i in _entradas.size():
+		var entrada: Dictionary = _entradas[i]
+		if GestorCatalogoScript.clave_unica(str(entrada.get("url", ""))) == GestorCatalogoScript.clave_unica(url):
+			return i
+	return -1
+
+
+func _on_menu_solicitado(item: Button) -> void:
+	if orden_fecha.get_selected_id() > 0:
+		item.fijar_estado_reorden(false, false)
+		return
+	var visibles := _filas_visibles()
+	var idx := visibles.find(item)
+	item.fijar_estado_reorden(idx > 0, idx >= 0 and idx < visibles.size() - 1)
+
+
+func _on_mover_pedido(item: Button, delta: int) -> void:
+	if orden_fecha.get_selected_id() > 0:
+		return
+	var visibles := _filas_visibles()
+	var idx := visibles.find(item)
+	if idx < 0:
+		return
+	var vecino_idx := idx + delta
+	if vecino_idx < 0 or vecino_idx >= visibles.size():
+		return
+	var i := _indice_entrada(item.url)
+	var j := _indice_entrada(visibles[vecino_idx].url)
+	if i < 0 or j < 0:
+		return
+	var tmp = _entradas[i]
+	_entradas[i] = _entradas[j]
+	_entradas[j] = tmp
+	if not _guardar_datos():
+		_entradas[j] = _entradas[i]
+		_entradas[i] = tmp
+		progreso.text = "No se pudo guardar el orden."
+		return
+	_refrescar_vista()

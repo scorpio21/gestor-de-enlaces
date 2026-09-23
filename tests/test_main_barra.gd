@@ -279,6 +279,8 @@ func _arrancar() -> void:
 	var item_c: Button = LIST_ITEM_SCENE.instantiate()
 	item_c.url = "https://c.test"
 	main_script._cola.append(item_c)
+	var item_b: Button = LIST_ITEM_SCENE.instantiate()
+	item_b.url = "https://b.test"
 	main_script._persistir_cola()
 	var cola_guardada: Array = main_script._cola_store.cargar().get("urls", [])
 	_check(cola_guardada.size() == 2 and "https://a.test" in cola_guardada and "https://c.test" in cola_guardada, "persistir cola guarda las urls de los items")
@@ -580,6 +582,47 @@ func _arrancar() -> void:
 	main.get_node("%DialogoActualizacion").hide()
 	main_script._config_store.guardar(3, 10.0, false, 0, "oscuro", "")
 
+	# Task 2: helpers de reorden y estados del menú contextual
+	main_script._persistir = false
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
+		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
+		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""}
+	]
+	main_script._refrescar_vista()
+	await process_frame
+
+	var visibles_t2: Array = main_script._filas_visibles()
+	_check(visibles_t2.size() == 3, "_filas_visibles devuelve las 3 filas sin filtros")
+
+	var ind_b_t2: int = main_script._indice_entrada("https://b.test")
+	_check(ind_b_t2 == 1, "_indice_entrada localiza B en _entradas")
+	var ind_inex_t2: int = main_script._indice_entrada("https://no-existe.test")
+	_check(ind_inex_t2 == -1, "_indice_entrada devuelve -1 para url ausente")
+
+	var fila_a: Button = visibles_t2[0]
+	var fila_b: Button = visibles_t2[1]
+	var fila_c: Button = visibles_t2[2]
+	var menu_ctx_a: PopupMenu = fila_a.get_node("%MenuContexto")
+	var menu_ctx_b: PopupMenu = fila_b.get_node("%MenuContexto")
+	var menu_ctx_c: PopupMenu = fila_c.get_node("%MenuContexto")
+
+	# en la primera fila Subir deshabilitada y Bajar habilitada
+	main_script._on_menu_solicitado(fila_a)
+	_check(menu_ctx_a.is_item_disabled(menu_ctx_a.get_item_index(5)), "primera fila: Subir deshabilitada")
+	_check(not menu_ctx_a.is_item_disabled(menu_ctx_a.get_item_index(6)), "primera fila: Bajar habilitada")
+
+	# fila central: ambas habilitadas
+	main_script._on_menu_solicitado(fila_b)
+	_check(not menu_ctx_b.is_item_disabled(menu_ctx_b.get_item_index(5)), "fila central: Subir habilitada")
+	_check(not menu_ctx_b.is_item_disabled(menu_ctx_b.get_item_index(6)), "fila central: Bajar habilitada")
+
+	# última fila: Subir habilitada y Bajar deshabilitada
+	main_script._on_menu_solicitado(fila_c)
+	_check(not menu_ctx_c.is_item_disabled(menu_ctx_c.get_item_index(5)), "última fila: Subir habilitada")
+	_check(menu_ctx_c.is_item_disabled(menu_ctx_c.get_item_index(6)), "última fila: Bajar deshabilitada")
+
+	main_script._persistir = false
 	_cerrar()
 
 
