@@ -1,6 +1,6 @@
 # Orden Manual de la Lista (#6) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Permitir reordenar la lista de enlaces con "Subir"/"Bajar" desde el menú contextual de cada fila y persistir ese orden en disco.
 
@@ -20,7 +20,7 @@
 - Todo test debe imprimir `TESTS OK` y llamar `quit(0)` al pasar; si no, `TESTS FALLIDOS: N` + `quit(1)`.
 
 ---
-- [ ] **Task 1: `list_item.gd` — menú de 7 opciones, señales y estados**
+- [x] **Task 1: `list_item.gd` — menú de 7 opciones, señales y estados**
 
 **Files:**
 - Modify: `scripts/list_item.gd`
@@ -33,7 +33,7 @@
   - `func fijar_estado_reorden(arriba: bool, abajo: bool) -> void`
   - menú con ids: Editar=0, Volver a comprobar=1, Copiar URL=2, Historial=3, Eliminar=4, **Subir=5, Bajar=6**
 
-- [ ] **Step 1: Write the failing test in `tests/test_list_item.gd`**
+- [x] **Step 1: Write the failing test in `tests/test_list_item.gd`**
 
 En `_arrancar()`, ampliar `_menu_completo()` para comprobar 7 opciones y que Subir/Bajar existen por su id:
 
@@ -75,12 +75,12 @@ Añadir, después del bloque de emisiones del menú existente (tras el `id_press
 	_check(menu_reorden.is_item_disabled(menu_reorden.get_item_index(6)), "fijar_estado_reorden(false,false) deshabilita Bajar")
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_list_item.gd`
 Expected: FAIL — `_menu_completo` devuelve false (solo hay 5 opciones) y `subir_pedido`/`bajar_pedido`/`fijar_estado_reorden` no existen.
 
-- [ ] **Step 3: Write minimal implementation in `scripts/list_item.gd`**
+- [x] **Step 3: Write minimal implementation in `scripts/list_item.gd`**
 
 Añadir las señales (junto a las existentes, líneas 3-8):
 
@@ -135,12 +135,12 @@ En `_on_menu` (líneas 145-156), añadir los casos:
 			bajar_pedido.emit()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_list_item.gd`
 Expected: `TESTS OK`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/list_item.gd tests/test_list_item.gd
@@ -148,7 +148,7 @@ git commit -m "feat(reorden): menu contextual con Subir/Bajar, senales y estados
 ```
 
 ---
-- [ ] **Task 2: `main.gd` — conexiones de señales y helpers de visibilidad**
+- [x] **Task 2: `main.gd` — conexiones de señales y helpers de visibilidad**
 
 **Files:**
 - Modify: `scripts/main.gd`
@@ -162,7 +162,7 @@ git commit -m "feat(reorden): menu contextual con Subir/Bajar, senales y estados
   - `_on_menu_solicitado(item: Button)`, `_on_mover_pedido(item: Button, delta: int)`
   - las conexiones en `_mostrar_lista()`.
 
-- [ ] **Step 1: Write the failing test in `tests/test_main_barra.gd`**
+- [x] **Step 1: Write the failing test in `tests/test_main_barra.gd`**
 
 Añadir al final de `_arrancar()` (tras los checks existentes, antes del cierre del método):
 
@@ -207,12 +207,12 @@ Añadir al final de `_arrancar()` (tras los checks existentes, antes del cierre 
 
 Nota: `_on_menu_solicitado(item)` se comprueba directamente, sin abrir el menú real (el popup real no es viable en headless). La llamada directa es válida porque el estado se calcula y se aplica al `PopupMenu`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_main_barra.gd`
 Expected: FAIL — `_filas_visibles`, `_indice_entrada` y `_on_menu_solicitado` no existen.
 
-- [ ] **Step 3: Write minimal implementation in `scripts/main.gd`**
+- [x] **Step 3: Write minimal implementation in `scripts/main.gd`**
 
 En `_mostrar_lista()` (tras las conexiones de señales, líneas 639-643), conectar las tres nuevas:
 
@@ -275,12 +275,12 @@ func _on_mover_pedido(item: Button, delta: int) -> void:
 	_refrescar_vista()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_main_barra.gd`
 Expected: `TESTS OK`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/main.gd tests/test_main_barra.gd
@@ -288,7 +288,7 @@ git commit -m "feat(reorden): main conecta Subir/Bajar, estados del menu y visib
 ```
 
 ---
-- [ ] **Task 3: reorden real, filtros y persistencia**
+- [x] **Task 3: reorden real, filtros y persistencia**
 
 **Files:**
 - Modify: `scripts/main.gd`, `tests/test_main_barra.gd`
@@ -296,7 +296,7 @@ git commit -m "feat(reorden): main conecta Subir/Bajar, estados del menu y visib
 **Interfaces:**
 - Consumes: de Task 2 — `_filas_visibles`, `_indice_entrada`, `_on_mover_pedido`, `_on_menu_solicitado`, conexiones en `_mostrar_lista`.
 
-- [ ] **Step 1: Write the failing test in `tests/test_main_barra.gd`**
+- [x] **Step 1: Write the failing test in `tests/test_main_barra.gd`**
 
 **Precondición de persistencia:** para que el test no toque los ficheros reales del usuario (`user://enlaces.json`) ni el trackeado `res://data/data.json`, esta tarea cambia `DATA_RES` y `DATA_USER` de `const` a `var` en `main.gd` (líneas 4-5) y el test redirige ambas a una base temporal antes de instanciar Main. Así `_cargar_datos()` del `_ready()` arranca con un catálogo vacío (mejor aislamiento, y los checks existentes ya no dependen de los datos reales).
 
@@ -386,14 +386,14 @@ func _cerrar() -> void:
 
 **Cambio de producción necesario (Task 3):** en `scripts/main.gd` líneas 4-5, `const DATA_RES := "res://data/data.json"` y `const DATA_USER := "user://enlaces.json"` pasan a `var DATA_RES := "res://data/data.json"` y `var DATA_USER := "user://enlaces.json"`. Solo se usan dentro de `_cargar_datos()` y `_guardar_datos()`, así que el test puede reasignarlas tras `instantiate()`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_main_barra.gd`
 Expected: FAIL — `_on_mover_pedido` no conectado o el orden no cambia.
 
 Nota: si `_on_mover_pedido` ya existe (Task 2), comprobar que la conexión `subir_pedido.connect(_on_mover_pedido.bind(item, -1))` está puesta; en el test se llama a `_on_mover_pedido` directamente sobre el instante, así que la comprobación es de comportamiento del swap.
 
-- [ ] **Step 3: Ensure implementation from Task 2 covers this**
+- [x] **Step 3: Ensure implementation from Task 2 covers this**
 
 La lógica de swap ya está en `_on_mover_pedido` (Task 2); esta tarea añade cobertura de filtros y persistencia. Además del bloque de Task 2, hacer **un único cambio de producción**:
 
@@ -408,7 +408,7 @@ Verificar que la suite pasa.
 
 Si algo falla por orden de filtros: recordar que `_aplicar_filtro()` (línea 848) usa `filtro.get_selected_id()`; el filtro "Caídos / no existen" es id **2** (no 3). En el test, para ocultar una fila VÁLIDA se usa id 2.
 
-- [ ] **Step 4: Run the full battery of tests**
+- [x] **Step 4: Run the full battery of tests**
 
 Run:
 ```bash
@@ -416,7 +416,7 @@ $bin="K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe"; Get-ChildItem "K:\
 ```
 Expected: todas las suites `OK`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/main.gd tests/test_main_barra.gd
@@ -424,24 +424,24 @@ git commit -m "test(reorden): reorden con filtros y persistencia en user data"
 ```
 
 ---
-- [ ] **Task 4: verificación manual y limpieza**
+- [x] **Task 4: verificación manual y limpieza**
 
 **Files:**
 - Modify: ninguno (verificación).
 - Test: `tests/test_list_item.gd`, `tests/test_main_barra.gd`.
 
-- [ ] **Step 1: Run both suites once more**
+- [x] **Step 1: Run both suites once more**
 
 Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_list_item.gd`
 Y: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_main_barra.gd`
 Expected: ambas `TESTS OK`.
 
-- [ ] **Step 2: Boot check headless**
+- [x] **Step 2: Boot check headless**
 
 Run: `& "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --quit-after 3 2>&1`
 Expected: sin errores (sin output de `ERROR`/`SCRIPT ERROR`).
 
-- [ ] **Step 3: Commit leftover docs if any**
+- [x] **Step 3: Commit leftover docs if any**
 
 Revisar `git status --short`. Si hay cambios sueltos de esta rama (por ejemplo la spec del tema claro `docs/superpowers/specs/2026-09-19-tema-claro-oscuro-design.md` u otros sin relación), **no** commitearlos aquí.
 
@@ -449,6 +449,6 @@ Revisar `git status --short`. Si hay cambios sueltos de esta rama (por ejemplo l
 git status --short
 ```
 
-- [ ] **Step 4: Close the loop**
+- [x] **Step 4: Close the loop**
 
 Confirmar con el usuario que abra el editor y pruebe en vivo: abrir menú contextual → Subir/Bajar con los estados correctos en primera/última fila, con filtros y con OrdenFecha activo; reiniciar la app para ver el orden persistido.
