@@ -24,6 +24,10 @@ func _initialize() -> void:
 	_check(ultima_default_sin_fichero(), "sin fichero ultima_version_vista vacía")
 	_check(ultima_persistida(), "guardar persiste ultima_version_vista")
 	_check(ultima_no_string_normaliza(), "ultima_version_vista no-string cae a vacía")
+	_check(orden_default_sin_fichero(), "sin fichero orden_columna vacía y dirección 1")
+	_check(orden_persistido(), "guardar() persiste columna y dirección")
+	_check(orden_invalida_normaliza(), "columna no válida se normaliza a vacía")
+	_check(orden_direccion_invalida_normaliza(), "dirección no válida se normaliza a 1")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -126,6 +130,31 @@ func ultima_persistida() -> bool:
 func ultima_no_string_normaliza() -> bool:
 	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"ultima_version_vista": 42}')
 	return ConfigStore.new(BASE).cargar().get("ultima_version_vista", "#") == ""
+
+
+func orden_default_sin_fichero() -> bool:
+	var c := ConfigStore.new(BASE).cargar()
+	return c.get("orden_columna", "#") == "" and c.get("orden_direccion", 0) == 1
+
+
+func orden_persistido() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(4, 12.0, true, 30, "oscuro", "", "fecha", -1):
+		return false
+	var c := store.cargar()
+	return c.get("orden_columna", "#") == "fecha" and c.get("orden_direccion", 0) == -1
+
+
+func orden_invalida_normaliza() -> bool:
+	var store := ConfigStore.new(BASE)
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "tamanyo", 1)
+	return store.cargar().get("orden_columna", "#") == ""
+
+
+func orden_direccion_invalida_normaliza() -> bool:
+	var store := ConfigStore.new(BASE)
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "fecha", 42)
+	return store.cargar().get("orden_direccion", 0) == 1
 
 
 func _check(condicion: bool, etiqueta: String) -> void:
