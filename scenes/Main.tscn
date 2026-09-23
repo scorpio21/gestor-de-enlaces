@@ -122,6 +122,35 @@ value = 0
 visible = false
 show_percentage = false
 
+[node name="FilaCabeceras" type="HBoxContainer" parent="ColumnaApp/Margen/Columna"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CabNombre" type="Button" parent="ColumnaApp/Margen/Columna/FilaCabeceras"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Nombre"
+
+[node name="CabEstado" type="Button" parent="ColumnaApp/Margen/Columna/FilaCabeceras"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+text = "Estado"
+
+[node name="CabFecha" type="Button" parent="ColumnaApp/Margen/Columna/FilaCabeceras"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+text = "Fecha"
+
+[node name="CabImagen" type="Button" parent="ColumnaApp/Margen/Columna/FilaCabeceras"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+text = "Imagen"
+
 [node name="ScrollContainer" type="ScrollContainer" parent="ColumnaApp/Margen/Columna"]
 layout_mode = 2
 size_flags_vertical = 3

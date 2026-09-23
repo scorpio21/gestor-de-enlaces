@@ -448,6 +448,8 @@ func _arrancar() -> void:
 	_check(main.get_node("%Progreso").text == "Nada que comprobar", "Ctrl+R dispara la comprobación")
 
 	# Disponibilidad: selector de orden por fecha (#9)
+	_check(main.has_node("%CabNombre") and main.has_node("%CabEstado") \
+		and main.has_node("%CabFecha") and main.has_node("%CabImagen"), "la barra muestra las 4 cabeceras de columna")
 	main.get_node("%FiltroEstado").select(0)
 	_check(main.has_node("%OrdenFecha"), "la barra tiene el selector de orden")
 	var orden: OptionButton = main.get_node("%OrdenFecha")
