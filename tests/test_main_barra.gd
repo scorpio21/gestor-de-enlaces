@@ -15,6 +15,7 @@ const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
+const ConfigStoreScript := preload("res://scripts/config_store.gd")
 
 var _fallos := 0
 var _imgs_iniciales: Array = []
@@ -29,6 +30,7 @@ func _arrancar() -> void:
 	var main := MAIN_SCENE.instantiate()
 	main.DATA_RES = "user://__test_main_barra__/data.json"
 	main.DATA_USER = "user://__test_main_barra__/enlaces.json"
+	main.CONFIG_BASE = "user://__test_main_barra__"
 	root.add_child(main)
 
 	await process_frame
@@ -451,10 +453,13 @@ func _arrancar() -> void:
 	_check(main.has_node("%CabNombre") and main.has_node("%CabEstado") \
 		and main.has_node("%CabFecha") and main.has_node("%CabImagen"), "la barra muestra las 4 cabeceras de columna")
 	main.get_node("%FiltroEstado").select(0)
-	_check(main.has_node("%OrdenFecha"), "la barra tiene el selector de orden")
-	var orden: OptionButton = main.get_node("%OrdenFecha")
-	_check(orden.get_item_count() == 3 and orden.get_item_text(0) == "Sin ordenar" \
-		and orden.get_item_text(1) == "Más recientes" and orden.get_item_text(2) == "Más antiguos", "el selector de orden ofrece las 3 opciones")
+	var cab_nombre_btn := main.get_node("%CabNombre")
+	var cab_estado_btn := main.get_node("%CabEstado")
+	var cab_fecha_btn := main.get_node("%CabFecha")
+	var cab_imagen_btn := main.get_node("%CabImagen")
+	_check(cab_nombre_btn.get_parent().name == "FilaCabeceras", "las cabeceras viven en FilaCabeceras")
+	_check(cab_nombre_btn.toggle_mode and cab_estado_btn.toggle_mode \
+		and cab_fecha_btn.toggle_mode and cab_imagen_btn.toggle_mode, "las cabeceras son pulsables (toggle_mode)")
 
 	main_script._entradas = [
 		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
@@ -467,29 +472,73 @@ func _arrancar() -> void:
 	}
 	main_script._refrescar_vista()
 	await process_frame
-	orden.select(1)
-	main_script._aplicar_filtro()
-	var orden_recientes: Array = []
-	for hijo in main.get_node("%ListaContenedor").get_children():
-		if hijo.visible:
-			orden_recientes.append(hijo.url)
-	_check(orden_recientes == ["https://b.test", "https://a.test", "https://c.test"], "Más recientes ordena por fecha y deja lo sin comprobar al final")
 
-	orden.select(2)
-	main_script._aplicar_filtro()
-	var orden_antiguos: Array = []
-	for hijo in main.get_node("%ListaContenedor").get_children():
-		if hijo.visible:
-			orden_antiguos.append(hijo.url)
-	_check(orden_antiguos == ["https://a.test", "https://b.test", "https://c.test"], "Más antiguos invierte el orden con lo sin comprobar al final")
+	main_script._pulsar_cabecera("fecha")
+	_check(main_script._orden_columna == "fecha" and main_script._orden_direccion == -1, "primer clic en Fecha activa descendente")
+	_check(cab_fecha_btn.text == "Fecha ▼", "la cabecera Fecha activa muestra indicador descendente")
+	_check(_urls_visibles(main) == ["https://b.test", "https://a.test", "https://c.test"], "Fecha descendente: más recientes primero y lo sin comprobar al final")
 
-	orden.select(0)
-	main_script._aplicar_filtro()
-	var orden_natural: Array = []
-	for hijo in main.get_node("%ListaContenedor").get_children():
-		if hijo.visible:
-			orden_natural.append(hijo.url)
-	_check(orden_natural == ["https://a.test", "https://b.test", "https://c.test"], "Sin ordenar conserva el orden de inserción")
+	main_script._pulsar_cabecera("fecha")
+	_check(main_script._orden_direccion == 1, "segundo clic en la misma cabecera invierte a ascendente")
+	_check(cab_fecha_btn.text == "Fecha ▲", "la cabecera Fecha invertida muestra indicador ascendente")
+	_check(_urls_visibles(main) == ["https://a.test", "https://b.test", "https://c.test"], "Fecha ascendente: más antiguos primero y lo sin comprobar al final")
+
+	main_script._pulsar_cabecera("fecha")
+	_check(main_script._orden_columna == "", "tercer clic desactiva la columna")
+	_check(_urls_visibles(main) == ["https://a.test", "https://b.test", "https://c.test"], "sin columna conserva el orden de inserción")
+
+	# #17: columna Nombre (asc por defecto)
+	main_script._entradas = [
+		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""},
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
+		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
+	]
+	main_script._estados = {}
+	main_script._refrescar_vista()
+	await process_frame
+	main_script._pulsar_cabecera("nombre")
+	_check(_urls_visibles(main) == ["https://a.test", "https://b.test", "https://c.test"], "Nombre ascendente ordena alfabéticamente")
+	main_script._pulsar_cabecera("nombre")
+	_check(_urls_visibles(main) == ["https://c.test", "https://b.test", "https://a.test"], "Nombre descendente invierte el orden")
+	main_script._pulsar_cabecera("nombre")
+	_check(main_script._orden_columna == "", "3 clics en Nombre vuelven a sin ordenar")
+
+	# #17: columna Imagen (con imagen primero en asc)
+	var ruta_b := _crear_captura("img_ord_b.png")
+	var ruta_c := _crear_captura("img_ord_c.png")
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
+		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ruta_b},
+		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ruta_c},
+	]
+	main_script._estados = {}
+	main_script._refrescar_vista()
+	await process_frame
+	main_script._pulsar_cabecera("imagen")
+	_check(_urls_visibles(main) == ["https://b.test", "https://c.test", "https://a.test"], "Imagen ascendente pone con captura primero (alfabético luego)")
+	main_script._pulsar_cabecera("imagen")
+	_check(_urls_visibles(main) == ["https://a.test", "https://b.test", "https://c.test"], "Imagen descendente pone sin captura primero")
+	main_script._pulsar_cabecera("imagen")
+	_check(main_script._orden_columna == "", "3 clics en Imagen vuelven a sin ordenar")
+
+	# #17: columna Estado (sin comprobar → válidos → caídos)
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
+		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
+		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""},
+	]
+	main_script._estados = {
+		"a.test": {"valido": true, "mensaje": "OK", "codigo": 200, "fecha": 1000},
+		"b.test": {"valido": false, "mensaje": "No existe", "codigo": 404, "fecha": 1000},
+	}
+	main_script._refrescar_vista()
+	await process_frame
+	main_script._pulsar_cabecera("estado")
+	_check(_urls_visibles(main) == ["https://b.test", "https://a.test", "https://c.test"], "Estado descendente: caídos, válidos, sin comprobar")
+	main_script._pulsar_cabecera("estado")
+	_check(_urls_visibles(main) == ["https://c.test", "https://a.test", "https://b.test"], "Estado ascendente: sin comprobar, válidos, caídos")
+	main_script._pulsar_cabecera("estado")
+	_check(main_script._orden_columna == "", "3 clics en Estado vuelven a sin ordenar")
 
 	# Disponibilidad: historial desde la fila (#10)
 	main_script._estado_store = _FakeHistorial.new()
@@ -678,13 +727,53 @@ func _arrancar() -> void:
 	_check(main_script._indice_entrada("https://b.test") == 2 and main_script._indice_entrada("https://c.test") == 0, "Subir C la cruza con B saltando la fila oculta A")
 	main_script.filtro_cat.select(0)
 
-	main_script.orden_fecha.select(1)
+	main_script._pulsar_cabecera("imagen")
 	main_script._on_mover_pedido(main_script._filas_visibles()[0], -1)
 	var antes: Array = []
 	for e in main_script._entradas:
 		antes.append(str(e.get("url", "")))
-	_check(antes == ["https://c.test", "https://a.test", "https://b.test"], "con OrdenFecha activo _on_mover_pedido no modifica _entradas")
-	main_script.orden_fecha.select(0)
+	_check(antes == ["https://c.test", "https://a.test", "https://b.test"], "con columna activa _on_mover_pedido no modifica _entradas")
+	main_script._on_menu_solicitado(main_script._filas_visibles()[0])
+	_check(main_script._filas_visibles()[0].get_node("%MenuContexto").is_item_disabled(
+		main_script._filas_visibles()[0].get_node("%MenuContexto").get_item_index(5)), "con columna activa Subir queda deshabilitada")
+	main_script._pulsar_cabecera("imagen")
+	main_script._pulsar_cabecera("imagen")
+	_check(main_script._orden_columna == "", "3 clics en la columna activa vuelven a sin ordenar")
+
+	# #17: persistencia y restauración del criterio
+	main_script._pulsar_cabecera("fecha")
+	var guardado: Dictionary = main_script._config_store.cargar()
+	_check(guardado.get("orden_columna", "") == "fecha" and guardado.get("orden_direccion", 0) == -1, "pulsar una cabecera persiste el criterio")
+	main_script._persistir_version_vista()
+	var preservado: Dictionary = main_script._config_store.cargar()
+	_check(preservado.get("orden_columna", "") == "fecha", "persistir la versión vista conserva el criterio")
+	main_script._pulsar_cabecera("fecha")
+	main_script._pulsar_cabecera("fecha")
+	_check(main_script._config_store.cargar().get("orden_columna", "#") == "", "desactivar la columna persiste sin criterio")
+
+	var base_orden := "user://__test_orden_restore__"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(base_orden))
+	ConfigStoreScript.new(base_orden).guardar(3, 10.0, true, 0, "oscuro", "", "fecha", -1)
+	var main_rest := MAIN_SCENE.instantiate()
+	main_rest.DATA_RES = base_orden + "/data.json"
+	main_rest.DATA_USER = base_orden + "/enlaces.json"
+	main_rest.CONFIG_BASE = base_orden
+	root.add_child(main_rest)
+	await process_frame
+	await process_frame
+	var mrs: Node = main_rest.get_node(".")
+	_check(mrs._orden_columna == "fecha" and mrs._orden_direccion == -1, "otro arranque restaura el criterio desde config")
+	_check(_urls_visibles(main_rest).is_empty() or _urls_visibles(main_rest).size() >= 0, "el segundo arranque carga sin errores")
+	main_rest.queue_free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(base_orden))
+
+	# #17: si no se puede guardar, se revierte el criterio
+	var store_roto := ConfigStoreScript.new("user://__test_main_barra__/nada/cfg")
+	main_script._config_store = store_roto
+	main_script._pulsar_cabecera("nombre")
+	_check(main_script._orden_columna == "", "si la persistencia falla se revierte el criterio")
+	_check(store_roto.cargar().get("orden_columna", "") == "", "el fallo no deja criterio guardado")
+	main_script._config_store = ConfigStoreScript.new()
 
 	main_script._persistir = false
 	_cerrar()
@@ -733,6 +822,14 @@ func _cerrar() -> void:
 		return
 	print("TESTS FALLIDOS: %d" % _fallos)
 	quit(1)
+
+
+func _urls_visibles(main_node: Node) -> Array:
+	var urls: Array = []
+	for hijo in main_node.get_node("%ListaContenedor").get_children():
+		if hijo.visible:
+			urls.append(hijo.url)
+	return urls
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

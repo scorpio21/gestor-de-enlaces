@@ -95,18 +95,6 @@ unique_name_in_owner = true
 layout_mode = 2
 selected = 0
 
-[node name="OrdenFecha" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
-unique_name_in_owner = true
-layout_mode = 2
-selected = 0
-item_count = 3
-popup/item_0/text = "Sin ordenar"
-popup/item_0/id = 0
-popup/item_1/text = "Más recientes"
-popup/item_1/id = 1
-popup/item_2/text = "Más antiguos"
-popup/item_2/id = 2
-
 [node name="Progreso" type="Label" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
 unique_name_in_owner = true
 layout_mode = 2

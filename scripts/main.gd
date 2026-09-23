@@ -29,7 +29,10 @@ const ActualizadorScript := preload("res://scripts/actualizador.gd")
 @onready var total_label: Label = %Total
 @onready var version_label: Label = %Version
 @onready var barra_progreso: ProgressBar = %BarraProgreso
-@onready var orden_fecha: OptionButton = %OrdenFecha
+@onready var cab_nombre: Button = %CabNombre
+@onready var cab_estado: Button = %CabEstado
+@onready var cab_fecha: Button = %CabFecha
+@onready var cab_imagen: Button = %CabImagen
 @onready var dialogo_historial: Window = %DialogoHistorial
 @onready var timer_auto: Timer = %AutoEscaneo
 
@@ -40,6 +43,9 @@ var _hechos := 0
 var _total := 0
 var _estado_store: RefCounted
 var _config_store: RefCounted
+var CONFIG_BASE := "user://"
+var _orden_columna := ""
+var _orden_direccion := 1
 var _logger = null
 var _paralelismo := 3
 var _timeout := 10.0
@@ -78,18 +84,16 @@ func _ready() -> void:
 		filtro_cat.add_item(GestorCatalogoScript.categoria_display(GestorCatalogoScript.CATEGORIAS[i]), i + 1)
 	filtro_cat.select(0)
 	filtro_cat.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
-	orden_fecha.clear()
-	orden_fecha.add_item("Sin ordenar", 0)
-	orden_fecha.add_item("Más recientes", 1)
-	orden_fecha.add_item("Más antiguos", 2)
-	orden_fecha.select(0)
-	orden_fecha.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
+	cab_nombre.pressed.connect(func() -> void: _pulsar_cabecera("nombre"))
+	cab_estado.pressed.connect(func() -> void: _pulsar_cabecera("estado"))
+	cab_fecha.pressed.connect(func() -> void: _pulsar_cabecera("fecha"))
+	cab_imagen.pressed.connect(func() -> void: _pulsar_cabecera("imagen"))
 	timer_auto.timeout.connect(_on_auto_timer)
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
 	ventana_agregar.lote_guardado.connect(_on_lote_guardado)
 	ventana_agregar.editado.connect(_on_enlace_editado)
 	_cargar_datos()
-	_config_store = ConfigStoreScript.new()
+	_config_store = ConfigStoreScript.new(CONFIG_BASE)
 	_cola_store = ColaStoreScript.new()
 	var cfg: Dictionary = _config_store.cargar()
 	_paralelismo = clampi(int(cfg.get("paralelismo", 3)), 1, 8)
@@ -97,6 +101,11 @@ func _ready() -> void:
 	_auto_abrir = cfg.get("auto_abrir", true) == true
 	_intervalo_auto = int(cfg.get("intervalo", 0))
 	TemaStoreScript.aplicar(String(cfg.get("tema", "oscuro")), self)
+	_orden_columna = str(cfg.get("orden_columna", ""))
+	_orden_direccion = -1 if int(cfg.get("orden_direccion", 1)) < 0 else 1
+	_pintar_cabeceras()
+	if _orden_columna != "":
+		_aplicar_filtro()
 	preferencias.aplicado.connect(_aplicar_preferencias)
 	%DialogoImportar.file_selected.connect(_on_importar_elegido)
 	%DialogoExportar.file_selected.connect(_on_exportar_elegido)
@@ -865,11 +874,10 @@ func _aplicar_filtro() -> void:
 				visible_estado = hijo.valido == null
 		hijo.visible = visible_estado and (cat_id == 0 or hijo.categoria == clave_cat)
 
-	var modo_orden := orden_fecha.get_selected_id()
-	if modo_orden > 0:
+	if _orden_columna != "":
 		var hijos: Array = lista.get_children()
 		hijos.sort_custom(func(a: Button, b: Button) -> bool:
-			return _comparar_orden(a, b, modo_orden)
+			return _comparar_orden(a, b)
 		)
 		for hijo in hijos:
 			lista.move_child(hijo, -1)
@@ -981,6 +989,8 @@ func _persistir_version_vista() -> void:
 		int(cfg.get("intervalo", 0)),
 		str(cfg.get("tema", "oscuro")),
 		_dialogo_version,
+		_orden_columna,
+		_orden_direccion,
 	)
 
 
@@ -1016,16 +1026,97 @@ func _on_auto_timer() -> void:
 		_comprobar_visibles()
 
 
-func _comparar_orden(a: Button, b: Button, modo: int) -> bool:
-	var fa := int(a.fecha)
-	var fb := int(b.fecha)
-	if fa == fb:
-		return a.url < b.url
-	if fa == 0:
-		return false
-	if fb == 0:
-		return true
-	return fa > fb if modo == 1 else fa < fb
+func _comparar_orden(a: Button, b: Button) -> bool:
+	var dir := _orden_direccion
+	match _orden_columna:
+		"nombre":
+			var na: String = a.nombre if a.nombre != "" else a.url
+			var nb: String = b.nombre if b.nombre != "" else b.url
+			if na == nb:
+				return a.url < b.url
+			return na < nb if dir == 1 else na > nb
+		"estado":
+			var ea := _peso_estado(a.valido)
+			var eb := _peso_estado(b.valido)
+			if ea == eb:
+				return a.url < b.url
+			return ea > eb if dir == -1 else ea < eb
+		"fecha":
+			var fa := int(a.fecha)
+			var fb := int(b.fecha)
+			if fa == fb:
+				return a.url < b.url
+			if fa == 0:
+				return false
+			if fb == 0:
+				return true
+			return fa > fb if dir == -1 else fa < fb
+		"imagen":
+			var ia := 1 if a.img != "" else 0
+			var ib := 1 if b.img != "" else 0
+			if ia == ib:
+				return a.url < b.url
+			return ia > ib if dir == 1 else ia < ib
+	return a.url < b.url
+
+
+func _pulsar_cabecera(columna: String) -> void:
+	var prev_col := _orden_columna
+	var prev_dir := _orden_direccion
+	if _orden_columna != columna:
+		_orden_columna = columna
+		_orden_direccion = _direccion_por_defecto(columna)
+	elif _orden_direccion == _direccion_por_defecto(columna):
+		_orden_direccion = -_orden_direccion
+	else:
+		_orden_columna = ""
+	_pintar_cabeceras()
+	_aplicar_filtro()
+	if not _persistir_orden():
+		_orden_columna = prev_col
+		_orden_direccion = prev_dir
+		_pintar_cabeceras()
+		_aplicar_filtro()
+		progreso.text = "No se pudo guardar el orden."
+
+
+func _direccion_por_defecto(columna: String) -> int:
+	return 1 if columna == "nombre" or columna == "imagen" else -1
+
+
+func _pintar_cabeceras() -> void:
+	var titulos := {"nombre": "Nombre", "estado": "Estado", "fecha": "Fecha", "imagen": "Imagen"}
+	var flecha := "▼" if _orden_direccion == -1 else "▲"
+	var pares := {
+		"nombre": cab_nombre,
+		"estado": cab_estado,
+		"fecha": cab_fecha,
+		"imagen": cab_imagen,
+	}
+	for col in pares:
+		var boton: Button = pares[col]
+		boton.button_pressed = _orden_columna == col
+		boton.text = "%s %s" % [titulos[col], flecha] if _orden_columna == col else str(titulos[col])
+
+
+func _persistir_orden() -> bool:
+	var cfg: Dictionary = _config_store.cargar()
+	return _config_store.guardar(
+		int(cfg.get("paralelismo", 3)),
+		float(cfg.get("timeout", 10.0)),
+		bool(cfg.get("auto_abrir", true)),
+		int(cfg.get("intervalo", 0)),
+		str(cfg.get("tema", "oscuro")),
+		str(cfg.get("ultima_version_vista", "")),
+		_orden_columna,
+		_orden_direccion,
+	)
+
+
+func _peso_estado(v: Variant) -> int:
+	if v == null:
+		return 0
+	return 1 if v == true else 2
 
 
 func _on_historial_pedido(item: Button) -> void:
@@ -1052,7 +1143,7 @@ func _indice_entrada(url: String) -> int:
 
 
 func _on_menu_solicitado(item: Button) -> void:
-	if orden_fecha.get_selected_id() > 0:
+	if _orden_columna != "":
 		item.fijar_estado_reorden(false, false)
 		return
 	var visibles := _filas_visibles()
@@ -1061,7 +1152,7 @@ func _on_menu_solicitado(item: Button) -> void:
 
 
 func _on_mover_pedido(item: Button, delta: int) -> void:
-	if orden_fecha.get_selected_id() > 0:
+	if _orden_columna != "":
 		return
 	var visibles := _filas_visibles()
 	var idx := visibles.find(item)
