@@ -14,6 +14,7 @@ const MAIN_SCENE := preload("res://scenes/Main.tscn")
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
+const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
 
 var _fallos := 0
 var _imgs_iniciales: Array = []
@@ -24,7 +25,10 @@ func _initialize() -> void:
 
 
 func _arrancar() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("user://__test_main_barra__"))
 	var main := MAIN_SCENE.instantiate()
+	main.DATA_RES = "user://__test_main_barra__/data.json"
+	main.DATA_USER = "user://__test_main_barra__/enlaces.json"
 	root.add_child(main)
 
 	await process_frame
@@ -383,7 +387,7 @@ func _arrancar() -> void:
 		if menu_file.get_item_id(i) == 4 and menu_file.get_item_text(i) == "Restaurar copia…":
 			hay_restaurar = true
 	_check(hay_restaurar, "Archivo > Restaurar copia… está en el menú")
-	var hay_copia := FileAccess.file_exists("user://enlaces.json.bak") or FileAccess.file_exists("res://data/data.json.bak")
+	var hay_copia := FileAccess.file_exists(main_script.DATA_USER + ".bak") or FileAccess.file_exists(main_script.DATA_RES + ".bak")
 	main_script._on_file_id(4)
 	if hay_copia:
 		_check(main.has_node("%ConfirmarRestaurar") and main.get_node("%ConfirmarRestaurar").visible, "Restaurar copia… abre el diálogo de confirmación al existir copia")
@@ -622,6 +626,64 @@ func _arrancar() -> void:
 	_check(not menu_ctx_c.is_item_disabled(menu_ctx_c.get_item_index(5)), "última fila: Subir habilitada")
 	_check(menu_ctx_c.is_item_disabled(menu_ctx_c.get_item_index(6)), "última fila: Bajar deshabilitada")
 
+	# Task 3: reorden real, filtros y persistencia
+	main_script._persistir = false
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
+		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
+		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""}
+	]
+	main_script._refrescar_vista()
+	await process_frame
+
+	var visibles_t3: Array = main_script._filas_visibles()
+	var item_b_real: Button = visibles_t3[1]
+	main_script._persistir = true
+	main_script._on_mover_pedido(item_b_real, -1)
+	main_script._persistir = false
+	_check(main_script._indice_entrada("https://a.test") == 1 and main_script._indice_entrada("https://b.test") == 0, "Subir B la coloca antes de A en _entradas")
+
+	var urls_antes: Array = []
+	for e in main_script._entradas:
+		urls_antes.append(str(e.get("url", "")))
+	_check(urls_antes == ["https://b.test", "https://a.test", "https://c.test"], "tras guardar el orden B,A,C queda persistido en memoria")
+
+	var persistido: Array = GestorDatosScript.cargar(main_script.DATA_USER)
+	var orden_persistido: Array = []
+	for e in persistido:
+		orden_persistido.append(str(e.get("url", "")))
+	_check(orden_persistido == ["https://b.test", "https://a.test", "https://c.test"], "tras guardar el orden B,A,C queda en el archivo de usuario")
+
+	var item_b_rest: Button = main_script._filas_visibles()[0]
+	main_script._on_mover_pedido(item_b_rest, 1)
+	_check(main_script._indice_entrada("https://b.test") == 1, "Bajar devuelve B a su posición original")
+
+	main_script._entradas = [
+		{"nombre": "B", "desc": "", "url": "https://b.test", "img": "", "cat": "cliente"},
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": "", "cat": "otro"},
+		{"nombre": "C", "desc": "", "url": "https://c.test", "img": "", "cat": "cliente"}
+	]
+	main_script._estados = {}
+	main_script.filtro_cat.select(2)
+	main_script._refrescar_vista()
+	await process_frame
+
+	var visibles_filtradas: Array = main_script._filas_visibles()
+	_check(visibles_filtradas.size() == 2, "el filtro Cliente oculta la fila A (otro)")
+
+	var item_c2: Button = visibles_filtradas[1]
+	main_script._on_mover_pedido(item_c2, -1)
+	_check(main_script._indice_entrada("https://b.test") == 2 and main_script._indice_entrada("https://c.test") == 0, "Subir C la cruza con B saltando la fila oculta A")
+	main_script.filtro_cat.select(0)
+
+	main_script.orden_fecha.select(1)
+	main_script._on_mover_pedido(main_script._filas_visibles()[0], -1)
+	var antes: Array = []
+	for e in main_script._entradas:
+		antes.append(str(e.get("url", "")))
+	_check(antes == ["https://c.test", "https://a.test", "https://b.test"], "con OrdenFecha activo _on_mover_pedido no modifica _entradas")
+	main_script.orden_fecha.select(0)
+
 	main_script._persistir = false
 	_cerrar()
 
@@ -657,6 +719,12 @@ func _limpiar_capturas() -> void:
 
 
 func _cerrar() -> void:
+	var ruta_temp := ProjectSettings.globalize_path("user://__test_main_barra__")
+	for f in ["data.json", "enlaces.json"]:
+		if FileAccess.file_exists(ruta_temp.path_join(f)):
+			DirAccess.remove_absolute(ruta_temp.path_join(f))
+	if DirAccess.dir_exists_absolute(ruta_temp):
+		DirAccess.remove_absolute(ruta_temp)
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

@@ -1,8 +1,8 @@
 extends Control
 
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
-const DATA_RES := "res://data/data.json"
-const DATA_USER := "user://enlaces.json"
+var DATA_RES := "res://data/data.json"
+var DATA_USER := "user://enlaces.json"
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
