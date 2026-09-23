@@ -19,6 +19,8 @@ const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
 
 var url: String = ""
+var nombre := ""
+var img := ""
 var estado: String = "pendiente"
 var valido: Variant = null
 var categoria: String = "otro"
@@ -43,6 +45,8 @@ func _ready() -> void:
 
 
 func setup(nombre: String, descripcion: String, enlace: String, imagen := "", categoria := "") -> void:
+	self.nombre = nombre
+	self.img = imagen
 	url = enlace
 	text = ""
 	_actualizar_tooltip()

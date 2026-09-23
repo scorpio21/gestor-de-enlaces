@@ -26,8 +26,9 @@ func _arrancar() -> void:
 	_check(_menu_completo(caido), "la fila construye el menú con 7 opciones")
 	_check(_menu_completo(valido), "la fila válida también construye el menú")
 
+	var ruta_png := _generar_png_temporal()
 	var con_imagen := _crear_item()
-	con_imagen.setup("Nom", "Desc", "https://ejemplo.com/v", _generar_png_temporal())
+	con_imagen.setup("Nom", "Desc", "https://ejemplo.com/v", ruta_png)
 	var sin_imagen := _crear_item()
 	sin_imagen.setup("Nom", "Desc", "https://ejemplo.com/w", "")
 	var inexistente := _crear_item()
@@ -41,6 +42,8 @@ func _arrancar() -> void:
 	_check(_miniatura_es(con_imagen, false), "miniatura muestra la imagen elegida")
 	_check(_miniatura_es(sin_imagen, true), "sin imagen muestra el placeholder")
 	_check(_miniatura_es(inexistente, true), "imagen inexistente muestra el placeholder")
+	_check(con_imagen.nombre == "Nom" and con_imagen.img == ruta_png, "setup expone nombre e imagen")
+	_check(sin_imagen.img == "", "sin imagen la fila guarda img vacía")
 
 	var con_detalle := _crear_item()
 	con_detalle.setup("Nom", "Desc", "https://ejemplo.com/d")
