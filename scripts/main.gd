@@ -18,6 +18,7 @@ const InformeStoreScript := preload("res://scripts/informe_store.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const ActualizadorScript := preload("res://scripts/actualizador.gd")
 const OrdenadorScript := preload("res://scripts/ordenador.gd")
+const FiltrosScript := preload("res://scripts/filtros.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -630,22 +631,7 @@ func _borrar_captura_si_huerfana(ruta: String) -> void:
 
 
 func _refrescar_vista() -> void:
-	_mostrar_lista(_filtrar_busqueda(busqueda.text))
-
-
-func _filtrar_busqueda(texto: String) -> Array:
-	var filtro_texto := texto.strip_edges().to_lower()
-	if filtro_texto.is_empty():
-		return _entradas
-
-	var filtradas: Array = []
-	for entrada in _entradas:
-		if typeof(entrada) != TYPE_DICTIONARY:
-			continue
-		var haystack := "%s %s" % [entrada.get("nombre", ""), entrada.get("desc", "")]
-		if filtro_texto in haystack.to_lower():
-			filtradas.append(entrada)
-	return filtradas
+	_mostrar_lista(FiltrosScript.filtrar(_entradas, busqueda.text))
 
 
 func _mostrar_lista(entradas: Array) -> void:
@@ -894,15 +880,7 @@ func _aplicar_filtro() -> void:
 	if cat_id > 0:
 		clave_cat = GestorCatalogoScript.CATEGORIAS[cat_id - 1]
 	for hijo in lista.get_children():
-		var visible_estado := true
-		match modo:
-			1:
-				visible_estado = hijo.valido == true
-			2:
-				visible_estado = hijo.valido == false
-			3:
-				visible_estado = hijo.valido == null
-		hijo.visible = visible_estado and (cat_id == 0 or hijo.categoria == clave_cat)
+		hijo.visible = FiltrosScript.fila_visible(hijo.valido, hijo.categoria, modo, cat_id, clave_cat)
 
 	if _orden_columna != "":
 		var hijos: Array = lista.get_children()
