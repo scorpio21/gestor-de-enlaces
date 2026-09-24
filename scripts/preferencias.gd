@@ -2,7 +2,7 @@ extends Window
 
 signal aplicado(paralelismo: int, timeout: float, auto_abrir: bool, intervalo: int, tema: String, idioma: String)
 
-const IDIOMAS := [["es", "Español"], ["en", "English"]]
+const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
 
 @onready var paralelismo_spin: SpinBox = %Paralelismo
 @onready var timeout_spin: SpinBox = %Timeout
@@ -15,8 +15,8 @@ const IDIOMAS := [["es", "Español"], ["en", "English"]]
 func _ready() -> void:
 	for i in IDIOMAS.size():
 		var icono: Texture2D = null
-		if FileAccess.file_exists("res://Assets/icon/flag_%s.svg" % IDIOMAS[i][0]):
-			icono = load("res://Assets/icon/flag_%s.svg" % IDIOMAS[i][0])
+		if FileAccess.file_exists("res://Assets/banderas/%s.svg" % IDIOMAS[i][2]):
+			icono = load("res://Assets/banderas/%s.svg" % IDIOMAS[i][2])
 		idioma_opcion.add_icon_item(icono, IDIOMAS[i][1], i)
 	close_requested.connect(hide)
 	%BotonCancelar.pressed.connect(hide)
