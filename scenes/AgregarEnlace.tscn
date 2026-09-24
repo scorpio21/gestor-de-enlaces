@@ -155,5 +155,5 @@ text = "Guardar"
 unique_name_in_owner = true
 title = "Elegir imagen"
 size = Vector2i(600, 400)
-access = 0
+access = 2
 filters = PackedStringArray("*.png ; *.jpg ; *.jpeg ; *.webp")
