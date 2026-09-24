@@ -99,6 +99,14 @@ popup/item_0/id = 0
 popup/item_1/text = "Claro"
 popup/item_1/id = 1
 
+[node name="EtiquetaIdioma" type="Label" parent="Margen/Columna"]
+layout_mode = 2
+text = "Idioma"
+
+[node name="Idioma" type="OptionButton" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+
 [node name="Error" type="Label" parent="Margen/Columna"]
 unique_name_in_owner = true
 layout_mode = 2
