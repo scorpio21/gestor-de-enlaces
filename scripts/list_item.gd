@@ -157,7 +157,7 @@ func _pressed() -> void:
 func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		menu_solicitado.emit()
-		%MenuContexto.popup(Rect2i(Vector2i(event.global_position), Vector2i.ZERO))
+		%MenuContexto.popup(Rect2i(Vector2i(DisplayServer.mouse_get_position()), Vector2i.ZERO))
 
 
 func _on_menu(id: int) -> void:
