@@ -368,6 +368,9 @@ func _arrancar() -> void:
 	main_script._on_file_id(2)
 	_check(diag_exp.visible, "Archivo > Exportar… abre el diálogo de exportación")
 	diag_exp.hide()
+	var diag_inf_i18n: FileDialog = main.get_node("%DialogoInforme")
+	var diag_diag_i18n: FileDialog = main.get_node("%DialogoDiagnostico")
+	_check(diag_imp.access == FileDialog.ACCESS_FILESYSTEM and diag_exp.access == FileDialog.ACCESS_FILESYSTEM and diag_inf_i18n.access == FileDialog.ACCESS_FILESYSTEM and diag_diag_i18n.access == FileDialog.ACCESS_FILESYSTEM, "los diálogos de archivo navegan por todo el disco (no quedan atrapados en res://)")
 
 	# Informe de disponibilidad (#11)
 	var menu_file_inf: PopupMenu = main.get_node("%File")

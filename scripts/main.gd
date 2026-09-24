@@ -105,6 +105,10 @@ func _ready() -> void:
 		_logger = LoggerScript.new("user://")
 		_log_app("inicio", "aplicación iniciada")
 	%DialogoDiagnostico.file_selected.connect(_on_diag_elegido)
+	%DialogoImportar.access = FileDialog.ACCESS_FILESYSTEM
+	%DialogoExportar.access = FileDialog.ACCESS_FILESYSTEM
+	%DialogoInforme.access = FileDialog.ACCESS_FILESYSTEM
+	%DialogoDiagnostico.access = FileDialog.ACCESS_FILESYSTEM
 	_refrescar_vista()
 	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
 	_actualizar_status()
