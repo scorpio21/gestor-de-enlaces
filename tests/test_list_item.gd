@@ -2,6 +2,7 @@ extends SceneTree
 
 const LIST_ITEM := preload("res://scenes/ListItem.tscn")
 const ListItemScript := preload("res://scripts/list_item.gd")
+const IdiomaScript := preload("res://scripts/idioma.gd")
 const PLACEHOLDER := "res://Assets/png/no-disponible.png"
 const BASE := "user://__test_list_item__"
 
@@ -156,6 +157,26 @@ func _arrancar() -> void:
 	_check(cat_codigos.get_node("%CategoriaLabel").text == "Códigos fuente", "la fila muestra la etiqueta de códigos fuente")
 	_check(cat_vacia.get_node("%CategoriaLabel").text == "Otro" and cat_vacia.categoria == "otro", "sin categoría la fila normaliza y muestra Otro")
 	_check(cat_rara.get_node("%CategoriaLabel").text == "Otro", "categoría desconocida muestra Otro")
+
+	# Idioma: el estado guardado se re-traduce al pintar o reconstruir la fila
+	IdiomaScript.cargar_traducciones()
+	TranslationServer.set_locale("en")
+	var i18n_item := _crear_item()
+	i18n_item.setup("Nom", "Desc", "https://ejemplo.com/i18n")
+	i18n_item.aplicar_estado(false, "No existe (404)", 404, 0)
+	root.add_child(i18n_item)
+	await process_frame
+	_check(i18n_item.get_node("%EstadoLabel").text == "Does not exist (404)", "cambiado a en, el estado guardado en es se repinta traducido")
+	_check("Does not exist (404)" in i18n_item.tooltip_text, "el tooltip re-traduce el mensaje guardado")
+	_check(ListItemScript.formatear_mensaje("Conexión cerrada", 0) == "Connection closed", "formatear_mensaje re-traduce una frase guardada")
+	TranslationServer.set_locale("es")
+	var i18n_es_item := _crear_item()
+	i18n_es_item.setup("Nom", "Desc", "https://ejemplo.com/i18n2")
+	i18n_es_item.aplicar_estado(false, "Connection closed", 0, 0)
+	root.add_child(i18n_es_item)
+	await process_frame
+	_check(i18n_es_item.get_node("%EstadoLabel").text == "Conexión cerrada", "vuelto a es, el estado guardado en en se repinta traducido")
+	TranslationServer.set_locale("en")
 
 	if _fallos == 0:
 		print("TESTS OK")

@@ -21,7 +21,7 @@ func abrir(entradas: Array) -> void:
 		fila.text = tr("%s — %s — %s") % [
 			ListItemScript.formatear_fecha(int(e.get("fecha", 0))),
 			tr("Válido") if e.get("valido") == true else tr("Caído"),
-			str(e.get("mensaje", "")),
+			ListItemScript.formatear_mensaje(str(e.get("mensaje", "")), int(e.get("codigo", 0))),
 		]
 		fila.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		lista_historial.add_child(fila)

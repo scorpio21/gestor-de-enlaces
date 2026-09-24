@@ -70,10 +70,10 @@ func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva :
 	_pintar_fecha()
 	if ok == true:
 		estado = "ok"
-		_pintar_estado(texto, TemaStoreScript.color_estado(true))
+		_pintar_estado(formatear_mensaje(texto, codigo), TemaStoreScript.color_estado(true))
 	elif ok == false:
 		estado = "caido"
-		_pintar_estado(texto, TemaStoreScript.color_estado(false))
+		_pintar_estado(formatear_mensaje(texto, codigo), TemaStoreScript.color_estado(false))
 	else:
 		estado = "pendiente"
 		_pintar_estado(tr("Sin comprobar"), TemaStoreScript.color_estado(null))
@@ -85,6 +85,30 @@ static func formatear_fecha(unix: int) -> String:
 	return "%02d/%02d/%04d %02d:%02d" % [d.day, d.month, d.year, d.hour, d.minute]
 
 
+static func formatear_mensaje(mensaje: String, codigo: int) -> String:
+	var clave := _clave_de_mensaje(mensaje, codigo)
+	if clave.is_empty():
+		return TranslationServer.translate(mensaje)
+	if clave.count("%d") == 1 and clave.count("%") == 1:
+		return TranslationServer.translate(clave) % codigo
+	return TranslationServer.translate(clave)
+
+
+static func _clave_de_mensaje(mensaje: String, codigo: int) -> String:
+	for locale in TranslationServer.get_loaded_locales():
+		var traduccion: Translation = TranslationServer.get_translation_object(locale)
+		if traduccion == null:
+			continue
+		for clave in traduccion.get_message_list():
+			var valor := traduccion.get_message(clave)
+			if clave.count("%d") == 1 and clave.count("%") == 1 and valor.count("%d") == 1 and valor.count("%") == 1:
+				if (clave % codigo) == mensaje or (valor % codigo) == mensaje:
+					return clave
+			elif clave == mensaje or valor == mensaje:
+				return clave
+	return ""
+
+
 func _actualizar_tooltip() -> void:
 	if valido == null:
 		tooltip_text = url + "\n" + tr("Sin comprobar")
@@ -93,7 +117,7 @@ func _actualizar_tooltip() -> void:
 	lineas.append(tr("Código: %s") % ("—" if codigo == 0 else str(codigo)))
 	if fecha > 0:
 		lineas.append(tr("Comprobado: %s") % formatear_fecha(fecha))
-	lineas.append(mensaje)
+	lineas.append(formatear_mensaje(mensaje, codigo))
 	tooltip_text = "\n".join(lineas)
 
 

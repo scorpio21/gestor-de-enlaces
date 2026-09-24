@@ -72,19 +72,7 @@ func _ready() -> void:
 	%ConfirmarRestaurar.confirmed.connect(_confirmar_restaurar)
 	%ConfirmarReanudar.confirmed.connect(_reanudar_escaneo)
 	%ConfirmarReanudar.canceled.connect(_descartar_cola_pendiente)
-	filtro.clear()
-	filtro.add_item(tr("Todos"), 0)
-	filtro.add_item(tr("Válidos"), 1)
-	filtro.add_item(tr("Caídos / no existen"), 2)
-	filtro.add_item(tr("Sin comprobar"), 3)
-	filtro.select(0)
-	filtro.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
-	filtro_cat.clear()
-	filtro_cat.add_item(tr("Todas"), 0)
-	for i in range(GestorCatalogoScript.CATEGORIAS.size()):
-		filtro_cat.add_item(GestorCatalogoScript.new().categoria_display(GestorCatalogoScript.CATEGORIAS[i]), i + 1)
-	filtro_cat.select(0)
-	filtro_cat.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
+	_cargar_filtros()
 	cab_nombre.pressed.connect(func() -> void: _pulsar_cabecera("nombre"))
 	cab_estado.pressed.connect(func() -> void: _pulsar_cabecera("estado"))
 	cab_fecha.pressed.connect(func() -> void: _pulsar_cabecera("fecha"))
@@ -137,6 +125,8 @@ func _configurar_menus() -> void:
 	menu_file.add_separator()
 	menu_file.add_item(tr("Restaurar copia…"), 4)
 	menu_file.add_item(tr("Salir"), 3)
+	if menu_file.id_pressed.is_connected(_on_file_id):
+		menu_file.id_pressed.disconnect(_on_file_id)
 	menu_file.id_pressed.connect(_on_file_id)
 
 	var menu_util: PopupMenu = %Utilidades
@@ -146,7 +136,39 @@ func _configurar_menus() -> void:
 	menu_util.add_item(tr("Limpiar capturas huérfanas…"), 2)
 	menu_util.add_item(tr("Exportar diagnóstico…"), 3)
 	menu_util.add_item(tr("Comprobar actualizaciones…"), 4)
+	if menu_util.id_pressed.is_connected(_on_utilidades_id):
+		menu_util.id_pressed.disconnect(_on_utilidades_id)
 	menu_util.id_pressed.connect(_on_utilidades_id)
+
+
+func _cargar_filtros() -> void:
+	var sel_estado := filtro.get_selected()
+	var sel_cat := filtro_cat.get_selected()
+	filtro.clear()
+	filtro.add_item(tr("Todos"), 0)
+	filtro.add_item(tr("Válidos"), 1)
+	filtro.add_item(tr("Caídos / no existen"), 2)
+	filtro.add_item(tr("Sin comprobar"), 3)
+	if filtro.item_selected.is_connected(_on_filtro_seleccionado):
+		filtro.item_selected.disconnect(_on_filtro_seleccionado)
+	filtro.item_selected.connect(_on_filtro_seleccionado)
+	filtro.select(maxi(sel_estado, 0))
+	filtro_cat.clear()
+	filtro_cat.add_item(tr("Todas"), 0)
+	for i in range(GestorCatalogoScript.CATEGORIAS.size()):
+		filtro_cat.add_item(GestorCatalogoScript.new().categoria_display(GestorCatalogoScript.CATEGORIAS[i]), i + 1)
+	if filtro_cat.item_selected.is_connected(_on_filtro_cat_seleccionado):
+		filtro_cat.item_selected.disconnect(_on_filtro_cat_seleccionado)
+	filtro_cat.item_selected.connect(_on_filtro_cat_seleccionado)
+	filtro_cat.select(maxi(sel_cat, 0))
+
+
+func _on_filtro_seleccionado(_indice: int) -> void:
+	_aplicar_filtro()
+
+
+func _on_filtro_cat_seleccionado(_indice: int) -> void:
+	_aplicar_filtro()
 
 
 func _on_file_id(id: int) -> void:
@@ -908,10 +930,17 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma):
 		TranslationServer.set_locale(locale_anterior)
 		progreso.text = tr("No se pudo guardar la configuración.")
-	_refrescar_vista()
+	_retraducir_ui()
 	_rearmar_auto_escaneo()
 	if _auto_abrir and _puede_auto_escanear():
 		_comprobar_visibles()
+
+
+func _retraducir_ui() -> void:
+	_configurar_menus()
+	_cargar_filtros()
+	_actualizar_status()
+	_refrescar_vista()
 
 
 func _es_headless() -> bool:

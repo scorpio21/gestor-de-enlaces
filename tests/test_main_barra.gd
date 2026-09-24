@@ -610,6 +610,37 @@ func _arrancar() -> void:
 	_check(main_script._config_store.cargar().get("tema", "") == "oscuro", "preferencias guardan el tema oscuro")
 	_check(fondo_principal.color == Color(0.1, 0.1, 0.1, 1), "aplicar oscuro restaura el fondo original")
 
+	# Idioma: al cambiar el idioma se re-traduce filas, barra, menús y filtros
+	main_script._persistir = false
+	main_script._entradas = [{"nombre": "SIN", "desc": "", "url": "https://sin.test", "img": ""}]
+	main_script._estados = {"sin.test": {"valido": false, "mensaje": "No existe (404)", "codigo": 404, "fecha": 0}}
+	main_script._refrescar_vista()
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro", "en")
+	await process_frame
+	var fila_en_i18n: Control = null
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		if hijo.url == "https://sin.test":
+			fila_en_i18n = hijo
+			break
+	_check(fila_en_i18n != null and fila_en_i18n.get_node("%EstadoLabel").text == "Does not exist (404)", "al cambiar a en la fila re-traduce el estado guardado")
+	_check(main.get_node("%Rotos").text == "Broken: 1", "al cambiar a en la barra de estado se re-traduce")
+	var menu_file_i18n: PopupMenu = main.get_node("%File")
+	_check(menu_file_i18n.get_item_text(menu_file_i18n.get_item_index(1)) == "Import…", "al cambiar a en el menú Archivo se re-traduce")
+	var menu_util_i18n: PopupMenu = main.get_node("%Utilidades")
+	_check(menu_util_i18n.get_item_text(menu_util_i18n.get_item_index(1)) == "Preferences…", "al cambiar a en el menú Utilidades se re-traduce")
+	var filtro_estado_i18n: OptionButton = main.get_node("%FiltroEstado")
+	_check(filtro_estado_i18n.get_item_text(0) == "All", "al cambiar a en el filtro de estado se re-traduce")
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro", "es")
+	await process_frame
+	var fila_es_i18n: Control = null
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		if hijo.url == "https://sin.test":
+			fila_es_i18n = hijo
+			break
+	_check(fila_es_i18n != null and fila_es_i18n.get_node("%EstadoLabel").text == "No existe (404)", "al volver a es la fila re-traduce el estado guardado")
+	_check(main.get_node("%Rotos").text == "Rotos: 1", "al volver a es la barra de estado se re-traduce")
+	_check(filtro_estado_i18n.get_item_text(0) == "Todos", "al volver a es el filtro de estado se re-traduce")
+
 	# Actualización (#27): diálogo y comprobación en headless
 	_check(main_script.has_method("_lanzar_comprobacion_auto"), "main tiene el disparo automático")
 	_check(main.has_node("%DialogoActualizacion"), "existe el diálogo DialogoActualizacion")
