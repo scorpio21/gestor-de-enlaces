@@ -19,6 +19,8 @@
 - 🔁 **Re-verificación individual** — botón *Volver a comprobar* en cada fila caída.
 - 🖱️ **Apertura directa** — clic en un enlace lo abre en el navegador del sistema.
 - 📊 **Progreso en tiempo real** — contador de verificaciones completadas.
+- 🗂️ **Ordenación por columnas** — pulsa las cabeceras de la lista para ordenar por fecha, nombre, imagen o estado (el criterio queda persistido, `#17`).
+- 🌐 **Internacionalización ES/EN** — selector de idioma con banderas en Preferencias; todos los textos de la UI se traducen al arrancar según tu elección (`#30`).
 
 ---
 
@@ -86,7 +88,7 @@ La escena principal es `res://scenes/Main.tscn`.
 
 - **Presets de exportación** (`export_presets.cfg`) — Windows (exe), Linux/X11 (x86_64) y macOS (`.app` universal). La escena principal y los iconos (SVG/PNG/ICO/ICNS) se generan con `scripts/generar_iconos.gd`.
 - **GitHub Actions** (`.github/workflows/ci.yml`) — en cada push a `main`: descarga Godot 4.7.2 y las export templates (versión fija `4.7.2.stable`), importa el proyecto, ejecuta la batería de tests headless y exporta los 3 presets a `build/` (el `.app` de macOS se comprime a ZIP). Los artefactos quedan publicados en la página del run.
-- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 17 suites en orden; local (Windows, pwsh):
+- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 22 suites en orden; local (Windows, pwsh):
 
   ```bash
   & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_<area>.gd
@@ -102,6 +104,7 @@ La escena principal es `res://scenes/Main.tscn`.
 gestor-de-enlaces/
 ├── project.godot            # Configuración del proyecto
 ├── export_presets.cfg       # Presets de exportación Windows/Linux/macOS
+├── CHANGELOG.md             # Histórico de cambios por día
 ├── .github/workflows/ci.yml # CI: tests headless + export de los 3 bundles
 ├── scenes/
 │   ├── Main.tscn            # Escena principal (UI completa)
@@ -123,10 +126,13 @@ gestor-de-enlaces/
 │   ├── preferencias.gd      # Ventana de preferencias
 │   ├── gestor_archivo.gd    # Selección y copia de capturas
 │   ├── gestor_imagenes.gd   # Copia de capturas a Assets/png
+│   ├── extraer_cadenas.gd   # Scanner de cadenas de la UI
 │   └── generar_iconos.gd    # Regenera Assets/icon (svg/png/ico/icns)
 ├── tests/
-│   ├── run_battery.sh       # Ejecuta las 17 suites headless (Linux/CI)
-│   └── test_<area>.gd       # 17 suites SceneTree (TESTS OK / quit(0))
+│   ├── run_battery.sh       # Ejecuta las 22 suites headless (Linux/CI)
+│   └── test_<area>.gd       # 22 suites SceneTree (TESTS OK / quit(0))
+├── locale/
+│   └── gestor_es_en.csv     # Traducciones ES/EN (clave ES, valor ES, valor EN)
 ├── data/
 │   └── data.json            # Catálogo base de enlaces
 ├── Assets/
@@ -148,6 +154,8 @@ gestor-de-enlaces/
 - [x] **Logs rotativos y diagnóstico en ZIP** — logger app/scan en `user://logs/` + *Utilidades → Exportar diagnóstico…* (`#28`)
 - [x] **Icono propio y metadatos 0.1.0** — Assets/icon (svg/png/ico/icns) generado por script (`#29`)
 - [x] **Empaquetado y CI** — presets Windows/Linux/macOS + GitHub Actions que testea y exporta los 3 bundles (#26)
+- [x] **Ordenación por columnas** — cabeceras de la lista con criterio persistido (`#17`)
+- [x] **Internacionalización ES/EN** — selector de idioma con banderas y `tr()` en toda la UI (`#30`)
 
 > El diseño de cada funcionalidad está especificado en `docs/superpowers/specs/` (`2026-09-05-estado-escaneo-enlaces-design.md`, `2026-09-05-captura-enlaces-design.md`).
 
