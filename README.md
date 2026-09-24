@@ -6,6 +6,15 @@
 
 ---
 
+## Capturas
+
+<p align="center">
+  <img src="Assets/main.png" alt="Ventana principal de GestorAO" height="320"/>
+  <img src="Assets/preferencias.png" alt="Ventana de preferencias" height="320"/>
+</p>
+
+---
+
 ## Características
 
 - 📚 **Listado por catálogo** — listado base en `data/data.json` + enlaces añadidos por el usuario guardados en `user://enlaces.json`.
