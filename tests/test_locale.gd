@@ -2,6 +2,7 @@ extends SceneTree
 
 const RUTA_CSV := "res://locale/gestor_es_en.csv"
 const Extraer := preload("res://scripts/extraer_cadenas.gd")
+const IdiomaScript := preload("res://scripts/idioma.gd")
 
 var _fallos := 0
 
@@ -15,6 +16,8 @@ func _initialize() -> void:
 	_a_cabecera(filas)
 	_a_integridad(filas)
 	_b_cobertura(filas)
+	_c_idioma()
+	_d_templates()
 	_cerrar()
 
 
@@ -51,6 +54,36 @@ func _b_cobertura(filas: Array) -> void:
 	else:
 		for a in ausentes:
 			_check(false, "falta clave: %s" % a)
+
+
+func _c_idioma() -> void:
+	_check(IdiomaScript.aplicar("", "en_US") == "en", "aplicar autodetecta en_US")
+	_check(IdiomaScript.aplicar("", "es_ES") == "es", "aplicar autodetecta es_ES")
+	_check(IdiomaScript.aplicar("", "fr_FR") == "es", "aplicar cae a es con locale ajeno")
+	_check(IdiomaScript.aplicar("en", "es_ES") == "en", "la config en manda sobre el SO")
+	_check(IdiomaScript.aplicar("es", "en_US") == "es", "la config es manda sobre el SO")
+	IdiomaScript.cargar_traducciones()
+	TranslationServer.set_locale("es")
+	_check(tr("Nombre") == "Nombre", "la carga manual registra traducciones es")
+	TranslationServer.set_locale("en")
+	_check(tr("Nombre") == "Name", "la carga manual registra traducciones en")
+	_check(tr("%d enlaces") == "%d links", "el template %d enlaces se traduce en")
+	TranslationServer.set_locale("es")
+
+
+func _d_templates() -> void:
+	var regex := RegEx.create_from_string(r'\.(?:text|dialog_text|ok_button_text)\s*=\s*"([^"]*%[^"]*)"')
+	var pendientes := 0
+	for ruta in Extraer.SCRIPTS_UI:
+		var src := FileAccess.get_file_as_string(ruta)
+		for m in regex.search_all(src):
+			var fin := m.get_end(0)
+			var ini := src.rfind("\n", fin - 1) + 1
+			var linea := src.substr(ini, fin - ini)
+			if not linea.contains("tr("):
+				pendientes += 1
+				push_error("FALLO: template sin tr(): %s" % linea.strip_edges())
+	_check(pendientes == 0, "todo texto con %% de scripts de UI está envuelto en tr()")
 
 
 func _leer_csv(path: String) -> Array:

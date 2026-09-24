@@ -6,6 +6,7 @@ var DATA_USER := "user://enlaces.json"
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
+const IdiomaScript := preload("res://scripts/idioma.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
 const GestorArchivoScript := preload("res://scripts/gestor_archivo.gd")
@@ -96,6 +97,8 @@ func _ready() -> void:
 	_config_store = ConfigStoreScript.new(CONFIG_BASE)
 	_cola_store = ColaStoreScript.new()
 	var cfg: Dictionary = _config_store.cargar()
+	IdiomaScript.cargar_traducciones()
+	TranslationServer.set_locale(IdiomaScript.aplicar(String(cfg.get("idioma", "")), OS.get_locale()))
 	_paralelismo = clampi(int(cfg.get("paralelismo", 3)), 1, 8)
 	_timeout = clampf(float(cfg.get("timeout", 10.0)), 3.0, 60.0)
 	_auto_abrir = cfg.get("auto_abrir", true) == true
@@ -168,7 +171,7 @@ func _on_importar_elegido(ruta: String) -> void:
 	var entradas: Array = res.get("entradas", [])
 	var omitidas := int(res.get("omitidas", 0))
 	if entradas.is_empty():
-		progreso.text = "%d omitidos (ya existían o sin URL válida)." % omitidas
+		progreso.text = tr("%d omitidos (ya existían o sin URL válida).") % omitidas
 		return
 	var importados := entradas.size()
 	for entrada in entradas:
@@ -180,7 +183,7 @@ func _on_importar_elegido(ruta: String) -> void:
 		return
 	_refrescar_vista()
 	_actualizar_status()
-	progreso.text = "%d importados, %d omitidos." % [importados, omitidas]
+	progreso.text = tr("%d importados, %d omitidos.") % [importados, omitidas]
 
 
 func _on_exportar_elegido(ruta: String) -> void:
@@ -188,7 +191,7 @@ func _on_exportar_elegido(ruta: String) -> void:
 	if not res.get("ok", false):
 		progreso.text = str(res.get("error", "No se pudo exportar el catálogo."))
 		return
-	progreso.text = "Catálogo exportado (%d enlaces)." % int(res.get("total", 0))
+	progreso.text = tr("Catálogo exportado (%d enlaces).") % int(res.get("total", 0))
 
 
 func _on_informe_elegido(ruta: String) -> void:
@@ -219,7 +222,7 @@ func _on_informe_elegido(ruta: String) -> void:
 	if not res.get("ok", false):
 		progreso.text = str(res.get("error", "No se pudo guardar el informe."))
 		return
-	progreso.text = "Informe %s guardado (%d enlaces)." % [formato.to_upper(), int(res.get("total", 0))]
+	progreso.text = tr("Informe %s guardado (%d enlaces).") % [formato.to_upper(), int(res.get("total", 0))]
 
 
 func _formato_informe(ruta: String) -> String:
@@ -234,10 +237,10 @@ func _on_diag_elegido(ruta: String) -> void:
 		base = _logger_base()
 	var res := DiagnosticoScript.exportar(ruta, base, str(ProjectSettings.get_setting("application/config/version", "0.0.1")), _entradas.size())
 	if not res.get("ok", false):
-		progreso.text = "No se pudo exportar el diagnóstico (%d errores)." % int(res.get("errores", 0))
+		progreso.text = tr("No se pudo exportar el diagnóstico (%d errores).") % int(res.get("errores", 0))
 		return
 	_log_app("diagnostico", "diagnóstico exportado a " + ruta)
-	progreso.text = "Diagnóstico guardado en %s." % ruta
+	progreso.text = tr("Diagnóstico guardado en %s.") % ruta
 
 
 func _logger_base() -> String:
@@ -258,7 +261,7 @@ func _on_utilidades_id(id: int) -> void:
 	if id == 0:
 		ventana_agregar.abrir()
 	elif id == 1:
-		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "oscuro")))
+		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "oscuro")), String(_config_store.cargar().get("idioma", "")))
 	elif id == 2:
 		_solicitar_limpieza_capturas()
 	elif id == 3:
@@ -319,7 +322,7 @@ func _solicitar_limpieza_capturas() -> void:
 	if borradas == 0:
 		progreso.text = "No hay capturas huérfanas."
 		return
-	%ConfirmarLimpieza.dialog_text = "¿Borrar %d capturas huérfanas?" % borradas
+	%ConfirmarLimpieza.dialog_text = tr("¿Borrar %d capturas huérfanas?") % borradas
 	%ConfirmarLimpieza.popup_centered()
 
 
@@ -328,9 +331,9 @@ func _confirmar_limpieza() -> void:
 	_limpieza_resultado = {}
 	var borradas := int(res.get("borradas", 0))
 	var errores := int(res.get("errores", 0))
-	var texto := "Capturas huérfanas eliminadas: %d" % borradas
+	var texto := tr("Capturas huérfanas eliminadas: %d") % borradas
 	if errores > 0:
-		texto += " (%d errores)" % errores
+		texto += tr(" (%d errores)") % errores
 	progreso.text = texto
 
 
@@ -431,7 +434,7 @@ func _on_enlace_guardado(datos: Dictionary) -> void:
 	var url_nueva := GestorCatalogoScript.normalizar_url(str(datos.get("url", "")))
 	var existente := _url_existente(url_nueva)
 	if not existente.is_empty():
-		progreso.text = "Ya existe: %s" % existente
+		progreso.text = tr("Ya existe: %s") % existente
 		return
 	datos["url"] = url_nueva
 	datos["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", "otro"))
@@ -441,7 +444,7 @@ func _on_enlace_guardado(datos: Dictionary) -> void:
 		return
 	_refrescar_vista()
 	_actualizar_status()
-	progreso.text = "Enlace agregado: %s" % datos.get("nombre", "")
+	progreso.text = tr("Enlace agregado: %s") % datos.get("nombre", "")
 
 
 func _on_lote_guardado(urls: Array) -> void:
@@ -463,9 +466,9 @@ func _on_lote_guardado(urls: Array) -> void:
 	if nuevas.is_empty():
 		var partes_vacias: Array = ["No se añadió ningún enlace."]
 		if not repetidas.is_empty():
-			partes_vacias.append("%d repetidas ignoradas." % repetidas.size())
+			partes_vacias.append(tr("%d repetidas ignoradas.") % repetidas.size())
 		if not invalidas.is_empty():
-			partes_vacias.append("%d inválidas ignoradas." % invalidas.size())
+			partes_vacias.append(tr("%d inválidas ignoradas.") % invalidas.size())
 		progreso.text = " ".join(partes_vacias)
 		return
 	for u in nuevas:
@@ -481,11 +484,11 @@ func _on_lote_guardado(urls: Array) -> void:
 			_entradas.pop_back()
 		progreso.text = "No se pudo guardar el lote."
 		return
-	var partes: Array = ["Se añadieron %d enlaces." % nuevas.size()]
+	var partes: Array = [tr("Se añadieron %d enlaces.") % nuevas.size()]
 	if not repetidas.is_empty():
-		partes.append("%d repetidas ignoradas." % repetidas.size())
+		partes.append(tr("%d repetidas ignoradas.") % repetidas.size())
 	if not invalidas.is_empty():
-		partes.append("%d inválidas ignoradas." % invalidas.size())
+		partes.append(tr("%d inválidas ignoradas.") % invalidas.size())
 	_refrescar_vista()
 	_actualizar_status()
 	progreso.text = " ".join(partes)
@@ -548,7 +551,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 	var entrada: Dictionary = _entradas[indice]
 	var img_anterior := str(entrada.get("img", ""))
 	if url_nueva != url_original and not _cambios_url_validos(url_original, url_nueva):
-		progreso.text = "Ya existe: %s" % url_nueva
+		progreso.text = tr("Ya existe: %s") % url_nueva
 		var datos_reabrir := datos.duplicate(true)
 		datos_reabrir["img"] = img_anterior
 		datos_reabrir.erase("img_pendiente")
@@ -585,7 +588,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 		_borrar_captura_si_huerfana(img_anterior)
 	_refrescar_vista()
 	_actualizar_status()
-	progreso.text = "Enlace actualizado: %s" % str(datos.get("nombre", ""))
+	progreso.text = tr("Enlace actualizado: %s") % str(datos.get("nombre", ""))
 
 
 func _borrar_captura_si_huerfana(ruta: String) -> void:
@@ -656,7 +659,7 @@ func _mostrar_lista(entradas: Array) -> void:
 		lista.add_child(item)
 
 	_aplicar_filtro()
-	progreso.text = "%d enlaces" % lista.get_child_count()
+	progreso.text = tr("%d enlaces") % lista.get_child_count()
 
 
 func _actualizar_barra(hechos: int, total: int) -> void:
@@ -698,7 +701,7 @@ func _comprobar_visibles() -> void:
 	%BarraProgreso.visible = true
 	%BarraProgreso.remove_theme_stylebox_override("fill")
 	_actualizar_barra(0, _total)
-	progreso.text = "Comprobando 0/%d…" % _total
+	progreso.text = tr("Comprobando 0/%d…") % _total
 	_persistir_cola()
 	_lanzar_siguiente()
 
@@ -717,7 +720,7 @@ func _on_item_terminado(item: Button) -> void:
 	_en_vuelo = maxi(_en_vuelo - 1, 0)
 	_hechos += 1
 	_actualizar_barra(_hechos, _total)
-	progreso.text = "Comprobando %d/%d…" % [_hechos, _total]
+	progreso.text = tr("Comprobando %d/%d…") % [_hechos, _total]
 	var ahora := int(Time.get_unix_time_from_system())
 	if is_instance_valid(item):
 		var clave_estado := GestorCatalogoScript.clave_unica(item.url)
@@ -739,7 +742,7 @@ func _on_item_terminado(item: Button) -> void:
 		if is_instance_valid(hijo) and hijo.valido == false:
 			caidos += 1
 	_marcar_barra_final(caidos)
-	progreso.text = "Listo: %d caídos de %d" % [caidos, _total]
+	progreso.text = tr("Listo: %d caídos de %d") % [caidos, _total]
 
 
 func _revisar_cola_pendiente() -> void:
@@ -759,7 +762,7 @@ func _revisar_cola_pendiente() -> void:
 	if validas.is_empty():
 		_cola_store.limpiar()
 		return
-	%ConfirmarReanudar.dialog_text = "¿Reanudar escaneo de %d enlaces?" % validas.size()
+	%ConfirmarReanudar.dialog_text = tr("¿Reanudar escaneo de %d enlaces?") % validas.size()
 	%ConfirmarReanudar.popup_centered()
 
 
@@ -781,7 +784,7 @@ func _reanudar_escaneo() -> void:
 	%BarraProgreso.visible = true
 	%BarraProgreso.remove_theme_stylebox_override("fill")
 	_actualizar_barra(0, _total)
-	progreso.text = "Comprobando 0/%d…" % _total
+	progreso.text = tr("Comprobando 0/%d…") % _total
 	_lanzar_siguiente()
 
 
@@ -802,7 +805,7 @@ func _on_recomprobar_pedido(item: Button) -> void:
 		return
 	if item.estado == "comprobando":
 		return
-	progreso.text = "Re-comprobando %s…" % item.url
+	progreso.text = tr("Re-comprobando %s…") % item.url
 	item.verificacion_terminada.connect(_persistir_recompra.bind(item), CONNECT_ONE_SHOT)
 	item.verificar()
 
@@ -821,7 +824,7 @@ func _persistir_recompra(item: Button) -> void:
 
 func _on_eliminar_pedido(item: Button) -> void:
 	_item_pendiente_borrar = item
-	%ConfirmarBorrado.dialog_text = "¿Eliminar «%s» para siempre?" % item.get_node("Margen/Fila/Textos/NombreLabel").text
+	%ConfirmarBorrado.dialog_text = tr("¿Eliminar «%s» para siempre?") % item.get_node("Margen/Fila/Textos/NombreLabel").text
 	%ConfirmarBorrado.popup_centered()
 
 
@@ -829,7 +832,7 @@ func _on_copiar_pedido(url: String, item: Button) -> void:
 	if not is_instance_valid(item):
 		return
 	DisplayServer.clipboard_set(url)
-	progreso.text = "URL copiada: %s" % url
+	progreso.text = tr("URL copiada: %s") % url
 
 
 func _confirmar_borrado() -> void:
@@ -889,19 +892,22 @@ func _on_busqueda_changed(_texto: String) -> void:
 
 func _actualizar_status() -> void:
 	var c: Dictionary = ContadoresScript.contar(_entradas, _estados)
-	rotos_label.text = "Rotos: %d" % c.get("rotos", 0)
-	activos_label.text = "Activos: %d" % c.get("activos", 0)
-	total_label.text = "Total: %d" % c.get("total", 0)
+	rotos_label.text = tr("Rotos: %d") % c.get("rotos", 0)
+	activos_label.text = tr("Activos: %d") % c.get("activos", 0)
+	total_label.text = tr("Total: %d") % c.get("total", 0)
 
 
-func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "oscuro") -> void:
+func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "oscuro", idioma := "es") -> void:
+	var locale_anterior := TranslationServer.get_locale()
 	_paralelismo = paralelismo
 	_timeout = timeout
 	_auto_abrir = auto_abrir
 	_intervalo_auto = intervalo
 	TemaStoreScript.aplicar(tema, self)
-	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema):
-		progreso.text = "No se pudo guardar la configuración."
+	TranslationServer.set_locale(idioma)
+	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma):
+		TranslationServer.set_locale(locale_anterior)
+		progreso.text = tr("No se pudo guardar la configuración.")
 	_refrescar_vista()
 	_rearmar_auto_escaneo()
 	if _auto_abrir and _puede_auto_escanear():
@@ -946,7 +952,7 @@ func _mostrar_aviso(modo: String, version: String, url: String) -> void:
 	var dialogo: ConfirmationDialog = %DialogoActualizacion
 	if modo == "nueva":
 		dialogo.title = "Nueva versión disponible"
-		dialogo.dialog_text = "Hay una nueva versión: %s" % version
+		dialogo.dialog_text = tr("Hay una nueva versión: %s") % version
 		dialogo.ok_button_text = "Ver release"
 		dialogo.get_cancel_button().visible = true
 		_aviso_url = url
@@ -954,7 +960,7 @@ func _mostrar_aviso(modo: String, version: String, url: String) -> void:
 		_dialogo_con_aviso = true
 	elif modo == "al_dia":
 		dialogo.title = "Comprobar actualizaciones"
-		dialogo.dialog_text = "Estás al día (v%s)" % version
+		dialogo.dialog_text = tr("Estás al día (v%s)") % version
 		dialogo.ok_button_text = "Cerrar"
 		dialogo.get_cancel_button().visible = false
 		_dialogo_con_aviso = false
@@ -991,6 +997,7 @@ func _persistir_version_vista() -> void:
 		_dialogo_version,
 		_orden_columna,
 		_orden_direccion,
+		str(cfg.get("idioma", "")),
 	)
 
 
@@ -1096,7 +1103,7 @@ func _pintar_cabeceras() -> void:
 	for col in pares:
 		var boton: Button = pares[col]
 		boton.button_pressed = _orden_columna == col
-		boton.text = "%s %s" % [titulos[col], flecha] if _orden_columna == col else str(titulos[col])
+		boton.text = tr("%s %s") % [tr(titulos[col]), flecha] if _orden_columna == col else tr(titulos[col])
 
 
 func _persistir_orden() -> bool:
@@ -1110,6 +1117,7 @@ func _persistir_orden() -> bool:
 		str(cfg.get("ultima_version_vista", "")),
 		_orden_columna,
 		_orden_direccion,
+		str(cfg.get("idioma", "")),
 	)
 
 

@@ -1,9 +1,12 @@
 keys,es,en
 %d enlaces,%d enlaces,%d links
 "%d importados, %d omitidos.","%d importados, %d omitidos.","%d imported, %d skipped."
+%d inválidas ignoradas.,%d inválidas ignoradas.,%d invalid ignored.
 %d omitidos (ya existían o sin URL válida).,%d omitidos (ya existían o sin URL válida).,%d skipped (already existing or no valid URL).
+%d repetidas ignoradas.,%d repetidas ignoradas.,%d duplicates ignored.
 %s %s,%s %s,%s %s
 %s — %s — %s,%s — %s — %s,%s — %s — %s
+(%d errores),(%d errores),(%d errors)
 Activos: %d,Activos: %d,Working: %d
 Activos: 0,Activos: 0,Working: 0
 Agregar,Agregar,Add
@@ -12,6 +15,7 @@ Auto-escaneo,Auto-escaneo,Auto-scan
 Bajar,Bajar,Move down
 Buscar por nombre o descripción...,Buscar por nombre o descripción...,Search by name or description...
 Cancelar,Cancelar,Cancel
+Capturas huérfanas eliminadas: %d,Capturas huérfanas eliminadas: %d,Orphaned captures deleted: %d
 Categoría,Categoría,Category
 Catálogo exportado (%d enlaces).,Catálogo exportado (%d enlaces).,Catalogue exported (%d links).
 Catálogo restaurado desde la copia.,Catálogo restaurado desde la copia.,Catalogue restored from backup.
@@ -106,6 +110,7 @@ Restaurar copia…,Restaurar copia…,Restore backup…
 Rotos: %d,Rotos: %d,Broken: %d
 Rotos: 0,Rotos: 0,Broken: 0
 Salir,Salir,Quit
+Se añadieron %d enlaces.,Se añadieron %d enlaces.,%d links added.
 Servidor,Servidor,Server
 Sin comprobar,Sin comprobar,Not checked
 Sin historial,Sin historial,No history

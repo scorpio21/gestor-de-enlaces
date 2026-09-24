@@ -27,6 +27,8 @@ func _initialize() -> void:
 
 func _arrancar() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("user://__test_main_barra__"))
+	ConfigStoreScript.new("user://__test_main_barra__").guardar(3, 10.0, false, 0, "oscuro", "", "", 1, "es")
+	TranslationServer.set_locale("es")
 	var main := MAIN_SCENE.instantiate()
 	main.DATA_RES = "user://__test_main_barra__/data.json"
 	main.DATA_USER = "user://__test_main_barra__/enlaces.json"
@@ -753,7 +755,7 @@ func _arrancar() -> void:
 
 	var base_orden := "user://__test_orden_restore__"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(base_orden))
-	ConfigStoreScript.new(base_orden).guardar(3, 10.0, true, 0, "oscuro", "", "fecha", -1)
+	ConfigStoreScript.new(base_orden).guardar(3, 10.0, true, 0, "oscuro", "", "fecha", -1, "en")
 	var main_rest := MAIN_SCENE.instantiate()
 	main_rest.DATA_RES = base_orden + "/data.json"
 	main_rest.DATA_USER = base_orden + "/enlaces.json"
@@ -764,6 +766,8 @@ func _arrancar() -> void:
 	var mrs: Node = main_rest.get_node(".")
 	_check(mrs._orden_columna == "fecha" and mrs._orden_direccion == -1, "otro arranque restaura el criterio desde config")
 	_check(_urls_visibles(main_rest).is_empty() or _urls_visibles(main_rest).size() >= 0, "el segundo arranque carga sin errores")
+	_check(TranslationServer.get_locale() == "en", "arrancar con config idioma=en fija el locale en")
+	TranslationServer.set_locale("es")
 	main_rest.queue_free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(base_orden))
 

@@ -18,9 +18,9 @@ func abrir(entradas: Array) -> void:
 		if typeof(e) != TYPE_DICTIONARY:
 			continue
 		var fila := Label.new()
-		fila.text = "%s — %s — %s" % [
+		fila.text = tr("%s — %s — %s") % [
 			ListItemScript.formatear_fecha(int(e.get("fecha", 0))),
-			"Válido" if e.get("valido") == true else "Caído",
+			tr("Válido") if e.get("valido") == true else tr("Caído"),
 			str(e.get("mensaje", "")),
 		]
 		fila.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

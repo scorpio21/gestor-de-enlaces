@@ -2,6 +2,7 @@ extends SceneTree
 
 const PATRON_ESCENA := r'(?:^|\s|/)(?:text|title|placeholder_text|tooltip_text|dialog_text|ok_button_text|cancel_button_text)\s*=\s*"([^"]+)"'
 const PATRON_SCRIPT_UI := r'\.(?:text|title|dialog_text|ok_button_text|cancel_button_text)\s*=\s*"([^"]+)"'
+const PATRON_TR := r'\btr\("([^"]*)"'
 const PATRON_MENU := r'(?:add_item|add_icon_item)\([^"\n]*"([^"]+)"'
 const ESCENAS := ["res://scenes/Main.tscn", "res://scenes/Preferencias.tscn", "res://scenes/AgregarEnlace.tscn", "res://scenes/ListItem.tscn", "res://scenes/Historial.tscn"]
 const SCRIPTS_UI := ["res://scripts/main.gd", "res://scripts/preferencias.gd", "res://scripts/agregar_enlace.gd", "res://scripts/list_item.gd", "res://scripts/historial.gd"]
@@ -13,6 +14,7 @@ static func ui_strings() -> Array[String]:
 		_volcar(FileAccess.get_file_as_string(ruta), RegEx.create_from_string(PATRON_ESCENA), por_analizar)
 	for ruta in SCRIPTS_UI:
 		_volcar(FileAccess.get_file_as_string(ruta), RegEx.create_from_string(PATRON_SCRIPT_UI), por_analizar)
+		_volcar(FileAccess.get_file_as_string(ruta), RegEx.create_from_string(PATRON_TR), por_analizar)
 		_volcar(FileAccess.get_file_as_string(ruta), RegEx.create_from_string(PATRON_MENU), por_analizar)
 	for cadena in EXTRA_VISIBLES:
 		por_analizar[cadena] = true
