@@ -124,6 +124,7 @@ func _arrancar() -> void:
 	var dialogo_imagen: FileDialog = dialogo.get_node("%DialogoImagen")
 	_check(dialogo_imagen.filters.size() == 1 and dialogo_imagen.filters[0] == "*.png ; *.jpg ; *.jpeg ; *.webp", "el diálogo de imagen lista png, jpg, jpeg y webp (#33)")
 	_check(dialogo_imagen.access == FileDialog.ACCESS_FILESYSTEM, "el diálogo de imagen navega por todo el disco (no queda atrapado en res://)")
+	_check(dialogo_imagen.file_mode == FileDialog.FILE_MODE_OPEN_FILE, "el diálogo de imagen abre archivos (no está en modo Guardar)")
 	var jpg_prueba := ProjectSettings.globalize_path("user://__test_agregar_jpg__.jpg")
 	var img := Image.create_empty(8, 8, false, Image.FORMAT_RGB8)
 	img.fill(Color.BLUE)
