@@ -19,6 +19,7 @@ const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const ActualizadorScript := preload("res://scripts/actualizador.gd")
 const OrdenadorScript := preload("res://scripts/ordenador.gd")
 const FiltrosScript := preload("res://scripts/filtros.gd")
+const ColaEscaneoScript := preload("res://scripts/cola_escaneo.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -41,9 +42,7 @@ const FiltrosScript := preload("res://scripts/filtros.gd")
 
 var _entradas: Array = []
 var _cola: Array[Button] = []
-var _en_vuelo := 0
-var _hechos := 0
-var _total := 0
+var _scan = ColaEscaneoScript.new()
 var _estado_store: RefCounted
 var _config_store: RefCounted
 var CONFIG_BASE := "user://"
@@ -636,7 +635,7 @@ func _refrescar_vista() -> void:
 
 func _mostrar_lista(entradas: Array) -> void:
 	_cola.clear()
-	_en_vuelo = 0
+	_scan.reiniciar()
 	for hijo in lista.get_children():
 		hijo.queue_free()
 
@@ -702,10 +701,8 @@ func _comprobar_visibles() -> void:
 		if hijo.visible:
 			_cola.append(hijo)
 
-	_total = _cola.size()
-	_hechos = 0
-	_en_vuelo = 0
-	if _total == 0:
+	_scan.configurar(_cola, _paralelismo, _lanzar_item)
+	if _scan.total == 0:
 		%BarraProgreso.visible = false
 		progreso.text = tr("Nada que comprobar")
 		return
@@ -713,27 +710,21 @@ func _comprobar_visibles() -> void:
 	%BotonComprobar.disabled = true
 	%BarraProgreso.visible = true
 	%BarraProgreso.remove_theme_stylebox_override("fill")
-	_actualizar_barra(0, _total)
-	progreso.text = tr("Comprobando 0/%d…") % _total
+	_actualizar_barra(0, _scan.total)
+	progreso.text = tr("Comprobando 0/%d…") % _scan.total
 	_persistir_cola()
-	_lanzar_siguiente()
+	_scan.lanzar()
 
 
-func _lanzar_siguiente() -> void:
-	while _en_vuelo < _paralelismo and not _cola.is_empty():
-		var item: Button = _cola.pop_front()
-		if not is_instance_valid(item):
-			continue
-		_en_vuelo += 1
-		item.verificacion_terminada.connect(_on_item_terminado.bind(item), CONNECT_ONE_SHOT)
-		item.verificar()
+func _lanzar_item(item: Button) -> void:
+	item.verificacion_terminada.connect(_on_item_terminado.bind(item), CONNECT_ONE_SHOT)
+	item.verificar()
 
 
 func _on_item_terminado(item: Button) -> void:
-	_en_vuelo = maxi(_en_vuelo - 1, 0)
-	_hechos += 1
-	_actualizar_barra(_hechos, _total)
-	progreso.text = tr("Comprobando %d/%d…") % [_hechos, _total]
+	_scan.terminar()
+	_actualizar_barra(_scan.hechos, _scan.total)
+	progreso.text = tr("Comprobando %d/%d…") % [_scan.hechos, _scan.total]
 	var ahora := int(Time.get_unix_time_from_system())
 	if is_instance_valid(item):
 		var clave_estado := GestorCatalogoScript.clave_unica(item.url)
@@ -742,8 +733,8 @@ func _on_item_terminado(item: Button) -> void:
 		_log_scan(item.url, "valido" if item.valido == true else "caido", item.mensaje)
 	_aplicar_filtro()
 	_actualizar_status()
-	if not _cola.is_empty() or _en_vuelo > 0:
-		_lanzar_siguiente()
+	if _scan.queda_trabajo():
+		_scan.lanzar()
 		_persistir_cola()
 		return
 
@@ -755,7 +746,7 @@ func _on_item_terminado(item: Button) -> void:
 		if is_instance_valid(hijo) and hijo.valido == false:
 			caidos += 1
 	_marcar_barra_final(caidos)
-	progreso.text = tr("Listo: %d caídos de %d") % [caidos, _total]
+	progreso.text = tr("Listo: %d caídos de %d") % [caidos, _scan.total]
 
 
 func _revisar_cola_pendiente() -> void:
@@ -785,20 +776,18 @@ func _reanudar_escaneo() -> void:
 	var pendientes: Array = _cola_store.cargar().get("urls", [])
 	if pendientes.is_empty():
 		return
-	_en_vuelo = 0
 	_rearmar_cola_pendiente(pendientes)
-	_total = _cola.size()
-	if _total == 0:
+	_scan.configurar(_cola, _paralelismo, _lanzar_item)
+	if _scan.total == 0:
 		_cola_store.limpiar()
 		%BotonComprobar.disabled = false
 		return
-	_hechos = 0
 	%BotonComprobar.disabled = true
 	%BarraProgreso.visible = true
 	%BarraProgreso.remove_theme_stylebox_override("fill")
-	_actualizar_barra(0, _total)
-	progreso.text = tr("Comprobando 0/%d…") % _total
-	_lanzar_siguiente()
+	_actualizar_barra(0, _scan.total)
+	progreso.text = tr("Comprobando 0/%d…") % _scan.total
+	_scan.lanzar()
 
 
 func _rearmar_cola_pendiente(pendientes: Array) -> void:
@@ -1037,7 +1026,7 @@ func _iniciar_auto_escaneo() -> void:
 
 
 func _puede_auto_escanear() -> bool:
-	return not _es_headless() and _cola.is_empty() and _en_vuelo == 0
+	return not _es_headless() and _cola.is_empty() and _scan.en_vuelo == 0
 
 
 func _on_auto_timer() -> void:
