@@ -31,15 +31,15 @@ var _timeout := 10.0
 
 func _ready() -> void:
 	var menu: PopupMenu = %MenuContexto
-	menu.add_item("Editar…", 0)
+	menu.add_item(tr("Editar…"), 0)
 	menu.add_separator()
-	menu.add_item("Subir", 5)
-	menu.add_item("Bajar", 6)
+	menu.add_item(tr("Subir"), 5)
+	menu.add_item(tr("Bajar"), 6)
 	menu.add_separator()
-	menu.add_item("Volver a comprobar", 1)
-	menu.add_item("Copiar URL", 2)
-	menu.add_item("Historial…", 3)
-	menu.add_item("Eliminar", 4)
+	menu.add_item(tr("Volver a comprobar"), 1)
+	menu.add_item(tr("Copiar URL"), 2)
+	menu.add_item(tr("Historial…"), 3)
+	menu.add_item(tr("Eliminar"), 4)
 	menu.id_pressed.connect(_on_menu)
 	gui_input.connect(_on_gui_input)
 
@@ -52,10 +52,10 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "", ca
 	_actualizar_tooltip()
 	%NombreLabel.text = nombre
 	%DescripcionLabel.text = descripcion
-	%FechaLabel.text = "Sin comprobar"
-	_pintar_estado("Sin comprobar", TemaStoreScript.color_estado(null))
+	%FechaLabel.text = tr("Sin comprobar")
+	_pintar_estado(tr("Sin comprobar"), TemaStoreScript.color_estado(null))
 	self.categoria = GestorCatalogoScript.normalizar_categoria(categoria)
-	%CategoriaLabel.text = GestorCatalogoScript.categoria_display(self.categoria)
+	%CategoriaLabel.text = GestorCatalogoScript.new().categoria_display(self.categoria)
 	if imagen != "" and FileAccess.file_exists(imagen):
 		var img := Image.load_from_file(imagen)
 		if img != null and not img.is_empty():
@@ -76,7 +76,7 @@ func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva :
 		_pintar_estado(texto, TemaStoreScript.color_estado(false))
 	else:
 		estado = "pendiente"
-		_pintar_estado("Sin comprobar", TemaStoreScript.color_estado(null))
+		_pintar_estado(tr("Sin comprobar"), TemaStoreScript.color_estado(null))
 	_actualizar_tooltip()
 
 
@@ -87,12 +87,12 @@ static func formatear_fecha(unix: int) -> String:
 
 func _actualizar_tooltip() -> void:
 	if valido == null:
-		tooltip_text = url + "\nSin comprobar"
+		tooltip_text = url + "\n" + tr("Sin comprobar")
 		return
 	var lineas := PackedStringArray([url])
-	lineas.append("Código: %s" % ("—" if codigo == 0 else str(codigo)))
+	lineas.append(tr("Código: %s") % ("—" if codigo == 0 else str(codigo)))
 	if fecha > 0:
-		lineas.append("Comprobado: %s" % formatear_fecha(fecha))
+		lineas.append(tr("Comprobado: %s") % formatear_fecha(fecha))
 	lineas.append(mensaje)
 	tooltip_text = "\n".join(lineas)
 
@@ -114,14 +114,14 @@ func verificar() -> void:
 	if url.is_empty() or not (url.begins_with("http://") or url.begins_with("https://")):
 		valido = false
 		estado = "invalido"
-		mensaje = "URL inválida"
-		_pintar_estado("URL inválida", Color(0.95, 0.55, 0.2, 1))
+		mensaje = tr("URL inválida")
+		_pintar_estado(tr("URL inválida"), Color(0.95, 0.55, 0.2, 1))
 		_actualizar_tooltip()
 		verificacion_terminada.emit()
 		return
 
 	estado = "comprobando"
-	_pintar_estado("Comprobando…", Color(0.85, 0.75, 0.25, 1))
+	_pintar_estado(tr("Comprobando…"), Color(0.85, 0.75, 0.25, 1))
 	_checker = LinkCheckerScript.new()
 	add_child(_checker)
 	_checker.terminado.connect(_on_check_terminado)
@@ -182,4 +182,4 @@ func _pintar_fecha() -> void:
 	if fecha > 0:
 		%FechaLabel.text = formatear_fecha(fecha)
 	else:
-		%FechaLabel.text = "Sin comprobar"
+		%FechaLabel.text = tr("Sin comprobar")

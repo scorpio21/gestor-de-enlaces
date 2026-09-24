@@ -36,7 +36,7 @@ func _ready() -> void:
 	url.text_submitted.connect(func(_t: String) -> void: _on_guardar())
 	%Modo.item_selected.connect(_cambiar_modo)
 	for i in range(GestorCatalogoScript.CATEGORIAS.size()):
-		%Categoria.add_item(GestorCatalogoScript.categoria_display(GestorCatalogoScript.CATEGORIAS[i]))
+		%Categoria.add_item(GestorCatalogoScript.new().categoria_display(GestorCatalogoScript.CATEGORIAS[i]))
 
 
 func abrir() -> void:
@@ -71,8 +71,8 @@ func abrir_edicion(datos: Dictionary, url_original: String) -> void:
 	_imagen_original = str(datos.get("img", ""))
 	_fijar_imagen(_imagen_original)
 	%Categoria.select(GestorCatalogoScript.CATEGORIAS.find(GestorCatalogoScript.normalizar_categoria(datos.get("cat", ""))))
-	title = "Editar enlace"
-	%BotonGuardar.text = "Guardar cambios"
+	title = tr("Editar enlace")
+	%BotonGuardar.text = tr("Guardar cambios")
 	popup_centered()
 	nombre.grab_focus()
 
@@ -85,12 +85,12 @@ func _cambiar_modo(id: int) -> void:
 	if _modo == "varias":
 		%ListaUrls.text = ""
 		error_label.text = ""
-		title = "Agregar varias URLs"
-		%BotonGuardar.text = "Agregar"
+		title = tr("Agregar varias URLs")
+		%BotonGuardar.text = tr("Agregar")
 		%ListaUrls.grab_focus()
 	else:
-		title = "Agregar enlace"
-		%BotonGuardar.text = "Guardar"
+		title = tr("Agregar enlace")
+		%BotonGuardar.text = tr("Guardar")
 		nombre.grab_focus()
 
 
@@ -121,7 +121,7 @@ func _fijar_imagen(ruta: String) -> void:
 func _on_imagen_picked(ruta: String) -> void:
 	var img := Image.load_from_file(ruta)
 	if img == null or img.is_empty():
-		error_label.text = "No se pudo cargar la imagen."
+		error_label.text = tr("No se pudo cargar la imagen.")
 		return
 	_imagen_ruta = ruta
 	_quitar_imagen = false
@@ -143,15 +143,15 @@ func _on_guardar() -> void:
 	var u := url.text.strip_edges()
 
 	if n.is_empty():
-		error_label.text = "El nombre no puede estar vacío."
+		error_label.text = tr("El nombre no puede estar vacío.")
 		nombre.grab_focus()
 		return
 	if u.is_empty():
-		error_label.text = "La URL no puede estar vacía."
+		error_label.text = tr("La URL no puede estar vacía.")
 		url.grab_focus()
 		return
 	if not (u.begins_with("http://") or u.begins_with("https://")):
-		error_label.text = "La URL debe empezar por http:// o https://."
+		error_label.text = tr("La URL debe empezar por http:// o https://.")
 		url.grab_focus()
 		return
 
@@ -186,7 +186,7 @@ func _on_guardar_lote() -> void:
 		if not linea.is_empty():
 			lineas.append(linea)
 	if lineas.is_empty():
-		error_label.text = "Pega al menos una URL."
+		error_label.text = tr("Pega al menos una URL.")
 		%ListaUrls.grab_focus()
 		return
 	hide()

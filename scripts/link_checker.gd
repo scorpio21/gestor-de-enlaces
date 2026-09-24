@@ -82,22 +82,22 @@ func _process(delta: float) -> void:
 
 	_transcurrido += delta
 	if _transcurrido >= timeout_s:
-		_cerrar("Sin respuesta (tiempo agotado)", false)
+		_cerrar(tr("Sin respuesta (tiempo agotado)"), false)
 		return
 
 	_cliente.poll()
 	match _cliente.get_status():
 		HTTPClient.STATUS_DISCONNECTED:
 			if _pedido_enviado:
-				_cerrar("Conexión cerrada", false)
+				_cerrar(tr("Conexión cerrada"), false)
 		HTTPClient.STATUS_CANT_RESOLVE:
-			_cerrar("No existe el dominio", false)
+			_cerrar(tr("No existe el dominio"), false)
 		HTTPClient.STATUS_CANT_CONNECT:
-			_cerrar("No se pudo conectar", false)
+			_cerrar(tr("No se pudo conectar"), false)
 		HTTPClient.STATUS_CONNECTION_ERROR:
-			_cerrar("Error de conexión", false)
+			_cerrar(tr("Error de conexión"), false)
 		HTTPClient.STATUS_TLS_HANDSHAKE_ERROR:
-			_cerrar("Error TLS/HTTPS", false)
+			_cerrar(tr("Error TLS/HTTPS"), false)
 		HTTPClient.STATUS_CONNECTED:
 			if not _pedido_enviado:
 				_enviar_pedido()
@@ -108,7 +108,7 @@ func _process(delta: float) -> void:
 func _conectar(url: String) -> void:
 	var partes := _parsear_url(url)
 	if partes.is_empty():
-		_cerrar("URL inválida", false)
+		_cerrar(tr("URL inválida"), false)
 		return
 
 	_cliente.close()
@@ -116,13 +116,13 @@ func _conectar(url: String) -> void:
 	var tls: TLSOptions = TLSOptions.client() if partes.tls else null
 	var err := _cliente.connect_to_host(partes.host, partes.port, tls)
 	if err != OK:
-		_cerrar("No se pudo iniciar la conexión", false)
+		_cerrar(tr("No se pudo iniciar la conexión"), false)
 
 
 func _enviar_pedido() -> void:
 	var partes := _parsear_url(_url)
 	if partes.is_empty():
-		_cerrar("URL inválida", false)
+		_cerrar(tr("URL inválida"), false)
 		return
 
 	var err := _cliente.request(
@@ -134,7 +134,7 @@ func _enviar_pedido() -> void:
 		])
 	)
 	if err != OK:
-		_cerrar("No se pudo enviar la petición", false)
+		_cerrar(tr("No se pudo enviar la petición"), false)
 		return
 	_pedido_enviado = true
 
@@ -144,7 +144,7 @@ func _leer_respuesta() -> void:
 	if codigo in [301, 302, 303, 307, 308]:
 		var destino := _cabecera("Location")
 		if destino.is_empty() or _redirects >= MAX_REDIRECTS:
-			_cerrar("Redirección inválida (%d)" % codigo, false)
+			_cerrar(tr("Redirección inválida (%d)") % codigo, false)
 			return
 		_redirects += 1
 		_url = _resolver_redirect(_url, destino)
@@ -155,20 +155,20 @@ func _leer_respuesta() -> void:
 
 	var fragmento := _cliente.read_response_body_chunk().get_string_from_utf8().to_lower()
 	if _parece_muerto(codigo, fragmento):
-		_cerrar("No existe (%d)" % codigo, false)
+		_cerrar(tr("No existe (%d)") % codigo, false)
 		return
 
 	if codigo >= 200 and codigo < 400:
-		_cerrar("OK (%d)" % codigo, true)
+		_cerrar(tr("OK (%d)") % codigo, true)
 		return
 	if codigo == 401 or codigo == 403:
-		_cerrar("Existe, acceso restringido (%d)" % codigo, true)
+		_cerrar(tr("Existe, acceso restringido (%d)") % codigo, true)
 		return
 	if codigo == 404 or codigo == 410:
-		_cerrar("No existe (%d)" % codigo, false)
+		_cerrar(tr("No existe (%d)") % codigo, false)
 		return
 
-	_cerrar("Error HTTP %d" % codigo, false)
+	_cerrar(tr("Error HTTP %d") % codigo, false)
 
 
 func _parece_muerto(codigo: int, html: String) -> bool:

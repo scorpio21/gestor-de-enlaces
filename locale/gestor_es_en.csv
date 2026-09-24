@@ -11,6 +11,7 @@ Activos: %d,Activos: %d,Working: %d
 Activos: 0,Activos: 0,Working: 0
 Agregar,Agregar,Add
 Agregar enlace,Agregar enlace,Add link
+Agregar varias URLs,Agregar varias URLs,Add multiple URLs
 Auto-escaneo,Auto-escaneo,Auto-scan
 Bajar,Bajar,Move down
 Buscar por nombre o descripción...,Buscar por nombre o descripción...,Search by name or description...
@@ -27,20 +28,25 @@ Cada 30 minutos,Cada 30 minutos,Every 30 minutes
 Cerrar,Cerrar,Close
 Claro,Claro,Light
 Cliente,Cliente,Client
+Comprobado: %s,Comprobado: %s,Checked: %s
 Comprobando %d/%d…,Comprobando %d/%d…,Checking %d/%d…
 Comprobando 0/%d…,Comprobando 0/%d…,Checking 0/%d…
+Comprobando…,Comprobando…,Checking…
 Comprobar actualizaciones,Comprobar actualizaciones,Check for updates
 Comprobar actualizaciones…,Comprobar actualizaciones…,Check for updates…
 Comprobar cada,Comprobar cada,Check every
 Comprobar enlaces,Comprobar enlaces,Check links
 Comprobar enlaces al abrir,Comprobar enlaces al abrir,Check links on open
+Conexión cerrada,Conexión cerrada,Connection closed
 Copiar URL,Copiar URL,Copy URL
+Código: %s,Código: %s,Code: %s
 Códigos fuente,Códigos fuente,Source code
 Desactivado,Desactivado,Disabled
 Descartar,Descartar,Discard
 Descripción,Descripción,Description
 Diagnóstico guardado en %s.,Diagnóstico guardado en %s.,Diagnostics saved to %s.
 Editar…,Editar…,Edit…
+Editar enlace,Editar enlace,Edit link
 Ej. (Cliente + códigos),Ej. (Cliente + códigos),E.g. (Client + code)
 Ej. Mi servidor AO,Ej. Mi servidor AO,E.g. My AO server
 El nombre no puede estar vacío.,El nombre no puede estar vacío.,The name cannot be empty.
@@ -51,8 +57,12 @@ Eliminar enlace,Eliminar enlace,Delete link
 Enlace actualizado: %s,Enlace actualizado: %s,Link updated: %s
 Enlace agregado: %s,Enlace agregado: %s,Link added: %s
 Enlace eliminado,Enlace eliminado,Link deleted
+Error HTTP %d,Error HTTP %d,HTTP error %d
+Error TLS/HTTPS,Error TLS/HTTPS,TLS/HTTPS error
+Error de conexión,Error de conexión,Connection error
 Estado,Estado,Status
 Estás al día (v%s),Estás al día (v%s),You are up to date (v%s)
+"Existe, acceso restringido (%d)","Existe, acceso restringido (%d)","Exists, restricted access (%d)"
 Exportar catálogo JSON,Exportar catálogo JSON,Export JSON catalogue
 Exportar diagnóstico,Exportar diagnóstico,Export diagnostics
 Exportar diagnóstico…,Exportar diagnóstico…,Export diagnostics…
@@ -79,21 +89,27 @@ Limpiar capturas huérfanas,Limpiar capturas huérfanas,Clean orphan captures
 Limpiar capturas huérfanas…,Limpiar capturas huérfanas…,Clean orphan captures…
 Listo: %d caídos de %d,Listo: %d caídos de %d,Done: %d down of %d
 Nada que comprobar,Nada que comprobar,Nothing to check
+No existe (%d),No existe (%d),Does not exist (%d)
+No existe el dominio,No existe el dominio,Domain does not exist
 No hay capturas huérfanas.,No hay capturas huérfanas.,No orphan captures.
 No hay copia de seguridad disponible.,No hay copia de seguridad disponible.,No backup available.
 No se encontró el enlace.,No se encontró el enlace.,Link not found.
 No se pudo cargar la imagen.,No se pudo cargar la imagen.,Could not load the image.
 No se pudo comprobar actualizaciones.,No se pudo comprobar actualizaciones.,Could not check for updates.
+No se pudo conectar,No se pudo conectar,Could not connect
+No se pudo enviar la petición,No se pudo enviar la petición,Could not send the request
 No se pudo exportar el diagnóstico (%d errores).,No se pudo exportar el diagnóstico (%d errores).,Could not export diagnostics (%d errors).
 No se pudo guardar el catálogo.,No se pudo guardar el catálogo.,Could not save the catalogue.
 No se pudo guardar el enlace.,No se pudo guardar el enlace.,Could not save the link.
 No se pudo guardar el lote.,No se pudo guardar el lote.,Could not save the batch.
 No se pudo guardar el orden.,No se pudo guardar el orden.,Could not save the order.
 No se pudo guardar la configuración.,No se pudo guardar la configuración.,Could not save the settings.
+No se pudo iniciar la conexión,No se pudo iniciar la conexión,Could not start the connection
 No se pudo procesar la imagen.,No se pudo procesar la imagen.,Could not process the image.
 No se pudo restaurar la copia.,No se pudo restaurar la copia.,Could not restore the backup.
 Nombre,Nombre,Name
 Nueva versión disponible,Nueva versión disponible,New version available
+OK (%d),OK (%d),OK (%d)
 Oscuro,Oscuro,Dark
 Otro,Otro,Other
 Parche,Parche,Patch
@@ -104,6 +120,7 @@ Quitar imagen,Quitar imagen,Remove image
 Re-comprobando %s…,Re-comprobando %s…,Re-checking %s…
 Reanudar,Reanudar,Resume
 Reanudar escaneo,Reanudar escaneo,Resume scan
+Redirección inválida (%d),Redirección inválida (%d),Invalid redirect (%d)
 Restaurar,Restaurar,Restore
 Restaurar copia,Restaurar copia,Restore backup
 Restaurar copia…,Restaurar copia…,Restore backup…
@@ -114,6 +131,7 @@ Se añadieron %d enlaces.,Se añadieron %d enlaces.,%d links added.
 Servidor,Servidor,Server
 Sin comprobar,Sin comprobar,Not checked
 Sin historial,Sin historial,No history
+Sin respuesta (tiempo agotado),Sin respuesta (tiempo agotado),No response (timed out)
 Subir,Subir,Move up
 Tema,Tema,Theme
 Timeout por enlace (segundos),Timeout por enlace (segundos),Per-link timeout (seconds)
@@ -123,6 +141,7 @@ Total: %d,Total: %d,Total: %d
 Total: 0,Total: 0,Total: 0
 URL,URL,URL
 URL copiada: %s,URL copiada: %s,URL copied: %s
+URL inválida,URL inválida,Invalid URL
 Una URL por línea,Una URL por línea,One URL per line
 Varias,Varias,Multiple
 Ver release,Ver release,View release

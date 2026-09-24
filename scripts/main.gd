@@ -73,16 +73,16 @@ func _ready() -> void:
 	%ConfirmarReanudar.confirmed.connect(_reanudar_escaneo)
 	%ConfirmarReanudar.canceled.connect(_descartar_cola_pendiente)
 	filtro.clear()
-	filtro.add_item("Todos", 0)
-	filtro.add_item("Válidos", 1)
-	filtro.add_item("Caídos / no existen", 2)
-	filtro.add_item("Sin comprobar", 3)
+	filtro.add_item(tr("Todos"), 0)
+	filtro.add_item(tr("Válidos"), 1)
+	filtro.add_item(tr("Caídos / no existen"), 2)
+	filtro.add_item(tr("Sin comprobar"), 3)
 	filtro.select(0)
 	filtro.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
 	filtro_cat.clear()
-	filtro_cat.add_item("Todas", 0)
+	filtro_cat.add_item(tr("Todas"), 0)
 	for i in range(GestorCatalogoScript.CATEGORIAS.size()):
-		filtro_cat.add_item(GestorCatalogoScript.categoria_display(GestorCatalogoScript.CATEGORIAS[i]), i + 1)
+		filtro_cat.add_item(GestorCatalogoScript.new().categoria_display(GestorCatalogoScript.CATEGORIAS[i]), i + 1)
 	filtro_cat.select(0)
 	filtro_cat.item_selected.connect(func(_i: int) -> void: _aplicar_filtro())
 	cab_nombre.pressed.connect(func() -> void: _pulsar_cabecera("nombre"))
@@ -131,21 +131,21 @@ func _ready() -> void:
 func _configurar_menus() -> void:
 	var menu_file: PopupMenu = %File
 	menu_file.clear()
-	menu_file.add_item("Importar…", 1)
-	menu_file.add_item("Exportar…", 2)
-	menu_file.add_item("Informe de disponibilidad…", 5)
+	menu_file.add_item(tr("Importar…"), 1)
+	menu_file.add_item(tr("Exportar…"), 2)
+	menu_file.add_item(tr("Informe de disponibilidad…"), 5)
 	menu_file.add_separator()
-	menu_file.add_item("Restaurar copia…", 4)
-	menu_file.add_item("Salir", 3)
+	menu_file.add_item(tr("Restaurar copia…"), 4)
+	menu_file.add_item(tr("Salir"), 3)
 	menu_file.id_pressed.connect(_on_file_id)
 
 	var menu_util: PopupMenu = %Utilidades
 	menu_util.clear()
-	menu_util.add_item("Agregar", 0)
-	menu_util.add_item("Preferencias…", 1)
-	menu_util.add_item("Limpiar capturas huérfanas…", 2)
-	menu_util.add_item("Exportar diagnóstico…", 3)
-	menu_util.add_item("Comprobar actualizaciones…", 4)
+	menu_util.add_item(tr("Agregar"), 0)
+	menu_util.add_item(tr("Preferencias…"), 1)
+	menu_util.add_item(tr("Limpiar capturas huérfanas…"), 2)
+	menu_util.add_item(tr("Exportar diagnóstico…"), 3)
+	menu_util.add_item(tr("Comprobar actualizaciones…"), 4)
 	menu_util.id_pressed.connect(_on_utilidades_id)
 
 
@@ -179,7 +179,7 @@ func _on_importar_elegido(ruta: String) -> void:
 	if not _guardar_datos():
 		_cargar_datos()
 		_refrescar_vista()
-		progreso.text = "No se pudo guardar el catálogo."
+		progreso.text = tr("No se pudo guardar el catálogo.")
 		return
 	_refrescar_vista()
 	_actualizar_status()
@@ -320,7 +320,7 @@ func _solicitar_limpieza_capturas() -> void:
 		return
 	var borradas := int(res.get("borradas", 0))
 	if borradas == 0:
-		progreso.text = "No hay capturas huérfanas."
+		progreso.text = tr("No hay capturas huérfanas.")
 		return
 	%ConfirmarLimpieza.dialog_text = tr("¿Borrar %d capturas huérfanas?") % borradas
 	%ConfirmarLimpieza.popup_centered()
@@ -339,7 +339,7 @@ func _confirmar_limpieza() -> void:
 
 func _on_restaurar_copia() -> void:
 	if not GestorDatosScript.hay_copia(DATA_USER) and not GestorDatosScript.hay_copia(DATA_RES):
-		progreso.text = "No hay copia de seguridad disponible."
+		progreso.text = tr("No hay copia de seguridad disponible.")
 		return
 	%ConfirmarRestaurar.popup_centered()
 
@@ -351,12 +351,12 @@ func _confirmar_restaurar() -> void:
 	if not GestorDatosScript.restaurar_copia(DATA_RES):
 		ok_rest = false
 	if not ok_rest:
-		progreso.text = "No se pudo restaurar la copia."
+		progreso.text = tr("No se pudo restaurar la copia.")
 		return
 	_cargar_datos()
 	_refrescar_vista()
 	_actualizar_status()
-	progreso.text = "Catálogo restaurado desde la copia."
+	progreso.text = tr("Catálogo restaurado desde la copia.")
 
 
 func _exit_tree() -> void:
@@ -424,7 +424,7 @@ func _guardar_datos() -> bool:
 	if not _persistir:
 		return true
 	if not GestorDatosScript.guardar(DATA_USER, _entradas):
-		progreso.text = "No se pudo guardar el enlace."
+		progreso.text = tr("No se pudo guardar el enlace.")
 		return false
 	GestorDatosScript.guardar(DATA_RES, _entradas)
 	return true
@@ -482,7 +482,7 @@ func _on_lote_guardado(urls: Array) -> void:
 	if not _guardar_datos():
 		for i in range(nuevas.size()):
 			_entradas.pop_back()
-		progreso.text = "No se pudo guardar el lote."
+		progreso.text = tr("No se pudo guardar el lote.")
 		return
 	var partes: Array = [tr("Se añadieron %d enlaces.") % nuevas.size()]
 	if not repetidas.is_empty():
@@ -517,7 +517,7 @@ func _on_editar_pedido(item: Button) -> void:
 		return
 	var datos := _buscar_entrada(item.url)
 	if datos.is_empty():
-		progreso.text = "No se encontró el enlace."
+		progreso.text = tr("No se encontró el enlace.")
 		return
 	ventana_agregar.abrir_edicion(datos, item.url)
 
@@ -546,7 +546,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 			indice = i
 			break
 	if indice == -1:
-		progreso.text = "No se encontró el enlace."
+		progreso.text = tr("No se encontró el enlace.")
 		return
 	var entrada: Dictionary = _entradas[indice]
 	var img_anterior := str(entrada.get("img", ""))
@@ -571,7 +571,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 	if datos.has("img_pendiente"):
 		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]))
 		if not resultado.get("ok", false):
-			progreso.text = "No se pudo procesar la imagen."
+			progreso.text = tr("No se pudo procesar la imagen.")
 			return
 		destino = str(resultado.get("destino", ""))
 	entrada["nombre"] = str(datos.get("nombre", ""))
@@ -582,7 +582,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 	if not _guardar_datos():
 		_cargar_datos()
 		_refrescar_vista()
-		progreso.text = "No se pudo guardar el enlace."
+		progreso.text = tr("No se pudo guardar el enlace.")
 		return
 	if destino != img_anterior:
 		_borrar_captura_si_huerfana(img_anterior)
@@ -694,7 +694,7 @@ func _comprobar_visibles() -> void:
 	_en_vuelo = 0
 	if _total == 0:
 		%BarraProgreso.visible = false
-		progreso.text = "Nada que comprobar"
+		progreso.text = tr("Nada que comprobar")
 		return
 
 	%BotonComprobar.disabled = true
@@ -855,7 +855,7 @@ func _confirmar_borrado() -> void:
 	item.queue_free()
 	if (imagen_borrada.begins_with("res://Assets/png/") or imagen_borrada.begins_with("res://Assets/jpg/")) and imagen_borrada != "res://Assets/png/no-disponible.png":
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(imagen_borrada))
-	progreso.text = "Enlace eliminado"
+	progreso.text = tr("Enlace eliminado")
 	_aplicar_filtro()
 	_actualizar_status()
 
@@ -951,23 +951,23 @@ func _on_actualizacion_terminado(resultado: Dictionary, manual: bool) -> void:
 func _mostrar_aviso(modo: String, version: String, url: String) -> void:
 	var dialogo: ConfirmationDialog = %DialogoActualizacion
 	if modo == "nueva":
-		dialogo.title = "Nueva versión disponible"
+		dialogo.title = tr("Nueva versión disponible")
 		dialogo.dialog_text = tr("Hay una nueva versión: %s") % version
-		dialogo.ok_button_text = "Ver release"
+		dialogo.ok_button_text = tr("Ver release")
 		dialogo.get_cancel_button().visible = true
 		_aviso_url = url
 		_dialogo_version = version
 		_dialogo_con_aviso = true
 	elif modo == "al_dia":
-		dialogo.title = "Comprobar actualizaciones"
+		dialogo.title = tr("Comprobar actualizaciones")
 		dialogo.dialog_text = tr("Estás al día (v%s)") % version
-		dialogo.ok_button_text = "Cerrar"
+		dialogo.ok_button_text = tr("Cerrar")
 		dialogo.get_cancel_button().visible = false
 		_dialogo_con_aviso = false
 	else:
-		dialogo.title = "Comprobar actualizaciones"
-		dialogo.dialog_text = "No se pudo comprobar actualizaciones."
-		dialogo.ok_button_text = "Cerrar"
+		dialogo.title = tr("Comprobar actualizaciones")
+		dialogo.dialog_text = tr("No se pudo comprobar actualizaciones.")
+		dialogo.ok_button_text = tr("Cerrar")
 		dialogo.get_cancel_button().visible = false
 		_dialogo_con_aviso = false
 	dialogo.popup_centered()
@@ -1084,7 +1084,7 @@ func _pulsar_cabecera(columna: String) -> void:
 		_orden_direccion = prev_dir
 		_pintar_cabeceras()
 		_aplicar_filtro()
-		progreso.text = "No se pudo guardar el orden."
+		progreso.text = tr("No se pudo guardar el orden.")
 
 
 func _direccion_por_defecto(columna: String) -> int:
@@ -1179,6 +1179,6 @@ func _on_mover_pedido(item: Button, delta: int) -> void:
 	if not _guardar_datos():
 		_entradas[j] = _entradas[i]
 		_entradas[i] = tmp
-		progreso.text = "No se pudo guardar el orden."
+		progreso.text = tr("No se pudo guardar el orden.")
 		return
 	_refrescar_vista()

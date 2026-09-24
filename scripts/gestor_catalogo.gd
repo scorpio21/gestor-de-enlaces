@@ -95,7 +95,7 @@ static func normalizar_categoria(valor: Variant) -> String:
 	return equivalencias.get(limpio, "otro")
 
 
-static func categoria_display(cat: String) -> String:
+func categoria_display(cat: String) -> String:
 	var etiquetas := {
 		"otro": "Otro",
 		"cliente": "Cliente",
@@ -103,4 +103,4 @@ static func categoria_display(cat: String) -> String:
 		"codigos": "Códigos fuente",
 		"parche": "Parche",
 	}
-	return etiquetas.get(normalizar_categoria(cat), "Otro")
+	return tr(etiquetas.get(normalizar_categoria(cat), "Otro"))

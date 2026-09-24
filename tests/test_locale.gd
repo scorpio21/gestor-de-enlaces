@@ -18,6 +18,7 @@ func _initialize() -> void:
 	_b_cobertura(filas)
 	_c_idioma()
 	_d_templates()
+	_e_runtime_tr()
 	_cerrar()
 
 
@@ -121,6 +122,66 @@ func _leer_csv(path: String) -> Array:
 		campos.append(buf)
 		filas.append(campos)
 	return filas
+
+
+func _e_runtime_tr() -> void:
+	var regex_llamada := RegEx.create_from_string(r'(?:add_item|add_icon_item|_pintar_estado|_cerrar)\(\s*"([^"]+)"')
+	var regex_asig := RegEx.create_from_string(r'\.(?:text|title|tooltip_text|dialog_text|ok_button_text|cancel_button_text)\s*=\s*"([^"]+)"')
+	var regex_mensaje := RegEx.create_from_string(r'mensaje\s*=\s*"([^"]+)"')
+	var regex_linea := RegEx.create_from_string(r'lineas\.append\(\s*"([^"]+)"')
+	var pendientes := 0
+	for ruta in Extraer.SCRIPTS_UI:
+		var src := FileAccess.get_file_as_string(ruta)
+		for regex in [regex_llamada, regex_asig, regex_mensaje, regex_linea]:
+			pendientes += _contar_sin_tr(src, regex, ruta)
+		pendientes += _tooltips_sin_tr(src, ruta)
+	var src_checker := FileAccess.get_file_as_string("res://scripts/link_checker.gd")
+	pendientes += _contar_sin_tr(src_checker, regex_llamada, "res://scripts/link_checker.gd")
+	var src_cat := FileAccess.get_file_as_string("res://scripts/gestor_catalogo.gd")
+	if not src_cat.contains("tr(etiquetas.get("):
+		pendientes += 1
+		push_error("FALLO: categoria_display no traduce sus etiquetas en runtime")
+	_check(pendientes == 0, "todo texto UI asignado por código está envuelto en tr()")
+
+
+func _contar_sin_tr(src: String, regex: RegEx, ruta: String) -> int:
+	var pendientes := 0
+	for linea in src.split("\n"):
+		for m in regex.search_all(linea):
+			var literal := m.get_string(1)
+			if not _traducible_simple(literal):
+				continue
+			var ini := m.get_start(1)
+			if not linea.substr(0, ini).contains("tr("):
+				pendientes += 1
+				push_error("FALLO: texto runtime sin tr(): %s (%s)" % [literal, ruta])
+	return pendientes
+
+
+func _tooltips_sin_tr(src: String, ruta: String) -> int:
+	var pendientes := 0
+	var regex := RegEx.create_from_string(r'"([^"]+)"')
+	for linea in src.split("\n"):
+		if not linea.contains("tooltip_text"):
+			continue
+		for m in regex.search_all(linea):
+			var literal := m.get_string(1)
+			if literal == "\\n" or literal.strip_edges().is_empty():
+				continue
+			var ini := m.get_start(1)
+			if not linea.substr(0, ini).contains("tr("):
+				pendientes += 1
+				push_error("FALLO: tooltip sin tr(): %s (%s)" % [literal, ruta])
+	return pendientes
+
+
+func _traducible_simple(txt: String) -> bool:
+	var limpio := txt.strip_edges()
+	if limpio.is_empty():
+		return false
+	if limpio == "v" or limpio.begins_with("v0") or limpio.begins_with("https"):
+		return false
+	return limpio.length() <= 200
 
 
 func _cerrar() -> void:
