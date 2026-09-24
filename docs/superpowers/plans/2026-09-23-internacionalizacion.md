@@ -584,7 +584,9 @@ feat(ui): #30 selector de idioma con banderas en Preferencias
 
 ## GREEN
 
-### 1) `scripts/idioma.gd` (nuevo, sin comentarios)
+### 1) `scripts/idioma.gd` (nuevo, sin comentarios) — carga manual del CSV
+
+Esta build no tiene loader de recursos CSV (ver "Desviaciones"). `idioma.gd` añade dos funciones estáticas puras (`aplicar`) y una de carga que sustituye al registro en `project.godot`:
 
 ```gdscript
 extends RefCounted
@@ -596,7 +598,33 @@ static func aplicar(guardado: String, locale_so: String) -> String:
 		return guardado
 	var prefijo := locale_so.to_lower().substr(0, 2)
 	return "en" if prefijo == "en" else "es"
+
+static func cargar_traducciones() -> void:
+	var filtros := _leer_csv("res://locale/gestor_es_en.csv")
+	if filtros.is_empty():
+		return
+	for i in range(1, filtros.size()):
+		if filtros[i].size() < 3 or filtros[i][1].is_empty():
+			continue
+		TranslationServer.add_translation(_traduccion(filtros[i]))
 ```
+
+Con un parser quote-aware (`_leer_csv`) y un constructor `Translation` (`_traduccion`) que rellena `add_message(singular, messages[lang])` por fila, ambos idénticos en semántica al del test:
+
+```gdscript
+static func _traduccion(fila: Array) -> Translation:
+	var t := Translation.new()
+	t.locale = "es"
+	t.add_message(fila[0], fila[1])
+	if fila.size() >= 3 and not fila[2].is_empty():
+		var en := Translation.new()
+		en.locale = "en"
+		en.add_message(fila[0], fila[2])
+		TranslationServer.add_translation(en)
+	return t
+```
+
+`main.gd` llama `IdiomaScript.cargar_traducciones()` en `_ready` (antes de `set_locale`); el test D/A la invoca igualmente. Las cadenas ES del CSV se registran con keys idénticas a las literales del código, luego `tr()` traduce a `en`.
 
 ### 2) `scripts/main.gd`
 
@@ -694,6 +722,13 @@ Fases de commit separadas:
 
 ---
 
+## Desviaciones durante la ejecución
+
+- **`project.godot` NO registra traducciones (Tarea 2 completada).** Esta build del motor (`Godot_v4.7.2-stable_win64_console`) no trae registrado ningún `ResourceFormatLoader` para `.csv`: `load("res://locale/gestor_es_en.csv")` devuelve `No loader found for resource`, y el arranque intentaría cargar `locale/translations` desde `project.godot` con el mismo error en cada ejecución. Se omite el registro en `project.godot` (paso 4 de la Tarea 2) y, en su lugar, **`idioma.gd` (Tarea 5) carga el CSV a mano**: parsear el fichero (parser quote-aware idéntico al del test) y registrar un `Translation` por idioma con `TranslationServer.add_translation()` antes de `set_locale`. Esto hace `tr()` funcional sin depender del loader. El paso 4 de la Tarea 2 queda anulado por esta nota.
+- **Scanner (Tarea 2):** `PATRON_MENU` usaba `[^"]*` que cruzaba líneas (falsos positivos `nombre`, `individual`): se fija a `[^"\n]*`. `PATRON_ESCENA` ganó `/` opcional para capturar `popup/item_N/text` (items de `OptionButton`). Se añaden skips: `txt == "v"` (etiqueta de versión) y `txt == "Open a File"` (FileDialog del SO).
+- **CSV (Tarea 2):** el test de cobertura usa las claves reales del scanner; las del plan (tercer caso, p. ej. `Comprobando %d/%d.` con punto) son aproximadas — las claves reales usan «…». Se autoraron las 130 claves reales; la fila `%d importados, %d omitidos.` lleva sus 3 celdas entre comillas (contiene comas).
+- **Named arguments en llamadas (Tarea 5):** GDScript no acepta `guardar(..., idioma = "es")` ni en la llamada encadenada del test ni en `main.gd` (`Parse Error: Assignment is not allowed inside an expression`). Se usa el 9º argumento posicional de `guardar()`: `(paralelismo, timeout, auto_abrir, intervalo, tema, ultima_version_vista, orden_columna, orden_direccion, idioma)`.
+
 ## Correcciones / contingencias conocidas
 
 - **Auto-traducción**: si tras la Tarea 5 una cadena simple no deja de mostrarse en ES en pantalla (detectable en el arranque visual opcional), el fix es envolverla en `tr(...)` igual que los templates; el Grupo D + cobertura no lo detecta por estar ES en el CSV, así que el arranque manual final juzga.
@@ -705,9 +740,9 @@ Fases de commit separadas:
 
 ## Checkboxes del plan
 
-- [ ] Tarea 1 — config_store guarda y valida idioma
-- [ ] Tarea 2 — scanner, CSV ES/EN, registro en project.godot, test_locale
-- [ ] Tarea 3 — banderas SVG de idioma + test_iconos
-- [ ] Tarea 4 — selector de idioma en Preferencias + señal
-- [ ] Tarea 5 — idioma aplicado en main + tr() runtime
-- [ ] Tarea 6 — batería 22, boot, README, CHANGELOG, cierre #30
+- [x] Tarea 1 — config_store guarda y valida idioma
+- [x] Tarea 2 — scanner, CSV ES/EN, registro en project.godot, test_locale
+- [x] Tarea 3 — banderas SVG de idioma + test_iconos
+- [x] Tarea 4 — selector de idioma en Preferencias + señal
+- [x] Tarea 5 — idioma aplicado en main + tr() runtime
+- [x] Tarea 6 — batería 22, boot, README, CHANGELOG, cierre #30
