@@ -72,6 +72,39 @@ func _arrancar() -> void:
 	_check(_lanzados.size() == 5, "secuencia completa lanza los 5 items")
 	_check(escaneo3.hechos == 5 and escaneo3.en_vuelo == 0 and escaneo3.pendientes.is_empty(), "al final todo procesado, cola vacía y sin vuelo")
 
+	var tope_host_esc = ColaEscaneoScript.new()
+	var host_items: Array = [_i("https://mediafire.com/a"), _i("https://mediafire.com/b"), _i("https://mediafire.com/c")]
+	tope_host_esc.configurar(host_items, 4, _lanzar_registrar, 2)
+	_lanzados.clear()
+	tope_host_esc.lanzar()
+	_check(_lanzados.size() == 2, "tope por host limita a 2 concurrentes del mismo dominio")
+	_check(tope_host_esc.en_vuelo == 2 and tope_host_esc.pendientes.size() == 1, "el tercero del mismo host queda pendiente sin reservar hueco")
+	tope_host_esc.terminar(_lanzados[0])
+	_lanzados.clear()
+	tope_host_esc.lanzar()
+	_check(_lanzados.size() == 1, "al terminar uno, el siguiente del mismo host se lanza")
+	_check(tope_host_esc.en_vuelo == 2 and tope_host_esc.pendientes.is_empty(), "el hueco liberado se reutiliza y la cola se vacía")
+
+	var multi_host = ColaEscaneoScript.new()
+	var distintos: Array = [_i("https://a.test/1"), _i("https://b.test/2"), _i("https://c.test/3")]
+	multi_host.configurar(distintos, 4, _lanzar_registrar, 1)
+	_lanzados.clear()
+	multi_host.lanzar()
+	_check(_lanzados.size() == 3, "tope de 1 por host no limita hosts distintos")
+
+	var sin_tope = ColaEscaneoScript.new()
+	var mismo: Array = [_i("https://x.test/1"), _i("https://x.test/2"), _i("https://x.test/3")]
+	sin_tope.configurar(mismo, 4, _lanzar_registrar)
+	_lanzados.clear()
+	sin_tope.lanzar()
+	_check(_lanzados.size() == 3, "sin tope por host se lanzan todos (comportamiento previo)")
+
+	_check(ColaEscaneoScript.host_de("https://www.MediaFire.com/archivo") == "mediafire.com", "host_de quita www y normaliza a minúsculas")
+	_check(ColaEscaneoScript.host_de("http://mega.nz:8080/x") == "mega.nz", "host_de quita el puerto")
+	_check(ColaEscaneoScript.host_de("https://drive.google.com/file/d/1") == "drive.google.com", "host_de ignora la ruta")
+	_check(ColaEscaneoScript.host_de("dropbox.com") == "dropbox.com", "host_de acepta URL sin esquema")
+	_check(ColaEscaneoScript.host_de("") == "", "host_de de cadena vacía devuelve vacío")
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

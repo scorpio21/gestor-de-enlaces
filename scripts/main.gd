@@ -1,6 +1,7 @@
 extends Control
 
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
+const TOPE_POR_HOST := 2
 var DATA_RES := "res://data/data.json"
 var DATA_USER := "user://enlaces.json"
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
@@ -701,7 +702,7 @@ func _comprobar_visibles() -> void:
 		if hijo.visible:
 			_cola.append(hijo)
 
-	_scan.configurar(_cola, _paralelismo, _lanzar_item)
+	_scan.configurar(_cola, _paralelismo, _lanzar_item, TOPE_POR_HOST)
 	if _scan.total == 0:
 		%BarraProgreso.visible = false
 		progreso.text = tr("Nada que comprobar")
@@ -722,7 +723,7 @@ func _lanzar_item(item: Button) -> void:
 
 
 func _on_item_terminado(item: Button) -> void:
-	_scan.terminar()
+	_scan.terminar(item)
 	_actualizar_barra(_scan.hechos, _scan.total)
 	progreso.text = tr("Comprobando %d/%d…") % [_scan.hechos, _scan.total]
 	var ahora := int(Time.get_unix_time_from_system())
@@ -777,7 +778,7 @@ func _reanudar_escaneo() -> void:
 	if pendientes.is_empty():
 		return
 	_rearmar_cola_pendiente(pendientes)
-	_scan.configurar(_cola, _paralelismo, _lanzar_item)
+	_scan.configurar(_cola, _paralelismo, _lanzar_item, TOPE_POR_HOST)
 	if _scan.total == 0:
 		_cola_store.limpiar()
 		%BotonComprobar.disabled = false
