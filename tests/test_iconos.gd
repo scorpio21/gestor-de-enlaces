@@ -9,11 +9,15 @@ var _fallos := 0
 func _initialize() -> void:
 	DirAccess.remove_absolute(BASE)
 	var res: Dictionary = GenerarIconos.generar(BASE)
-	_check(res.get("ok", false) and int(res.get("total", -1)) == 4, "generar produce 4 ficheros")
+	_check(res.get("ok", false) and int(res.get("total", -1)) == 6, "generar produce 6 ficheros")
 	_check(_cabeza_icns_ok(), "icon.icns empieza por la cabecera icns")
 	_check(_cabeza_ico_ok(), "icon.ico empieza por la cabecera ICO (00 00 01 00)")
 	_check(_png_valido(), "icon_256.png es PNG válido (cabecera PNG + dimensión 256)")
 	_check(FileAccess.file_exists(BASE + "/icon.svg"), "icon.svg se genera")
+	_check(FileAccess.file_exists(BASE + "/flag_es.svg"), "flag_es.svg se genera")
+	_check(FileAccess.file_exists(BASE + "/flag_gb.svg"), "flag_gb.svg se genera")
+	_check(_svg_valido(BASE + "/flag_es.svg"), "flag_es.svg es SVG válido (<svg ...>...)</svg>)")
+	_check(_svg_valido(BASE + "/flag_gb.svg"), "flag_gb.svg es SVG válido (<svg ...>...)</svg>)")
 	DirAccess.remove_absolute(BASE)
 	if _fallos == 0:
 		print("TESTS OK")
@@ -49,6 +53,14 @@ func _png_valido() -> bool:
 	var im := Image.new()
 	var err := im.load_png_from_buffer(f.get_buffer(f.get_length()))
 	return ok_cab and err == OK and im.get_width() == 256 and im.get_height() == 256
+
+
+func _svg_valido(ruta: String) -> bool:
+	var f := FileAccess.open(ruta, FileAccess.READ)
+	if f == null:
+		return false
+	var s := f.get_as_text()
+	return s.strip_edges().begins_with("<svg ") and s.count("</svg>") == 1
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

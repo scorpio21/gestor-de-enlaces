@@ -18,6 +18,24 @@ const CONST_SVG := """<svg xmlns="http://www.w3.org/2000/svg" width="256" height
 """
 
 
+const _SVG_FLAG_ES := """<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<rect width="64" height="64" fill="#f5b301"/>
+<rect y="6" width="64" height="14" fill="#c8102e"/>
+<rect y="44" width="64" height="14" fill="#c8102e"/>
+<rect x="26" y="10" width="12" height="44" fill="#c8102e"/>
+</svg>
+"""
+
+const _SVG_FLAG_GB := """<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<rect width="64" height="64" fill="#012169"/>
+<path d="M32 0v64M0 32h64" stroke="#ffffff" stroke-width="12"/>
+<path d="M32 0v64M0 32h64" stroke="#c8102e" stroke-width="6"/>
+<path d="M32 0L0 32M32 0L64 32M32 64L0 32M32 64L64 32" stroke="#ffffff" stroke-width="12"/>
+<path d="M32 0L0 32M32 0L64 32M32 64L0 32M32 64L64 32" stroke="#c8102e" stroke-width="5"/>
+</svg>
+"""
+
+
 static func generar(destino := "res://Assets/icon") -> Dictionary:
 	DirAccess.make_dir_recursive_absolute(destino)
 	var svg_bytes := CONST_SVG.to_utf8_buffer()
@@ -30,7 +48,9 @@ static func generar(destino := "res://Assets/icon") -> Dictionary:
 	Var.write_bytes(destino + "/icon_256.png", im.save_png_to_buffer())
 	Var.write_bytes(destino + "/icon.ico", _fichero_ico(im))
 	Var.write_bytes(destino + "/icon.icns", _fichero_icns(im))
-	return {"ok": true, "total": 4}
+	Var.write_bytes(destino + "/flag_es.svg", _SVG_FLAG_ES.to_utf8_buffer())
+	Var.write_bytes(destino + "/flag_gb.svg", _SVG_FLAG_GB.to_utf8_buffer())
+	return {"ok": true, "total": 6}
 
 
 class Var:
