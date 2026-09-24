@@ -15,6 +15,8 @@ const ULTIMA_VERSION_DEFAULT := ""
 const ORDEN_COLUMNA_DEFAULT := ""
 const ORDEN_COLUMNAS_VALIDAS := ["", "nombre", "estado", "fecha", "imagen"]
 const ORDEN_DIRECCION_DEFAULT := 1
+const IDIOMA_DEFAULT := ""
+const IDIOMAS_VALIDOS := ["", "es", "en"]
 
 var _base: String
 
@@ -35,6 +37,7 @@ func cargar() -> Dictionary:
 			"ultima_version_vista": ULTIMA_VERSION_DEFAULT,
 			"orden_columna": ORDEN_COLUMNA_DEFAULT,
 			"orden_direccion": ORDEN_DIRECCION_DEFAULT,
+			"idioma": IDIOMA_DEFAULT,
 		}
 	return {
 		"paralelismo": _paralelismo_ok(v.get("paralelismo", PARALELO_DEFAULT)),
@@ -45,10 +48,13 @@ func cargar() -> Dictionary:
 		"ultima_version_vista": _string_ok(v.get("ultima_version_vista", ULTIMA_VERSION_DEFAULT)),
 		"orden_columna": _orden_columna_ok(v.get("orden_columna", ORDEN_COLUMNA_DEFAULT)),
 		"orden_direccion": _orden_direccion_ok(v.get("orden_direccion", ORDEN_DIRECCION_DEFAULT)),
+		"idioma": _idioma_ok(v.get("idioma", IDIOMA_DEFAULT)),
 	}
 
 
-func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT) -> bool:
+func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT) -> bool:
+	if not idioma in IDIOMAS_VALIDOS:
+		return false
 	var dato := {
 		"paralelismo": clampi(int(paralelismo), PARALELO_MIN, PARALELO_MAX),
 		"timeout": clampf(float(timeout), TIMEOUT_MIN, TIMEOUT_MAX),
@@ -58,6 +64,7 @@ func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT,
 		"ultima_version_vista": _string_ok(ultima_version_vista),
 		"orden_columna": _orden_columna_ok(orden_columna),
 		"orden_direccion": _orden_direccion_ok(orden_direccion),
+		"idioma": idioma,
 	}
 	return _escribir_json(_ruta("config.json"), dato)
 
@@ -91,6 +98,11 @@ func _orden_direccion_ok(v: Variant) -> int:
 	if typeof(v) != TYPE_FLOAT and typeof(v) != TYPE_INT:
 		return ORDEN_DIRECCION_DEFAULT
 	return -1 if int(v) < 0 else 1
+
+
+func _idioma_ok(v: Variant) -> String:
+	var id := str(v)
+	return id if IDIOMAS_VALIDOS.has(id) else IDIOMA_DEFAULT
 
 
 func _paralelismo_ok(v: Variant) -> int:

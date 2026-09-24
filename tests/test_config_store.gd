@@ -28,6 +28,10 @@ func _initialize() -> void:
 	_check(orden_persistido(), "guardar() persiste columna y dirección")
 	_check(orden_invalida_normaliza(), "columna no válida se normaliza a vacía")
 	_check(orden_direccion_invalida_normaliza(), "dirección no válida se normaliza a 1")
+	_check(idioma_default_sin_fichero(), "sin fichero devuelve idioma vacío")
+	_check(idioma_persistido(), "guardar() persiste el idioma")
+	_check(idioma_invalido_rechaza(), "idioma no válido rechaza el guardado")
+	_check(idioma_manualmente_invalido_normaliza(), "idioma inválido en fichero se normaliza a vacío")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -155,6 +159,29 @@ func orden_direccion_invalida_normaliza() -> bool:
 	var store := ConfigStore.new(BASE)
 	store.guardar(4, 12.0, true, 30, "oscuro", "", "fecha", 42)
 	return store.cargar().get("orden_direccion", 0) == 1
+
+
+func idioma_default_sin_fichero() -> bool:
+	return ConfigStore.new(BASE).cargar().get("idioma", "#") == ""
+
+
+func idioma_persistido() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "en"):
+		return false
+	return store.cargar().get("idioma", "#") == "en"
+
+
+func idioma_invalido_rechaza() -> bool:
+	var store := ConfigStore.new(BASE)
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es")
+	return not store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "fr") \
+		and store.cargar().get("idioma", "#") == "es"
+
+
+func idioma_manualmente_invalido_normaliza() -> bool:
+	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"idioma": "xx"}')
+	return ConfigStore.new(BASE).cargar().get("idioma", "#") == ""
 
 
 func _check(condicion: bool, etiqueta: String) -> void:
