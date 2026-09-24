@@ -17,6 +17,7 @@ const ColaStoreScript := preload("res://scripts/cola_store.gd")
 const InformeStoreScript := preload("res://scripts/informe_store.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const ActualizadorScript := preload("res://scripts/actualizador.gd")
+const OrdenadorScript := preload("res://scripts/ordenador.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -906,7 +907,7 @@ func _aplicar_filtro() -> void:
 	if _orden_columna != "":
 		var hijos: Array = lista.get_children()
 		hijos.sort_custom(func(a: Button, b: Button) -> bool:
-			return _comparar_orden(a, b)
+			return OrdenadorScript.comparar(a, b, _orden_columna, _orden_direccion)
 		)
 		for hijo in hijos:
 			lista.move_child(hijo, -1)
@@ -1066,47 +1067,13 @@ func _on_auto_timer() -> void:
 		_comprobar_visibles()
 
 
-func _comparar_orden(a: Button, b: Button) -> bool:
-	var dir := _orden_direccion
-	match _orden_columna:
-		"nombre":
-			var na: String = a.nombre if a.nombre != "" else a.url
-			var nb: String = b.nombre if b.nombre != "" else b.url
-			if na == nb:
-				return a.url < b.url
-			return na < nb if dir == 1 else na > nb
-		"estado":
-			var ea := _peso_estado(a.valido)
-			var eb := _peso_estado(b.valido)
-			if ea == eb:
-				return a.url < b.url
-			return ea > eb if dir == -1 else ea < eb
-		"fecha":
-			var fa := int(a.fecha)
-			var fb := int(b.fecha)
-			if fa == fb:
-				return a.url < b.url
-			if fa == 0:
-				return false
-			if fb == 0:
-				return true
-			return fa > fb if dir == -1 else fa < fb
-		"imagen":
-			var ia := 1 if a.img != "" else 0
-			var ib := 1 if b.img != "" else 0
-			if ia == ib:
-				return a.url < b.url
-			return ia > ib if dir == 1 else ia < ib
-	return a.url < b.url
-
-
 func _pulsar_cabecera(columna: String) -> void:
 	var prev_col := _orden_columna
 	var prev_dir := _orden_direccion
 	if _orden_columna != columna:
 		_orden_columna = columna
-		_orden_direccion = _direccion_por_defecto(columna)
-	elif _orden_direccion == _direccion_por_defecto(columna):
+		_orden_direccion = OrdenadorScript.direccion_por_defecto(columna)
+	elif _orden_direccion == OrdenadorScript.direccion_por_defecto(columna):
 		_orden_direccion = -_orden_direccion
 	else:
 		_orden_columna = ""
@@ -1118,10 +1085,6 @@ func _pulsar_cabecera(columna: String) -> void:
 		_pintar_cabeceras()
 		_aplicar_filtro()
 		progreso.text = tr("No se pudo guardar el orden.")
-
-
-func _direccion_por_defecto(columna: String) -> int:
-	return 1 if columna == "nombre" or columna == "imagen" else -1
 
 
 func _pintar_cabeceras() -> void:
@@ -1152,12 +1115,6 @@ func _persistir_orden() -> bool:
 		_orden_direccion,
 		str(cfg.get("idioma", "")),
 	)
-
-
-func _peso_estado(v: Variant) -> int:
-	if v == null:
-		return 0
-	return 1 if v == true else 2
 
 
 func _on_historial_pedido(item: Button) -> void:
