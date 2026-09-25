@@ -30,10 +30,39 @@ static func copiar(origen: String) -> Dictionary:
 	if img.get_width() > ANCHO_MAX:
 		var alto := maxi(1, int(float(img.get_height()) * ANCHO_MAX / float(img.get_width())))
 		img.resize(ANCHO_MAX, alto, Image.INTERPOLATE_CUBIC)
-	var ok: Error = img.save_png(ProjectSettings.globalize_path(destino)) if ext in ["png", "webp"] else img.save_jpg(ProjectSettings.globalize_path(destino), 0.9)
-	if ok != OK:
+	var bytes: PackedByteArray = img.save_png_to_buffer() if ext in ["png", "webp"] else img.save_jpg_to_buffer(0.9)
+	if bytes.is_empty():
 		return {"ok": false, "destino": "", "error": "No se pudo copiar la imagen."}
-	return {"ok": true, "destino": destino, "error": ""}
+	var digesto := _sha256(bytes)
+	var existente := _captura_con_hash(digesto, carpeta, sufijo)
+	if not existente.is_empty():
+		return {"ok": true, "destino": existente, "error": "", "reutilizada": true}
+	var f := FileAccess.open(ProjectSettings.globalize_path(destino), FileAccess.WRITE)
+	if f == null:
+		return {"ok": false, "destino": "", "error": "No se pudo copiar la imagen."}
+	f.store_buffer(bytes)
+	f.close()
+	return {"ok": true, "destino": destino, "error": "", "reutilizada": false}
+
+
+static func _sha256(bytes: PackedByteArray) -> String:
+	var ctx := HashingContext.new()
+	ctx.start(HashingContext.HASH_SHA256)
+	ctx.update(bytes)
+	return ctx.finish().hex_encode()
+
+
+static func _captura_con_hash(digesto: String, carpeta: String, sufijo: String) -> String:
+	var dir := DirAccess.open(carpeta)
+	if dir == null:
+		return ""
+	for f in dir.get_files():
+		if not (f.begins_with("img_") and f.ends_with(sufijo)):
+			continue
+		var ruta := "%s/%s" % [carpeta, f]
+		if FileAccess.get_sha256(ProjectSettings.globalize_path(ruta)) == digesto:
+			return ruta
+	return ""
 
 
 static func borrar(ruta: String) -> Dictionary:

@@ -15,6 +15,18 @@ Todos los cambios relevantes de GestorAO por día.
 
 ---
 
+## [0.1.6]
+
+### Añadido
+
+- **Deduplicación de capturas** (`#36`): al adjuntar la misma imagen a varios enlaces, la segunda copia reutiliza la captura existente (hash SHA-256 del contenido) y avisa en la barra de estado; no se acumulan archivos duplicados en `Assets/png` y `Assets/jpg`.
+
+### Cambiado
+
+- Versión del proyecto a 0.1.6.
+
+---
+
 ## [0.1.5]
 
 ### Añadido

@@ -192,6 +192,7 @@ func _on_guardar() -> void:
 		return
 
 	var img_final := _imagen_original
+	var img_reutilizada := false
 	if _quitar_imagen:
 		img_final = ""
 	elif _imagen_ruta != "":
@@ -203,9 +204,12 @@ func _on_guardar() -> void:
 				error_label.text = str(resultado.get("error", "No se pudo copiar la imagen."))
 				return
 			img_final = str(resultado.get("destino", ""))
+			img_reutilizada = bool(resultado.get("reutilizada", false))
 
 	var cat_clave: String = GestorCatalogoScript.CATEGORIAS[%Categoria.selected]
 	var datos := {"nombre": n, "desc": d, "url": u, "img": img_final, "cat": cat_clave, "tags": EtiquetasScript.parsear(etiquetas.text)}
+	if img_reutilizada:
+		datos["img_reutilizada"] = true
 	if _modo == "editar" and _imagen_ruta != "" and not _quitar_imagen:
 		datos["img_pendiente"] = _imagen_ruta
 	hide()

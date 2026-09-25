@@ -27,6 +27,24 @@ func _arrancar() -> void:
 	if FileAccess.file_exists(destino):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(destino))
 
+	var d1: Dictionary = GestorImagenesScript.copiar(origen)
+	var dest_d1 := str(d1.get("destino", ""))
+	var fichas_antes := _contar_img(CARPETA_PNG, ".png")
+	var d2: Dictionary = GestorImagenesScript.copiar(origen)
+	_check(d1.get("ok", false) and not d1.get("reutilizada", false), "copiar crea la captura sin marcar reutilizada")
+	_check(d2.get("ok", false) and d2.get("reutilizada", false) and str(d2.get("destino", "")) == dest_d1, "copiar la misma imagen reutiliza la captura existente")
+	_check(_contar_img(CARPETA_PNG, ".png") == fichas_antes, "reutilizar no añade un archivo duplicado")
+	if FileAccess.file_exists(dest_d1):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(dest_d1))
+	var origen_otra := BASE + "/otra.png"
+	var img_otra := Image.create_empty(4, 4, false, Image.FORMAT_RGBA8)
+	img_otra.fill(Color.BLUE)
+	img_otra.save_png(origen_otra)
+	var d3: Dictionary = GestorImagenesScript.copiar(origen_otra)
+	_check(d3.get("ok", false) and not d3.get("reutilizada", true) and _contar_img(CARPETA_PNG, ".png") == fichas_antes, "una imagen distinta crea su propia captura")
+	if FileAccess.file_exists(str(d3.get("destino", ""))):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(str(d3.get("destino", ""))))
+
 	var r2: Dictionary = GestorImagenesScript.copiar(BASE + "/no-existe.png")
 	_check(not r2.get("ok", true), "copiar un origen inexistente falla")
 
@@ -131,3 +149,14 @@ func _check(condicion: bool, etiqueta: String) -> void:
 	else:
 		_fallos += 1
 		push_error("FALLO: %s" % etiqueta)
+
+
+func _contar_img(carpeta: String, sufijo: String) -> int:
+	var dir := DirAccess.open(carpeta)
+	if dir == null:
+		return 0
+	var n := 0
+	for f in dir.get_files():
+		if f.begins_with("img_") and f.ends_with(sufijo):
+			n += 1
+	return n

@@ -1047,6 +1047,8 @@ func _on_enlace_guardado(datos: Dictionary) -> void:
 	_ui_refrescar()
 	_ui_status()
 	progreso.text = tr("Enlace agregado: %s") % datos.get("nombre", "")
+	if datos.get("img_reutilizada", false):
+		progreso.text += " · " + tr("Captura reutilizada")
 
 
 func _on_lote_guardado(urls: Array) -> void:
@@ -1126,12 +1128,14 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 			if str(_borrados[i_b]) == clave_original:
 				_borrados[i_b] = clave_nueva
 	var destino := str(datos.get("img", ""))
+	var captura_reutilizada := false
 	if datos.has("img_pendiente"):
 		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]))
 		if not resultado.get("ok", false):
 			progreso.text = tr("No se pudo procesar la imagen.")
 			return
 		destino = str(resultado.get("destino", ""))
+		captura_reutilizada = bool(resultado.get("reutilizada", false))
 	entrada["nombre"] = str(datos.get("nombre", ""))
 	entrada["desc"] = str(datos.get("desc", ""))
 	entrada["url"] = url_nueva
@@ -1148,6 +1152,8 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 	_ui_refrescar()
 	_ui_status()
 	progreso.text = tr("Enlace actualizado: %s") % str(datos.get("nombre", ""))
+	if captura_reutilizada:
+		progreso.text += " · " + tr("Captura reutilizada")
 
 
 func _guardar_datos() -> bool:
