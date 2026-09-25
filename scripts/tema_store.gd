@@ -1,6 +1,8 @@
 class_name TemaStore
 extends RefCounted
 
+const TemaSistemaScript := preload("res://scripts/tema_sistema.gd")
+
 const TEMA_DEFAULT := "oscuro"
 const TEMAS_VALIDOS := ["claro", "oscuro"]
 
@@ -46,7 +48,10 @@ static func normalizar(v: Variant) -> String:
 
 
 static func aplicar(modo: String, root: Node) -> void:
-	_actual = normalizar(modo)
+	var resuelto := modo
+	if resuelto == "auto":
+		resuelto = TemaSistemaScript.resolver("auto", TemaSistemaScript.soportado(), TemaSistemaScript.oscuro_detectado())
+	_actual = normalizar(resuelto)
 	var tema := _construir_tema()
 	if root is Control:
 		(root as Control).theme = tema

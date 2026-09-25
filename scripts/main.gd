@@ -115,7 +115,9 @@ func _ready() -> void:
 	_timeout = clampf(float(cfg.get("timeout", 10.0)), 3.0, 60.0)
 	_auto_abrir = cfg.get("auto_abrir", true) == true
 	_intervalo_auto = int(cfg.get("intervalo", 0))
-	TemaStoreScript.aplicar(String(cfg.get("tema", "oscuro")), self)
+	TemaStoreScript.aplicar(String(cfg.get("tema", "auto")), self)
+	if DisplayServer.is_dark_mode_supported():
+		DisplayServer.set_system_theme_change_callback(Callable(self, "_on_tema_sistema_cambio"))
 	_orden_columna = str(cfg.get("orden_columna", ""))
 	_orden_direccion = -1 if int(cfg.get("orden_direccion", 1)) < 0 else 1
 	busqueda.text = str(cfg.get("busqueda", ""))
@@ -213,7 +215,7 @@ func _on_utilidades_id(id: int) -> void:
 	if id == 0:
 		ventana_agregar.abrir(_sugerir_etiquetas())
 	elif id == 1:
-		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "oscuro")), String(_config_store.cargar().get("idioma", "")))
+		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "auto")), String(_config_store.cargar().get("idioma", "")))
 	elif id == 2:
 		_solicitar_limpieza_capturas()
 	elif id == 3:
@@ -1282,7 +1284,7 @@ func _confirmar_restaurar() -> void:
 	progreso.text = tr("Catálogo restaurado desde la copia.")
 
 
-func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "oscuro", idioma := "es") -> void:
+func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "auto", idioma := "es") -> void:
 	var locale_anterior := TranslationServer.get_locale()
 	_paralelismo = paralelismo
 	_timeout = timeout
@@ -1297,6 +1299,12 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	_scan_rearmar_auto()
 	if _auto_abrir and _scan_auto_posible():
 		_scan_iniciar()
+
+
+func _on_tema_sistema_cambio() -> void:
+	var cfg: Dictionary = _config_store.cargar()
+	if str(cfg.get("tema", "auto")) == "auto":
+		TemaStoreScript.aplicar("auto", self)
 
 
 func _retraducir_ui() -> void:
@@ -1317,7 +1325,7 @@ func _persistir_orden() -> bool:
 		float(cfg.get("timeout", 10.0)),
 		bool(cfg.get("auto_abrir", true)),
 		int(cfg.get("intervalo", 0)),
-		str(cfg.get("tema", "oscuro")),
+		str(cfg.get("tema", "auto")),
 		str(cfg.get("ultima_version_vista", "")),
 		_orden_columna,
 		_orden_direccion,
@@ -1340,7 +1348,7 @@ func _persistir_filtros() -> bool:
 		float(cfg.get("timeout", 10.0)),
 		bool(cfg.get("auto_abrir", true)),
 		int(cfg.get("intervalo", 0)),
-		str(cfg.get("tema", "oscuro")),
+		str(cfg.get("tema", "auto")),
 		str(cfg.get("ultima_version_vista", "")),
 		_orden_columna,
 		_orden_direccion,
@@ -1431,7 +1439,7 @@ func _persistir_version_vista() -> void:
 		float(cfg.get("timeout", 10.0)),
 		bool(cfg.get("auto_abrir", true)),
 		int(cfg.get("intervalo", 0)),
-		str(cfg.get("tema", "oscuro")),
+		str(cfg.get("tema", "auto")),
 		_dialogo_version,
 		_orden_columna,
 		_orden_direccion,

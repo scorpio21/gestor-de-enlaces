@@ -78,6 +78,9 @@ func _arrancar() -> void:
 	_check(fondo.color == Color(0.12, 0.12, 0.12, 1) \
 		and _color_label(root.get_child(1)) == Color(0.95, 0.4, 0.4, 1), "aplicar el mismo modo dos veces es idempotente")
 
+	TemaStoreScript.aplicar("auto", root)
+	_check(root.theme.get_color("font_color", "Label") == Color(0.75, 0.75, 0.75, 1), "aplicar auto sin soporte del SO queda en oscuro")
+
 	root.free()
 	_cerrar()
 

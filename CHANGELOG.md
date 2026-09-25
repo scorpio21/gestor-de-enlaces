@@ -15,6 +15,18 @@ Todos los cambios relevantes de GestorAO por día.
 
 ---
 
+## [0.1.7]
+
+### Añadido
+
+- **Tema automático del sistema** (`#46`): nueva opción **Automático** en Preferencias (junto a Oscuro y Claro). Al arrancar detecta el modo claro/oscuro del SO (`DisplayServer`) y aplica el tema correspondiente; si el sistema cambia de tema mientras la app está abierta, el tema se actualiza en vivo. El override manual sigue disponible y la preferencia (auto/manual + tema elegido) se guarda en configuración. En sistemas sin soporte de detección cae al tema oscuro.
+
+### Cambiado
+
+- Versión del proyecto a 0.1.7.
+
+---
+
 ## [0.1.6]
 
 ### Añadido

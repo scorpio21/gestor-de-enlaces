@@ -22,7 +22,7 @@ func _arrancar() -> void:
 	_check(is_equal_approx(ventana.get_node("%Timeout").value, 20.0), "abrir precarga el timeout")
 	_check(ventana.get_node("%AutoAbrir").button_pressed == false \
 		and ventana.get_node("%IntervaloAuto").get_selected_id() == 15, "abrir precarga auto_abrir e intervalo")
-	_check(ventana.get_node("%Tema").get_selected_id() == 0, "abrir precarga el tema")
+	_check(ventana.get_node("%Tema").get_selected_id() == 1, "abrir precarga el tema")
 	_check(ventana.get_node("%Idioma").get_selected_id() == 0, "abrir precarga el idioma es")
 	_check(ventana.size.y >= ventana.get_node("Margen/Columna").get_combined_minimum_size().y, \
 		"la ventana ajusta su alto al contenido (no desborda ni solapa)")

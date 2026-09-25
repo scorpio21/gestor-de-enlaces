@@ -93,11 +93,13 @@ text = "Tema"
 [node name="Tema" type="OptionButton" parent="Margen/Columna"]
 unique_name_in_owner = true
 layout_mode = 2
-item_count = 2
-popup/item_0/text = "Oscuro"
+item_count = 3
+popup/item_0/text = "Automático"
 popup/item_0/id = 0
-popup/item_1/text = "Claro"
+popup/item_1/text = "Oscuro"
 popup/item_1/id = 1
+popup/item_2/text = "Claro"
+popup/item_2/id = 2
 
 [node name="EtiquetaIdioma" type="Label" parent="Margen/Columna"]
 layout_mode = 2

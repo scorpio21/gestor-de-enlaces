@@ -42,7 +42,7 @@ func _seleccionar_intervalo(minutos: int) -> void:
 
 
 func _seleccionar_tema(tema: String) -> void:
-	tema_opcion.select(1 if tema == "claro" else 0)
+	tema_opcion.select(0 if tema == "auto" else (2 if tema == "claro" else 1))
 
 
 func _seleccionar_idioma(idioma: String) -> void:
@@ -54,12 +54,13 @@ func _seleccionar_idioma(idioma: String) -> void:
 
 
 func _on_guardar() -> void:
+	var id_tema := tema_opcion.get_selected_id()
 	aplicado.emit(
 		int(paralelismo_spin.value),
 		float(timeout_spin.value),
 		auto_abrir_box.button_pressed,
 		intervalo_auto.get_selected_id(),
-		"claro" if tema_opcion.get_selected_id() == 1 else "oscuro",
+		"auto" if id_tema == 0 else ("claro" if id_tema == 2 else "oscuro"),
 		IDIOMAS[idioma_opcion.get_selected_id()][0]
 	)
 	hide()
