@@ -1,6 +1,7 @@
 extends SceneTree
 
 const ConfigStore := preload("res://scripts/config_store.gd")
+const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const BASE := "user://__test_config__"
 
 var _fallos := 0
@@ -32,6 +33,11 @@ func _initialize() -> void:
 	_check(idioma_persistido(), "guardar() persiste el idioma")
 	_check(idioma_invalido_rechaza(), "idioma no válido rechaza el guardado")
 	_check(idioma_manualmente_invalido_normaliza(), "idioma inválido en fichero se normaliza a vacío")
+	_check(filtros_default_sin_fichero(), "sin fichero filtros por defecto (Todos/Todas/vacío)")
+	_check(filtros_persistidos(), "guardar() persiste estado, categoría y búsqueda")
+	_check(filtro_estado_invalido_normaliza(), "filtro de estado fuera de rango se clampea")
+	_check(filtro_categoria_invalida_normaliza(), "filtro de categoría fuera de rango se clampea")
+	_check(busqueda_no_string_normaliza(), "búsqueda no-string cae a vacía")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -182,6 +188,40 @@ func idioma_invalido_rechaza() -> bool:
 func idioma_manualmente_invalido_normaliza() -> bool:
 	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"idioma": "xx"}')
 	return ConfigStore.new(BASE).cargar().get("idioma", "#") == ""
+
+
+func filtros_default_sin_fichero() -> bool:
+	var c := ConfigStore.new(BASE).cargar()
+	return c.get("filtro_estado", -1) == 0 and c.get("filtro_categoria", -1) == 0 and c.get("busqueda", "#") == ""
+
+
+func filtros_persistidos() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(4, 12.0, true, 30, "oscuro", "", "fecha", 1, "es", 2, 3, "srv"):
+		return false
+	var c := store.cargar()
+	return c.get("filtro_estado", -1) == 2 and c.get("filtro_categoria", -1) == 3 and c.get("busqueda", "#") == "srv"
+
+
+func filtro_estado_invalido_normaliza() -> bool:
+	var store := ConfigStore.new(BASE)
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 99, 0, "")
+	var alto: bool = store.cargar().get("filtro_estado", -1) == 3
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", -7, 0, "")
+	return alto and store.cargar().get("filtro_estado", -1) == 0
+
+
+func filtro_categoria_invalida_normaliza() -> bool:
+	var store := ConfigStore.new(BASE)
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, 99, "")
+	var alto: bool = store.cargar().get("filtro_categoria", -1) == GestorCatalogoScript.CATEGORIAS.size()
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, -3, "")
+	return alto and store.cargar().get("filtro_categoria", -1) == 0
+
+
+func busqueda_no_string_normaliza() -> bool:
+	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"busqueda": 42}')
+	return ConfigStore.new(BASE).cargar().get("busqueda", "#") == ""
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

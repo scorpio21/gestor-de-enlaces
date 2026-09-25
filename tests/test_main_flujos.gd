@@ -142,6 +142,19 @@ func _arrancar() -> void:
 			visibles_todas.append(hijo.url)
 	_check(visibles_todas == ["https://srv.test", "https://cli.test"], "categoría Todas no filtra por categoría y mantiene el estado")
 
+	# Filtros: persistencia en config (#39)
+	filtro_cat.select(4)
+	main_script._ui_filtro_categoria(4)
+	_check(main_script._config_store.cargar().get("filtro_categoria", -1) == 4, "cambiar el filtro de categoría persiste en config")
+	main.get_node("%FiltroEstado").select(2)
+	main_script._ui_filtro_estado(2)
+	_check(main_script._config_store.cargar().get("filtro_estado", -1) == 2, "cambiar el filtro de estado persiste en config")
+	main.get_node("%Busqueda").text = "srv"
+	main_script._ui_busqueda(main.get_node("%Busqueda").text)
+	_check(main_script._config_store.cargar().get("busqueda", "#") == "srv", "escribir en búsqueda persiste el texto en config")
+	main.get_node("%Busqueda").text = ""
+	main_script._ui_refrescar()
+
 	# Importar/Exportar: menú y flujos (#3)
 	main_script._persistir = false
 	var diag_imp: FileDialog = main.get_node("%DialogoImportar")

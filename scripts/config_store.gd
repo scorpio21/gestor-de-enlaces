@@ -1,5 +1,7 @@
 extends RefCounted
 
+const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
+
 const PARALELO_DEFAULT := 3
 const TIMEOUT_DEFAULT := 10.0
 const PARALELO_MIN := 1
@@ -17,6 +19,10 @@ const ORDEN_COLUMNAS_VALIDAS := ["", "nombre", "estado", "fecha", "imagen"]
 const ORDEN_DIRECCION_DEFAULT := 1
 const IDIOMA_DEFAULT := ""
 const IDIOMAS_VALIDOS := ["", "es", "en"]
+const FILTRO_ESTADO_DEFAULT := 0
+const FILTRO_ESTADO_MAX := 3
+const FILTRO_CATEGORIA_DEFAULT := 0
+const BUSQUEDA_DEFAULT := ""
 
 var _base: String
 
@@ -38,6 +44,9 @@ func cargar() -> Dictionary:
 			"orden_columna": ORDEN_COLUMNA_DEFAULT,
 			"orden_direccion": ORDEN_DIRECCION_DEFAULT,
 			"idioma": IDIOMA_DEFAULT,
+			"filtro_estado": FILTRO_ESTADO_DEFAULT,
+			"filtro_categoria": FILTRO_CATEGORIA_DEFAULT,
+			"busqueda": BUSQUEDA_DEFAULT,
 		}
 	return {
 		"paralelismo": _paralelismo_ok(v.get("paralelismo", PARALELO_DEFAULT)),
@@ -49,10 +58,13 @@ func cargar() -> Dictionary:
 		"orden_columna": _orden_columna_ok(v.get("orden_columna", ORDEN_COLUMNA_DEFAULT)),
 		"orden_direccion": _orden_direccion_ok(v.get("orden_direccion", ORDEN_DIRECCION_DEFAULT)),
 		"idioma": _idioma_ok(v.get("idioma", IDIOMA_DEFAULT)),
+		"filtro_estado": _filtro_estado_ok(v.get("filtro_estado", FILTRO_ESTADO_DEFAULT)),
+		"filtro_categoria": _filtro_categoria_ok(v.get("filtro_categoria", FILTRO_CATEGORIA_DEFAULT)),
+		"busqueda": _string_ok(v.get("busqueda", BUSQUEDA_DEFAULT)),
 	}
 
 
-func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT) -> bool:
+func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT, filtro_estado := FILTRO_ESTADO_DEFAULT, filtro_categoria := FILTRO_CATEGORIA_DEFAULT, busqueda := BUSQUEDA_DEFAULT) -> bool:
 	if not idioma in IDIOMAS_VALIDOS:
 		return false
 	var dato := {
@@ -65,6 +77,9 @@ func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT,
 		"orden_columna": _orden_columna_ok(orden_columna),
 		"orden_direccion": _orden_direccion_ok(orden_direccion),
 		"idioma": idioma,
+		"filtro_estado": _filtro_estado_ok(filtro_estado),
+		"filtro_categoria": _filtro_categoria_ok(filtro_categoria),
+		"busqueda": _string_ok(busqueda),
 	}
 	return _escribir_json(_ruta("config.json"), dato)
 
@@ -103,6 +118,18 @@ func _orden_direccion_ok(v: Variant) -> int:
 func _idioma_ok(v: Variant) -> String:
 	var id := str(v)
 	return id if IDIOMAS_VALIDOS.has(id) else IDIOMA_DEFAULT
+
+
+func _filtro_estado_ok(v: Variant) -> int:
+	if typeof(v) != TYPE_FLOAT and typeof(v) != TYPE_INT:
+		return FILTRO_ESTADO_DEFAULT
+	return clampi(int(v), FILTRO_ESTADO_DEFAULT, FILTRO_ESTADO_MAX)
+
+
+func _filtro_categoria_ok(v: Variant) -> int:
+	if typeof(v) != TYPE_FLOAT and typeof(v) != TYPE_INT:
+		return FILTRO_CATEGORIA_DEFAULT
+	return clampi(int(v), FILTRO_CATEGORIA_DEFAULT, GestorCatalogoScript.CATEGORIAS.size())
 
 
 func _paralelismo_ok(v: Variant) -> int:

@@ -96,6 +96,9 @@ func _ready() -> void:
 	TemaStoreScript.aplicar(String(cfg.get("tema", "oscuro")), self)
 	_orden_columna = str(cfg.get("orden_columna", ""))
 	_orden_direccion = -1 if int(cfg.get("orden_direccion", 1)) < 0 else 1
+	filtro.select(clampi(int(cfg.get("filtro_estado", 0)), 0, 3))
+	filtro_cat.select(clampi(int(cfg.get("filtro_categoria", 0)), 0, GestorCatalogoScript.CATEGORIAS.size()))
+	busqueda.text = str(cfg.get("busqueda", ""))
 	_ui_pintar_cabeceras()
 	if _orden_columna != "":
 		_ui_aplicar_filtro()
@@ -352,14 +355,17 @@ func _ui_aplicar_filtro() -> void:
 
 func _ui_busqueda(_texto: String) -> void:
 	_ui_refrescar()
+	_persistir_filtros()
 
 
 func _ui_filtro_estado(_indice: int) -> void:
 	_ui_aplicar_filtro()
+	_persistir_filtros()
 
 
 func _ui_filtro_categoria(_indice: int) -> void:
 	_ui_aplicar_filtro()
+	_persistir_filtros()
 
 
 func _ui_status() -> void:
@@ -1020,7 +1026,7 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	_intervalo_auto = intervalo
 	TemaStoreScript.aplicar(tema, self)
 	TranslationServer.set_locale(idioma)
-	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma):
+	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma, filtro.get_selected_id(), filtro_cat.get_selected_id(), busqueda.text):
 		TranslationServer.set_locale(locale_anterior)
 		progreso.text = tr("No se pudo guardar la configuración.")
 	_retraducir_ui()
@@ -1048,6 +1054,27 @@ func _persistir_orden() -> bool:
 		_orden_columna,
 		_orden_direccion,
 		str(cfg.get("idioma", "")),
+		filtro.get_selected_id(),
+		filtro_cat.get_selected_id(),
+		busqueda.text,
+	)
+
+
+func _persistir_filtros() -> bool:
+	var cfg: Dictionary = _config_store.cargar()
+	return _config_store.guardar(
+		int(cfg.get("paralelismo", 3)),
+		float(cfg.get("timeout", 10.0)),
+		bool(cfg.get("auto_abrir", true)),
+		int(cfg.get("intervalo", 0)),
+		str(cfg.get("tema", "oscuro")),
+		str(cfg.get("ultima_version_vista", "")),
+		_orden_columna,
+		_orden_direccion,
+		str(cfg.get("idioma", "")),
+		filtro.get_selected_id(),
+		filtro_cat.get_selected_id(),
+		busqueda.text,
 	)
 
 
@@ -1131,6 +1158,9 @@ func _persistir_version_vista() -> void:
 		_orden_columna,
 		_orden_direccion,
 		str(cfg.get("idioma", "")),
+		filtro.get_selected_id(),
+		filtro_cat.get_selected_id(),
+		busqueda.text,
 	)
 
 
