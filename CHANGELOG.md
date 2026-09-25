@@ -19,6 +19,7 @@ Todos los cambios relevantes de GestorAO por día.
 
 ### Corregido
 
+- **Exportar a `.exe` no arrancaba (`Cannot get class ''`)**: el exportador convierte las escenas a `.scn` y las resuelve por uid; `Main.tscn` referenciaba `AgregarEnlace.tscn`/`Preferencias.tscn`/`Historial.tscn` con uids no registrados en `uid_cache.bin` (dos de ellos fuera de rango int64, p. ej. `uid://cxtkcrqj7ne7i`), así que al instanciar `VentanaAgregar` y `VentanaPreferencias` quedaban como placeholders vacíos y `main.gd` fallaba en cadena. Arreglado referenciando las subescenas **solo por ruta** (mismo patrón que `Dashboard.tscn`, que siempre funcionó); verificado exportando el PCK y arrancándolo en headless y con ventana D3D12 sin errores.
 - **Ventana principal cortada/solapada a los lados**: la fila de acciones (12 controles tras los filtros avanzados de `#44`) exigía un ancho mínimo de ~1412 px, más que la ventana base de 1152 px (default de Godot: nunca hubo `viewport_width/height` definido), desbordando el contenido y recortándolo por ambos lados. Arreglado fijando el tamaño base de ventana a 1440×810 (`display/window/size`) y convirtiendo `BarraAcciones` de `HBoxContainer` a `FlowContainer`, de modo que la barra salta a dos líneas en ventanas más estrechas en vez de cortarse.
 
 ---
