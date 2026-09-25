@@ -16,7 +16,7 @@ Todos los cambios relevantes de GestorAO por día.
 ### Añadido
 
 - **Etiquetas personalizadas** (`#42`): campo en el alta de enlaces con sugerencias por uso frecuente, normalización de etiquetas y filtro por etiqueta combinable con estado y categoría, con el criterio persistido en configuración.
-- **Barra de estado con colores**: contadores Rotos (rojo), Activos (verde) y Total (azul).
+- **Barra de estado con colores**: nombre de contador en blanco y número en color — Rotos (rojo), Activos (verde) y Total (azul).
 
 ### Cambiado
 

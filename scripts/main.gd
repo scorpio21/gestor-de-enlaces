@@ -34,6 +34,9 @@ const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 @onready var rotos_label: Label = %Rotos
 @onready var activos_label: Label = %Activos
 @onready var total_label: Label = %Total
+@onready var rotos_valor_label: Label = %RotosValor
+@onready var activos_valor_label: Label = %ActivosValor
+@onready var total_valor_label: Label = %TotalValor
 @onready var version_label: Label = %Version
 @onready var barra_progreso: ProgressBar = %BarraProgreso
 @onready var cab_nombre: Button = %CabNombre
@@ -409,12 +412,15 @@ func _ui_filtro_etiqueta(_indice: int) -> void:
 
 func _ui_status() -> void:
 	var c: Dictionary = ContadoresScript.contar(_entradas, _estados)
-	rotos_label.text = tr("Rotos: %d") % c.get("rotos", 0)
-	activos_label.text = tr("Activos: %d") % c.get("activos", 0)
-	total_label.text = tr("Total: %d") % c.get("total", 0)
-	rotos_label.add_theme_color_override("font_color", TemaStoreScript.color_estado(false))
-	activos_label.add_theme_color_override("font_color", TemaStoreScript.color_estado(true))
-	total_label.add_theme_color_override("font_color", Color(0.4, 0.6, 1.0, 1))
+	rotos_label.text = tr("Rotos:")
+	activos_label.text = tr("Activos:")
+	total_label.text = tr("Total:")
+	rotos_valor_label.text = str(c.get("rotos", 0))
+	activos_valor_label.text = str(c.get("activos", 0))
+	total_valor_label.text = str(c.get("total", 0))
+	rotos_valor_label.add_theme_color_override("font_color", TemaStoreScript.color_estado(false))
+	activos_valor_label.add_theme_color_override("font_color", TemaStoreScript.color_estado(true))
+	total_valor_label.add_theme_color_override("font_color", Color(0.4, 0.6, 1.0, 1))
 
 
 func _ui_barra(hechos: int, total: int) -> void:

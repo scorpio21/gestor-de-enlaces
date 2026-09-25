@@ -162,20 +162,47 @@ theme_override_constants/margin_right = 12
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Rotos" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=146938937]
-unique_name_in_owner = true
+[node name="VisorRotos" type="HBoxContainer" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
 layout_mode = 2
-text = "Rotos: 0"
+theme_override_constants/separation = 4
 
-[node name="Activos" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=1017804561]
+[node name="Rotos" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box/VisorRotos" unique_id=146938937]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Activos: 0"
+text = "Rotos:"
 
-[node name="Total" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=1556023556]
+[node name="RotosValor" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box/VisorRotos"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Total: 0"
+text = ""
+
+[node name="VisorActivos" type="HBoxContainer" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Activos" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box/VisorActivos" unique_id=1017804561]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Activos:"
+
+[node name="ActivosValor" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box/VisorActivos"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+
+[node name="VisorTotal" type="HBoxContainer" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Total" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box/VisorTotal" unique_id=1556023556]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Total:"
+
+[node name="TotalValor" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box/VisorTotal"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
 
 [node name="Empuje" type="Control" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=357735125]
 layout_mode = 2

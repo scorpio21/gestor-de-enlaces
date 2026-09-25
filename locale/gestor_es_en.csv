@@ -7,8 +7,7 @@ keys,es,en
 %s %s,%s %s,%s %s
 %s — %s — %s,%s — %s — %s,%s — %s — %s
 (%d errores),(%d errores),(%d errors)
-Activos: %d,Activos: %d,Working: %d
-Activos: 0,Activos: 0,Working: 0
+Activos:,Activos:,Working:
 Agregar,Agregar,Add
 Agregar enlace,Agregar enlace,Add link
 Agregar varias URLs,Agregar varias URLs,Add multiple URLs
@@ -126,8 +125,7 @@ Redirección inválida (%d),Redirección inválida (%d),Invalid redirect (%d)
 Restaurar,Restaurar,Restore
 Restaurar copia,Restaurar copia,Restore backup
 Restaurar copia…,Restaurar copia…,Restore backup…
-Rotos: %d,Rotos: %d,Broken: %d
-Rotos: 0,Rotos: 0,Broken: 0
+Rotos:,Rotos:,Broken:
 Salir,Salir,Quit
 Se añadieron %d enlaces.,Se añadieron %d enlaces.,%d links added.
 Servidor,Servidor,Server
@@ -139,8 +137,7 @@ Tema,Tema,Theme
 Timeout por enlace (segundos),Timeout por enlace (segundos),Per-link timeout (seconds)
 Todas,Todas,All
 Todos,Todos,All
-Total: %d,Total: %d,Total: %d
-Total: 0,Total: 0,Total: 0
+Total:,Total:,Total:
 URL,URL,URL
 URL copiada: %s,URL copiada: %s,URL copied: %s
 URL inválida,URL inválida,Invalid URL

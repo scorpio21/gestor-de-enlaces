@@ -32,6 +32,9 @@ func _arrancar() -> void:
 	_check(main.has_node("%Rotos"), "la barra tiene el label Rotos")
 	_check(main.has_node("%Activos"), "la barra tiene el label Activos")
 	_check(main.has_node("%Total"), "la barra tiene el label Total")
+	_check(main.has_node("%RotosValor"), "la barra tiene el label RotosValor")
+	_check(main.has_node("%ActivosValor"), "la barra tiene el label ActivosValor")
+	_check(main.has_node("%TotalValor"), "la barra tiene el label TotalValor")
 	_check(main.has_node("%Version"), "la barra tiene el label Version")
 
 	if not main.has_node("%Rotos"):
@@ -39,9 +42,12 @@ func _arrancar() -> void:
 		return
 
 	_check(main.get_node("%Version").text.begins_with("v"), "la versión se muestra con prefijo v")
-	_check(not main.get_node("%Rotos").text.is_empty(), "Rotos muestra un valor")
-	_check(not main.get_node("%Activos").text.is_empty(), "Activos muestra un valor")
-	_check(not main.get_node("%Total").text.is_empty(), "Total muestra un valor")
+	_check(not main.get_node("%Rotos").text.is_empty(), "Rotos muestra su nombre")
+	_check(not main.get_node("%RotosValor").text.is_empty(), "RotosValor muestra un valor")
+	_check(not main.get_node("%Activos").text.is_empty(), "Activos muestra su nombre")
+	_check(not main.get_node("%ActivosValor").text.is_empty(), "ActivosValor muestra un valor")
+	_check(not main.get_node("%Total").text.is_empty(), "Total muestra su nombre")
+	_check(not main.get_node("%TotalValor").text.is_empty(), "TotalValor muestra un valor")
 
 	var main_script = main.get_node(".")
 	if main_script.has_method("_scan_recompra"):
@@ -56,7 +62,7 @@ func _arrancar() -> void:
 		_check(estado_memoria.has("codigo") and int(estado_memoria.get("codigo", -1)) == 0, "el estado en memoria conserva el código tras re-comprobar")
 		_check(int(estado_memoria.get("fecha", 0)) > 0, "el estado en memoria conserva la fecha tras re-comprobar")
 		main_script._estado_store.borrar_estado(GestorCatalogoScript.clave_unica(item.url))
-		_check(main.get_node("%Rotos").text == "Rotos: 1", "Rotos se actualiza tras nueva comprobación")
+		_check(main.get_node("%RotosValor").text == "1", "RotosValor se actualiza tras nueva comprobación")
 		item.free()
 
 
@@ -182,7 +188,7 @@ func _arrancar() -> void:
 			fila_en_i18n = hijo
 			break
 	_check(fila_en_i18n != null and fila_en_i18n.get_node("%EstadoLabel").text == "Does not exist (404)", "al cambiar a en la fila re-traduce el estado guardado")
-	_check(main.get_node("%Rotos").text == "Broken: 1", "al cambiar a en la barra de estado se re-traduce")
+	_check(main.get_node("%Rotos").text == "Broken:" and main.get_node("%RotosValor").text == "1", "al cambiar a en la barra de estado se re-traduce")
 	var menu_file_i18n: PopupMenu = main.get_node("%File")
 	_check(menu_file_i18n.get_item_text(menu_file_i18n.get_item_index(1)) == "Import…", "al cambiar a en el menú Archivo se re-traduce")
 	var menu_util_i18n: PopupMenu = main.get_node("%Utilidades")
@@ -197,7 +203,7 @@ func _arrancar() -> void:
 			fila_es_i18n = hijo
 			break
 	_check(fila_es_i18n != null and fila_es_i18n.get_node("%EstadoLabel").text == "No existe (404)", "al volver a es la fila re-traduce el estado guardado")
-	_check(main.get_node("%Rotos").text == "Rotos: 1", "al volver a es la barra de estado se re-traduce")
+	_check(main.get_node("%Rotos").text == "Rotos:" and main.get_node("%RotosValor").text == "1", "al volver a es la barra de estado se re-traduce")
 	_check(filtro_estado_i18n.get_item_text(0) == "Todos", "al volver a es el filtro de estado se re-traduce")
 
 	# Actualización (#27): diálogo y comprobación en headless
