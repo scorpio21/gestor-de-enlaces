@@ -11,6 +11,18 @@ Todos los cambios relevantes de GestorAO por día.
 
 ---
 
+## [0.1.5]
+
+### Añadido
+
+- **Dashboard de estadísticas** (`#45`): ventana desde el menú Utilidades con resumen de disponibilidad (válidos, caídos, sin comprobar y % disponible sobre los comprobados), distribución por categoría y por host (los más problemáticos primero), gráfico de comprobaciones válidas vs caídas por día a partir del historial y exportación a CSV/JSON.
+
+### Cambiado
+
+- Versión del proyecto a 0.1.5.
+
+---
+
 ## [0.1.4]
 
 ### Añadido

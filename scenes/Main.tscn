@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://hthjcyt02ca3" path="res://scenes/AgregarEnlace.tscn" id="2_agregar"]
 [ext_resource type="PackedScene" uid="uid://cxtkcrqj7ne7i" path="res://scenes/Preferencias.tscn" id="3_preferencias"]
 [ext_resource type="PackedScene" uid="uid://cup4r7bqx0age" path="res://scenes/Historial.tscn" id="4_historial"]
+[ext_resource type="PackedScene" path="res://scenes/Dashboard.tscn" id="5_dashboard"]
 
 [node name="Main" type="Control" unique_id=1904280085]
 layout_mode = 3
@@ -249,7 +250,7 @@ size_flags_horizontal = 3
 [node name="Version" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=539832310]
 unique_name_in_owner = true
 layout_mode = 2
-text = "v0.1.4"
+text = "v0.1.5"
 
 [node name="VentanaAgregar" parent="." unique_id=1378998124 instance=ExtResource("2_agregar")]
 unique_name_in_owner = true
@@ -297,6 +298,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="VentanaPreferencias" parent="." unique_id=1814012713 instance=ExtResource("3_preferencias")]
+unique_name_in_owner = true
+
+[node name="VentanaDashboard" parent="." instance=ExtResource("5_dashboard")]
 unique_name_in_owner = true
 
 [node name="DialogoHistorial" parent="." unique_id=718768431 instance=ExtResource("4_historial")]

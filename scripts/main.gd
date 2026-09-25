@@ -42,6 +42,7 @@ const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 @onready var filtro: OptionButton = %FiltroEstado
 @onready var ventana_agregar = %VentanaAgregar
 @onready var preferencias: Window = %VentanaPreferencias
+@onready var dashboard: Window = %VentanaDashboard
 @onready var rotos_label: Label = %Rotos
 @onready var activos_label: Label = %Activos
 @onready var total_label: Label = %Total
@@ -188,6 +189,7 @@ func _configurar_menus() -> void:
 	menu_util.add_item(tr("Limpiar capturas huérfanas…"), 2)
 	menu_util.add_item(tr("Exportar diagnóstico…"), 3)
 	menu_util.add_item(tr("Comprobar actualizaciones…"), 4)
+	menu_util.add_item(tr("Dashboard de estadísticas…"), 5)
 	if menu_util.id_pressed.is_connected(_on_utilidades_id):
 		menu_util.id_pressed.disconnect(_on_utilidades_id)
 	menu_util.id_pressed.connect(_on_utilidades_id)
@@ -218,6 +220,8 @@ func _on_utilidades_id(id: int) -> void:
 		%DialogoDiagnostico.popup_centered()
 	elif id == 4:
 		_comprobar_actualizaciones(true)
+	elif id == 5:
+		dashboard.abrir(_entradas, _estado_store.cargar().get("estados", {}))
 
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -1,0 +1,127 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/dashboard_ui.gd" id="1_dash"]
+[ext_resource type="Script" path="res://scripts/grafico_dashboard.gd" id="2_graf"]
+
+[node name="VentanaDashboard" type="Window"]
+title = "Dashboard de estadísticas"
+initial_position = 2
+wrap_controls = true
+size = Vector2i(760, 560)
+exclusive = true
+visible = false
+script = ExtResource("1_dash")
+
+[node name="Fondo" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.12, 0.12, 0.12, 1)
+
+[node name="Margen" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="Columna" type="VBoxContainer" parent="Margen"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ResumenLabel" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = ""
+
+[node name="PctLabel" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = ""
+
+[node name="Filas" type="HBoxContainer" parent="Margen/Columna"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="PanelCategoria" type="VBoxContainer" parent="Margen/Columna/Filas"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="TituloCategoria" type="Label" parent="Margen/Columna/Filas/PanelCategoria"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Por categoría"
+
+[node name="ListaCategorias" type="ItemList" parent="Margen/Columna/Filas/PanelCategoria"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PanelHost" type="VBoxContainer" parent="Margen/Columna/Filas"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="TituloHost" type="Label" parent="Margen/Columna/Filas/PanelHost"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Por host (problemáticos)"
+
+[node name="ListaHosts" type="ItemList" parent="Margen/Columna/Filas/PanelHost"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PanelGrafico" type="VBoxContainer" parent="Margen/Columna"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="TituloGrafico" type="Label" parent="Margen/Columna/PanelGrafico"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Comprobaciones por día"
+
+[node name="Grafico" type="Control" parent="Margen/Columna/PanelGrafico"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+script = ExtResource("2_graf")
+
+[node name="Acciones" type="HBoxContainer" parent="Margen/Columna"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BotonCsv" type="Button" parent="Margen/Columna/Acciones"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Exportar CSV"
+
+[node name="BotonJson" type="Button" parent="Margen/Columna/Acciones"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Exportar JSON"
+
+[node name="Nota" type="Label" parent="Margen/Columna/Acciones"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+
+[node name="DialogoExportar" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Exportar estadísticas"
+file_mode = 4

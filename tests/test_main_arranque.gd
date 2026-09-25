@@ -331,6 +331,31 @@ func _arrancar() -> void:
 	main_script._ui_toggle_vista()
 	_check(main_script._config_store.cargar().get("vista", "") == "lista", "volver a la lista persiste la vista")
 
+	# Dashboard de estadísticas (#45)
+	_check(main.has_node("%VentanaDashboard"), "existe la ventana del dashboard")
+	var menu_util_dash: PopupMenu = main.get_node("%Utilidades")
+	var id_dash := -1
+	for i in range(menu_util_dash.get_item_count()):
+		if menu_util_dash.get_item_id(i) == 5:
+			id_dash = i
+	_check(id_dash != -1 and menu_util_dash.get_item_text(id_dash) == "Dashboard de estadísticas…", "el menú Utilidades ofrece el dashboard")
+	var dash_ui: Window = main.get_node("%VentanaDashboard")
+	var dia_1 := Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 9, "day": 1, "hour": 10})
+	dash_ui.abrir(main_script._entradas, {
+		"a.test": {"valido": true, "historial": [{"fecha": dia_1, "valido": true, "mensaje": "OK", "codigo": 200}]},
+		"b.test": {"valido": false, "historial": [{"fecha": dia_1, "valido": false, "mensaje": "No", "codigo": 404}]},
+	})
+	_check(dash_ui.visible, "abrir el dashboard muestra la ventana")
+	_check(dash_ui.get_node("%ResumenLabel").text.contains("Válidos: 1"), "el dashboard pinta el resumen de válidos")
+	_check(dash_ui.get_node("%ListaCategorias").item_count >= 1, "el dashboard pinta las categorías")
+	_check(dash_ui.get_node("%ListaHosts").item_count >= 1, "el dashboard pinta los hosts")
+	var ruta_dash := ProjectSettings.globalize_path("user://__test_main_arranque__").path_join("estadisticas.csv")
+	dash_ui._formato = "csv"
+	dash_ui._on_exportar_elegido(ruta_dash)
+	_check(FileAccess.file_exists(ruta_dash), "exportar estadísticas escribe el CSV")
+	_check(dash_ui.get_node("%Nota").text == "Estadísticas exportadas.", "exportar estadísticas informa del éxito")
+	dash_ui.hide()
+
 	main_script._persistir = false
 	_cerrar()
 
