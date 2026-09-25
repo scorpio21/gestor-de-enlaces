@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cd41pf5lakl3c"
+
+[deps]
+
+files=["res://locale/gestor_es_en.es.translation", "res://locale/gestor_es_en.en.translation"]
+
+source_file="res://locale/gestor_es_en.csv"
+dest_files=["res://locale/gestor_es_en.es.translation", "res://locale/gestor_es_en.en.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

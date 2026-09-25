@@ -6,3 +6,8 @@
 
 # Superpowers workspace (SDD/brainstorm sessions)
 .superpowers/
+
+# Planes ajenos sin commitear (pendientes de decisión propia)
+/docs/superpowers/plans/2026-09-05-captura-enlaces.md
+/docs/superpowers/plans/2026-09-19-ampliar-detectores-enlace-caido.md
+/plan-f429694c28882752.md
