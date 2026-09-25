@@ -110,8 +110,8 @@ func _ready() -> void:
 	filtro_cat.select(clampi(int(cfg.get("filtro_categoria", 0)), 0, GestorCatalogoScript.CATEGORIAS.size()))
 	filtro_tag.select(_indice_etiqueta(String(cfg.get("filtro_etiqueta", ""))))
 	filtro_codigo.select(_indice_codigo(String(cfg.get("filtro_codigo", ""))))
-	filtro_dias.value = int(cfg.get("filtro_dias", 0))
 	filtro_modo.select(0 if str(cfg.get("busqueda_modo", "and")) == "and" else 1)
+	filtro_dias.value = int(cfg.get("filtro_dias", 0))
 	_ui_pintar_cabeceras()
 	if _orden_columna != "":
 		_ui_aplicar_filtro()
