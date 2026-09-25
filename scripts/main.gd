@@ -23,6 +23,7 @@ const FiltrosScript := preload("res://scripts/filtros.gd")
 const CODIGOS_FILTRO := [200, 301, 302, 403, 404, 410, 500, 503]
 const ColaEscaneoScript := preload("res://scripts/cola_escaneo.gd")
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
+const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -31,6 +32,8 @@ const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 @onready var filtro_codigo: OptionButton = %FiltroCodigo
 @onready var filtro_dias: SpinBox = %FiltroDias
 @onready var filtro_modo: OptionButton = %FiltroModo
+@onready var preset_filtros: OptionButton = %PresetFiltros
+@onready var boton_preset: Button = %BotonPreset
 @onready var progreso: Label = %Progreso
 @onready var filtro: OptionButton = %FiltroEstado
 @onready var ventana_agregar = %VentanaAgregar
@@ -72,6 +75,9 @@ var _cola_store: RefCounted = null
 var _aviso_url := ""
 var _dialogo_version := ""
 var _dialogo_con_aviso := false
+var _presets_store: RefCounted = null
+var _presets: Dictionary = {}
+var _boton_eliminar_preset: Button = null
 
 
 func _ready() -> void:
@@ -94,6 +100,8 @@ func _ready() -> void:
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new(CONFIG_BASE)
 	_cola_store = ColaStoreScript.new()
+	_presets_store = PresetsStoreScript.new(CONFIG_BASE)
+	_presets = _presets_store.cargar()
 	var cfg: Dictionary = _config_store.cargar()
 	IdiomaScript.cargar_traducciones()
 	TranslationServer.set_locale(IdiomaScript.aplicar(String(cfg.get("idioma", "")), OS.get_locale()))
@@ -112,6 +120,11 @@ func _ready() -> void:
 	filtro_codigo.select(_indice_codigo(String(cfg.get("filtro_codigo", ""))))
 	filtro_modo.select(0 if str(cfg.get("busqueda_modo", "and")) == "and" else 1)
 	filtro_dias.value = int(cfg.get("filtro_dias", 0))
+	_presets_recargar_ui()
+	boton_preset.pressed.connect(_ui_boton_preset)
+	%DialogoPreset.confirmed.connect(_dialogo_preset_confirmado)
+	_boton_eliminar_preset = %DialogoPreset.add_button(tr("Eliminar"))
+	_boton_eliminar_preset.pressed.connect(_dialogo_preset_eliminar)
 	_ui_pintar_cabeceras()
 	if _orden_columna != "":
 		_ui_aplicar_filtro()
@@ -271,6 +284,9 @@ func _cargar_filtros() -> void:
 		filtro_modo.item_selected.disconnect(_ui_filtro_modo)
 	filtro_modo.item_selected.connect(_ui_filtro_modo)
 	filtro_dias.suffix = " " + tr("días")
+	if filtro_dias.value_changed.is_connected(_ui_filtro_dias):
+		filtro_dias.value_changed.disconnect(_ui_filtro_dias)
+	filtro_dias.value_changed.connect(_ui_filtro_dias)
 
 
 func _etiqueta_seleccionada() -> String:
@@ -467,6 +483,97 @@ func _ui_filtro_dias(_valor: float) -> void:
 func _ui_filtro_modo(_indice: int) -> void:
 	_ui_refrescar()
 	_persistir_filtros()
+
+
+func _ui_preset_seleccionado(indice: int) -> void:
+	if indice <= 0:
+		preset_filtros.select(0)
+		return
+	_aplicar_preset(preset_filtros.get_item_text(indice))
+
+
+func _aplicar_preset(nombre: String) -> void:
+	var cfg: Dictionary = _presets_store.aplicar_preset(_presets, nombre)
+	if cfg.is_empty():
+		preset_filtros.select(0)
+		return
+	filtro.select(int(cfg.get("filtro_estado", 0)))
+	filtro_cat.select(int(cfg.get("filtro_categoria", 0)))
+	filtro_tag.select(_indice_etiqueta(str(cfg.get("filtro_etiqueta", ""))))
+	filtro_codigo.select(_indice_codigo(str(cfg.get("filtro_codigo", ""))))
+	filtro_modo.select(0 if str(cfg.get("busqueda_modo", "and")) == "and" else 1)
+	filtro_dias.value = int(cfg.get("filtro_dias", 0))
+	busqueda.text = str(cfg.get("busqueda", ""))
+	_ui_refrescar()
+	_persistir_filtros()
+	preset_filtros.select(0)
+
+
+func _ui_boton_preset() -> void:
+	%NombrePreset.text = ""
+	%DialogoPreset.popup_centered()
+	%NombrePreset.grab_focus()
+
+
+func _dialogo_preset_confirmado() -> void:
+	var nombre: String = %NombrePreset.text.strip_edges()
+	if not _presets_store.nombre_ok(nombre):
+		progreso.text = tr("El nombre no puede estar vacío.")
+		return
+	_guardar_preset(nombre)
+
+
+func _guardar_preset(nombre: String) -> bool:
+	var presets_nuevos: Dictionary = _presets_store.guardar_preset(_presets, nombre, _config_filtros_actual())
+	if presets_nuevos == _presets:
+		progreso.text = tr("No se pudo guardar la configuración.")
+		return false
+	_presets = presets_nuevos
+	_presets_store.guardar(_presets)
+	_presets_recargar_ui()
+	progreso.text = tr("Filtro guardado: %s") % nombre
+	return true
+
+
+func _dialogo_preset_eliminar() -> void:
+	var nombre: String = %NombrePreset.text.strip_edges()
+	if not _borrar_preset(nombre):
+		progreso.text = tr("No existe ese filtro.")
+		return
+	%DialogoPreset.hide()
+
+
+func _borrar_preset(nombre: String) -> bool:
+	if not _presets.has(nombre):
+		return false
+	_presets = _presets_store.borrar_preset(_presets, nombre)
+	_presets_store.guardar(_presets)
+	_presets_recargar_ui()
+	progreso.text = tr("Filtro eliminado: %s") % nombre
+	return true
+
+
+func _presets_recargar_ui() -> void:
+	preset_filtros.clear()
+	preset_filtros.add_item(tr("Presets…"), -1)
+	for nombre in _presets_store.nombres(_presets):
+		preset_filtros.add_item(str(nombre), preset_filtros.item_count)
+	if preset_filtros.item_selected.is_connected(_ui_preset_seleccionado):
+		preset_filtros.item_selected.disconnect(_ui_preset_seleccionado)
+	preset_filtros.item_selected.connect(_ui_preset_seleccionado)
+	preset_filtros.select(0)
+
+
+func _config_filtros_actual() -> Dictionary:
+	return {
+		"filtro_estado": filtro.get_selected_id(),
+		"filtro_categoria": filtro_cat.get_selected_id(),
+		"filtro_etiqueta": _etiqueta_seleccionada(),
+		"busqueda": busqueda.text,
+		"filtro_codigo": _codigo_seleccionado(),
+		"filtro_dias": int(filtro_dias.value),
+		"busqueda_modo": _modo_busqueda(),
+	}
 
 
 func _ui_status() -> void:
@@ -1147,6 +1254,9 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 func _retraducir_ui() -> void:
 	_configurar_menus()
 	_cargar_filtros()
+	_presets_recargar_ui()
+	if _boton_eliminar_preset != null:
+		_boton_eliminar_preset.text = tr("Eliminar")
 	_ui_status()
 	_ui_refrescar()
 

@@ -113,6 +113,15 @@ min_value = 0
 max_value = 3650
 step = 1
 
+[node name="PresetFiltros" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BotonPreset" type="Button" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Guardar filtro…"
+
 [node name="Progreso" type="Label" parent="ColumnaApp/Margen/Columna/BarraAcciones" unique_id=1034102154]
 unique_name_in_owner = true
 layout_mode = 2
@@ -226,7 +235,7 @@ size_flags_horizontal = 3
 [node name="Version" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=539832310]
 unique_name_in_owner = true
 layout_mode = 2
-text = "v0.1.2"
+text = "v0.1.3"
 
 [node name="VentanaAgregar" parent="." unique_id=1378998124 instance=ExtResource("2_agregar")]
 unique_name_in_owner = true
@@ -259,6 +268,19 @@ unique_name_in_owner = true
 title = "Comprobar actualizaciones"
 ok_button_text = "Cerrar"
 cancel_button_text = "Cerrar"
+
+[node name="DialogoPreset" type="AcceptDialog" parent="."]
+unique_name_in_owner = true
+title = "Guardar filtro como…"
+ok_button_text = "Guardar"
+cancel_button_text = "Cancelar"
+size = Vector2i(360, 0)
+
+[node name="NombrePreset" type="LineEdit" parent="DialogoPreset"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="VentanaPreferencias" parent="." unique_id=1814012713 instance=ExtResource("3_preferencias")]
 unique_name_in_owner = true

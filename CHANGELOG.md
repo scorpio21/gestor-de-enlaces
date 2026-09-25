@@ -11,6 +11,18 @@ Todos los cambios relevantes de GestorAO por día.
 
 ---
 
+## [0.1.3]
+
+### Añadido
+
+- **Presets de filtros** (`#44`): guardar la combinación actual de filtros (estado, categoría, etiqueta, búsqueda, código HTTP, días y modo) bajo un nombre, aplicarla desde el desplegable y eliminarla; hasta 20 presets en `user://presets_filtros.json`. El filtro por días se aplica en vivo al cambiar el SpinBox.
+
+### Cambiado
+
+- Versión del proyecto a 0.1.3.
+
+---
+
 ## [0.1.2]
 
 ### Añadido

@@ -71,9 +71,13 @@ Exportar diagnóstico,Exportar diagnóstico,Export diagnostics
 Exportar diagnóstico…,Exportar diagnóstico…,Export diagnostics…
 Exportar…,Exportar…,Export…
 Fecha,Fecha,Date
+Filtro eliminado: %s,Filtro eliminado: %s,Filter deleted: %s
+Filtro guardado: %s,Filtro guardado: %s,Filter saved: %s
 Gestor de enlaces AO,Gestor de enlaces AO,AO Link Manager
 Guardar,Guardar,Save
 Guardar cambios,Guardar cambios,Save changes
+Guardar filtro…,Guardar filtro…,Save filter…
+Guardar filtro como…,Guardar filtro como…,Save filter as…
 Guardar informe de disponibilidad,Guardar informe de disponibilidad,Save availability report
 Idioma,Idioma,Language
 Hay una comprobación pendiente. ¿Reanudar el escaneo?,Hay una comprobación pendiente. ¿Reanudar el escaneo?,A check is pending. Resume scanning?
@@ -94,6 +98,7 @@ Listo: %d caídos de %d,Listo: %d caídos de %d,Done: %d down of %d
 Nada que comprobar,Nada que comprobar,Nothing to check
 No existe (%d),No existe (%d),Does not exist (%d)
 No existe el dominio,No existe el dominio,Domain does not exist
+No existe ese filtro.,No existe ese filtro.,That filter does not exist.
 No hay capturas huérfanas.,No hay capturas huérfanas.,No orphan captures.
 No hay copia de seguridad disponible.,No hay copia de seguridad disponible.,No backup available.
 No se encontró el enlace.,No se encontró el enlace.,Link not found.
@@ -119,6 +124,7 @@ Parche,Parche,Patch
 Pega al menos una URL.,Pega al menos una URL.,Paste at least one URL.
 Preferencias,Preferencias,Preferences
 Preferencias…,Preferencias…,Preferences…
+Presets…,Presets…,Presets…
 Quitar imagen,Quitar imagen,Remove image
 Re-comprobando %s…,Re-comprobando %s…,Re-checking %s…
 Reanudar,Reanudar,Resume

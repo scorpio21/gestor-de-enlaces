@@ -39,6 +39,10 @@ func _arrancar() -> void:
 	_check(main.has_node("%FiltroCodigo"), "la barra tiene el filtro de código HTTP")
 	_check(main.has_node("%FiltroModo"), "la barra tiene el modo de búsqueda")
 	_check(main.has_node("%FiltroDias"), "la barra tiene el filtro por días")
+	_check(main.has_node("%PresetFiltros"), "la barra tiene el selector de presets")
+	_check(main.has_node("%BotonPreset"), "la barra tiene el botón de guardar filtro")
+	_check(main.has_node("%DialogoPreset"), "existe el diálogo de guardar filtro")
+	_check(main.has_node("%NombrePreset"), "el diálogo tiene el campo de nombre")
 
 	if not main.has_node("%Rotos"):
 		_cerrar()
@@ -229,6 +233,29 @@ func _arrancar() -> void:
 	filtro_codigo_ui.select(0)
 	main_script._ui_filtro_codigo(0)
 
+	# Presets de filtros (#44)
+	var preset_selector: OptionButton = main.get_node("%PresetFiltros")
+	_check(preset_selector.item_count == 1, "sin presets el selector solo tiene la opción de menú")
+	main_script._persistir = true
+	main.get_node("%Busqueda").text = ""
+	main.get_node("%FiltroEstado").select(1)
+	main.get_node("%FiltroDias").value = 7
+	var guardado_preset: bool = main_script._guardar_preset("Solo válidos recientes")
+	_check(guardado_preset, "guardar un preset devuelve true")
+	_check(main_script._presets.has("Solo válidos recientes"), "el preset queda en memoria")
+	_check(preset_selector.item_count == 2, "el selector lista el preset guardado")
+	main.get_node("%Busqueda").text = "otra"
+	main.get_node("%FiltroEstado").select(0)
+	main.get_node("%FiltroDias").value = 0
+	main_script._aplicar_preset("Solo válidos recientes")
+	_check(main.get_node("%Busqueda").text == "" and main.get_node("%FiltroEstado").get_selected_id() == 1 \
+		and main.get_node("%FiltroDias").value == 7, "aplicar un preset restaura búsqueda, estado y días")
+	_check(preset_selector.selected == 0, "tras aplicar el selector vuelve a la opción de menú")
+	var borrado_preset: bool = main_script._borrar_preset("Solo válidos recientes")
+	_check(borrado_preset and not main_script._presets.has("Solo válidos recientes"), "borrar un preset lo elimina")
+	_check(preset_selector.item_count == 1, "tras borrar el selector queda solo la opción de menú")
+	main_script._persistir = false
+
 	# Actualización (#27): diálogo y comprobación en headless
 	_check(main_script.has_method("_lanzar_comprobacion_auto"), "main tiene el disparo automático")
 	_check(main.has_node("%DialogoActualizacion"), "existe el diálogo DialogoActualizacion")
@@ -264,7 +291,7 @@ func _arrancar() -> void:
 
 func _cerrar() -> void:
 	var ruta_temp := ProjectSettings.globalize_path("user://__test_main_arranque__")
-	for f in ["data.json", "enlaces.json"]:
+	for f in ["data.json", "enlaces.json", "presets_filtros.json"]:
 		if FileAccess.file_exists(ruta_temp.path_join(f)):
 			DirAccess.remove_absolute(ruta_temp.path_join(f))
 	if DirAccess.dir_exists_absolute(ruta_temp):
