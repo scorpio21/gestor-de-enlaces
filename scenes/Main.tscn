@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bqp4r7fqunage"]
+[gd_scene format=3]
 
 [ext_resource type="Script" uid="uid://cqjehi7g3idb7" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/AgregarEnlace.tscn" id="2_agregar"]
@@ -248,7 +248,7 @@ size_flags_horizontal = 3
 [node name="Version" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=539832310]
 unique_name_in_owner = true
 layout_mode = 2
-text = "v0.1.8"
+text = "v0.1.9"
 
 [node name="VentanaAgregar" parent="." unique_id=1378998124 instance=ExtResource("2_agregar")]
 unique_name_in_owner = true
