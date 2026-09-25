@@ -11,6 +11,19 @@ Todos los cambios relevantes de GestorAO por día.
 
 ---
 
+## [0.1.1]
+
+### Añadido
+
+- **Etiquetas personalizadas** (`#42`): campo en el alta de enlaces con sugerencias por uso frecuente, normalización de etiquetas y filtro por etiqueta combinable con estado y categoría, con el criterio persistido en configuración.
+- **Barra de estado con colores**: contadores Rotos (rojo), Activos (verde) y Total (azul).
+
+### Cambiado
+
+- Versión del proyecto a 0.1.1.
+
+---
+
 ## 2026-09-24
 
 - Implementación completa de `#30` (internacionalización): `config_store` guarda y valida el idioma, CSV ES/EN con scanner y test de cobertura, banderas de idioma generadas, selector en Preferencias y aplicación de idioma con `tr()` runtime (6 commits).

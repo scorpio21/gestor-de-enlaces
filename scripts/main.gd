@@ -412,6 +412,9 @@ func _ui_status() -> void:
 	rotos_label.text = tr("Rotos: %d") % c.get("rotos", 0)
 	activos_label.text = tr("Activos: %d") % c.get("activos", 0)
 	total_label.text = tr("Total: %d") % c.get("total", 0)
+	rotos_label.add_theme_color_override("font_color", TemaStoreScript.color_estado(false))
+	activos_label.add_theme_color_override("font_color", TemaStoreScript.color_estado(true))
+	total_label.add_theme_color_override("font_color", Color(0.4, 0.6, 1.0, 1))
 
 
 func _ui_barra(hechos: int, total: int) -> void:

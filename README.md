@@ -20,8 +20,9 @@
 - 📚 **Listado por catálogo** — listado base en `data/data.json` + enlaces añadidos por el usuario guardados en `user://enlaces.json`.
 - 🔎 **Buscador en vivo** — filtra por nombre y descripción mientras escribes.
 - ✅ **Verificación de enlaces** — comprueba la disponibilidad HTTP de cada URL con hasta **3 verificaciones en paralelo**, gestionando redirecciones, timeouts y marcadores típicos de archivo eliminado (4shared, RapidShare…).
-- 🎛️ **Filtros por estado** — Todos / Válidos / Caídos / Sin comprobar.
+- 🎛️ **Filtros por estado** — Todos / Válidos / Caídos / Sin comprobar, combinables con categoría y etiqueta.
 - ➕ **Añadir enlaces** — ventana con nombre, descripción, URL validada y **captura/imagen opcional** (gráfico o screenshot del juego).
+- 🏷️ **Etiquetas personalizadas** — campo en el formulario con sugerencias por uso frecuente y filtro por etiqueta, combinable con estado y categoría (`#42`).
 - 🖼️ **Miniaturas** — cada fila muestra la captura (56 px) o el marcador `no-disponible` cuando no hay imagen.
 - 💾 **Persistencia del escaneo** — los resultados se guardan en `user://estados.json`; no hace falta re-escanear al abrir.
 - 🗑️ **Eliminación de enlaces caídos** — con confirmación, registra la URL eliminada (`user://borrados.json`) y borra también su captura de `Assets/png/`.
@@ -97,7 +98,7 @@ La escena principal es `res://scenes/Main.tscn`.
 
 - **Presets de exportación** (`export_presets.cfg`) — Windows (exe), Linux/X11 (x86_64) y macOS (`.app` universal). La escena principal y los iconos (SVG/PNG/ICO/ICNS) se generan con `scripts/generar_iconos.gd`.
 - **GitHub Actions** (`.github/workflows/ci.yml`) — en cada push a `main`: descarga Godot 4.7.2 y las export templates (versión fija `4.7.2.stable`), importa el proyecto, ejecuta la batería de tests headless y exporta los 3 presets a `build/` (el `.app` de macOS se comprime a ZIP). Los artefactos quedan publicados en la página del run.
-- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 22 suites en orden; local (Windows, pwsh):
+- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 29 suites en orden; local (Windows, pwsh):
 
   ```bash
   & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_<area>.gd
@@ -138,8 +139,8 @@ gestor-de-enlaces/
 │   ├── extraer_cadenas.gd   # Scanner de cadenas de la UI
 │   └── generar_iconos.gd    # Regenera Assets/icon (svg/png/ico/icns)
 ├── tests/
-│   ├── run_battery.sh       # Ejecuta las 22 suites headless (Linux/CI)
-│   └── test_<area>.gd       # 22 suites SceneTree (TESTS OK / quit(0))
+│   ├── run_battery.sh       # Ejecuta las 29 suites headless (Linux/CI)
+│   └── test_<area>.gd       # 29 suites SceneTree (TESTS OK / quit(0))
 ├── locale/
 │   └── gestor_es_en.csv     # Traducciones ES/EN (clave ES, valor ES, valor EN)
 ├── data/
@@ -165,6 +166,8 @@ gestor-de-enlaces/
 - [x] **Empaquetado y CI** — presets Windows/Linux/macOS + GitHub Actions que testea y exporta los 3 bundles (#26)
 - [x] **Ordenación por columnas** — cabeceras de la lista con criterio persistido (`#17`)
 - [x] **Internacionalización ES/EN** — selector de idioma con banderas y `tr()` en toda la UI (`#30`)
+- [x] **Etiquetas personalizadas** — campo con sugerencias por uso frecuente y filtro combinado por etiqueta (`#42`)
+- [x] **Barra de estado con colores** — contadores Rotos/Activos/Total en rojo, verde y azul
 
 > El diseño de cada funcionalidad está especificado en `docs/superpowers/specs/` (`2026-09-05-estado-escaneo-enlaces-design.md`, `2026-09-05-captura-enlaces-design.md`).
 
