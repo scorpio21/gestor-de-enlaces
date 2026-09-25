@@ -41,6 +41,10 @@ func _initialize() -> void:
 	_check(filtro_etiqueta_persistida(), "guardar() persiste el filtro de etiqueta")
 	_check(filtro_etiqueta_no_string_normaliza(), "filtro de etiqueta no-string cae a vacía")
 	_check(busqueda_no_string_normaliza(), "búsqueda no-string cae a vacía")
+	_check(filtro_codigo_default_sin_fichero(), "sin fichero filtro de código vacío")
+	_check(filtros_avanzados_persistidos(), "guardar() persiste código, días y modo de búsqueda")
+	_check(filtro_dias_invalido_normaliza(), "días fuera de rango se clampea")
+	_check(busqueda_modo_invalido_normaliza(), "modo de búsqueda inválido vuelve a and")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -242,6 +246,33 @@ func filtro_etiqueta_no_string_normaliza() -> bool:
 func busqueda_no_string_normaliza() -> bool:
 	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"busqueda": 42}')
 	return ConfigStore.new(BASE).cargar().get("busqueda", "#") == ""
+
+
+func filtro_codigo_default_sin_fichero() -> bool:
+	return ConfigStore.new(BASE).cargar().get("filtro_codigo", "#") == ""
+
+
+func filtros_avanzados_persistidos() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, 0, "", "", "404", 30, "or"):
+		return false
+	var c := store.cargar()
+	return c.get("filtro_codigo", "#") == "404" and c.get("filtro_dias", -1) == 30 \
+		and c.get("busqueda_modo", "#") == "or"
+
+
+func filtro_dias_invalido_normaliza() -> bool:
+	var store := ConfigStore.new(BASE)
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, 0, "", "", "", 99999, "and")
+	var alto: bool = store.cargar().get("filtro_dias", -1) == 3650
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, 0, "", "", "", -5, "and")
+	return alto and store.cargar().get("filtro_dias", -1) == 0
+
+
+func busqueda_modo_invalido_normaliza() -> bool:
+	var store := ConfigStore.new(BASE)
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, 0, "", "", "", 0, "xor")
+	return store.cargar().get("busqueda_modo", "#") == "and"
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

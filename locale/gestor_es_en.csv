@@ -24,6 +24,7 @@ Caídos / no existen,Caídos / no existen,Down / missing
 Cada 1 hora,Cada 1 hora,Every hour
 Cada 15 minutos,Cada 15 minutos,Every 15 minutes
 Cada 30 minutos,Cada 30 minutos,Every 30 minutes
+Cualquier palabra,Cualquier palabra,Any word
 Cerrar,Cerrar,Close
 Claro,Claro,Light
 Cliente,Cliente,Client
@@ -43,6 +44,7 @@ Códigos fuente,Códigos fuente,Source code
 Desactivado,Desactivado,Disabled
 Descartar,Descartar,Discard
 Descripción,Descripción,Description
+días,días,days
 Diagnóstico guardado en %s.,Diagnóstico guardado en %s.,Diagnostics saved to %s.
 Editar…,Editar…,Edit…
 Editar enlace,Editar enlace,Edit link
@@ -136,6 +138,7 @@ Subir,Subir,Move up
 Tema,Tema,Theme
 Timeout por enlace (segundos),Timeout por enlace (segundos),Per-link timeout (seconds)
 Todas,Todas,All
+Todas las palabras,Todas las palabras,All words
 Todos,Todos,All
 Total:,Total:,Total:
 URL,URL,URL

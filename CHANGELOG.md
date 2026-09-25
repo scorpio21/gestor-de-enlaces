@@ -11,6 +11,18 @@ Todos los cambios relevantes de GestorAO por día.
 
 ---
 
+## [0.1.2]
+
+### Añadido
+
+- **Filtros avanzados** (`#44`): búsqueda booleana AND/OR por palabras en nombre/descripción/URL, filtro por código HTTP (200, 301, 302, 403, 404, 410, 500, 503) y filtro por última comprobación (últimos N días), combinables con estado, categoría y etiquetas; los tres criterios nuevos se persisten en configuración.
+
+### Cambiado
+
+- Versión del proyecto a 0.1.2.
+
+---
+
 ## [0.1.1]
 
 ### Añadido

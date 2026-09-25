@@ -21,6 +21,7 @@
 - 🔎 **Buscador en vivo** — filtra por nombre y descripción mientras escribes.
 - ✅ **Verificación de enlaces** — comprueba la disponibilidad HTTP de cada URL con hasta **3 verificaciones en paralelo**, gestionando redirecciones, timeouts y marcadores típicos de archivo eliminado (4shared, RapidShare…).
 - 🎛️ **Filtros por estado** — Todos / Válidos / Caídos / Sin comprobar, combinables con categoría y etiqueta.
+- 🎛️ **Filtros avanzados** — búsqueda AND/OR por palabras (nombre/descripción/URL), código HTTP (200, 301, 302, 403, 404, 410, 500, 503) y última comprobación (últimos N días); todo combinable con estado, categoría y etiqueta (`#44`).
 - ➕ **Añadir enlaces** — ventana con nombre, descripción, URL validada y **captura/imagen opcional** (gráfico o screenshot del juego).
 - 🏷️ **Etiquetas personalizadas** — campo en el formulario con sugerencias por uso frecuente y filtro por etiqueta, combinable con estado y categoría (`#42`).
 - 🖼️ **Miniaturas** — cada fila muestra la captura (56 px) o el marcador `no-disponible` cuando no hay imagen.
@@ -168,6 +169,7 @@ gestor-de-enlaces/
 - [x] **Internacionalización ES/EN** — selector de idioma con banderas y `tr()` en toda la UI (`#30`)
 - [x] **Etiquetas personalizadas** — campo con sugerencias por uso frecuente y filtro combinado por etiqueta (`#42`)
 - [x] **Barra de estado con colores** — contadores Rotos/Activos/Total en rojo, verde y azul
+- [x] **Filtros avanzados** — búsqueda AND/OR, código HTTP y última comprobación por días, combinables (`#44`)
 
 > El diseño de cada funcionalidad está especificado en `docs/superpowers/specs/` (`2026-09-05-estado-escaneo-enlaces-design.md`, `2026-09-05-captura-enlaces-design.md`).
 

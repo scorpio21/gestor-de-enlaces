@@ -24,6 +24,11 @@ const FILTRO_ESTADO_MAX := 3
 const FILTRO_CATEGORIA_DEFAULT := 0
 const FILTRO_ETIQUETA_DEFAULT := ""
 const BUSQUEDA_DEFAULT := ""
+const FILTRO_CODIGO_DEFAULT := ""
+const FILTRO_DIAS_DEFAULT := 0
+const FILTRO_DIAS_MAX := 3650
+const BUSQUEDA_MODO_DEFAULT := "and"
+const BUSQUEDA_MODOS_VALIDOS := ["and", "or"]
 
 var _base: String
 
@@ -49,6 +54,9 @@ func cargar() -> Dictionary:
 			"filtro_categoria": FILTRO_CATEGORIA_DEFAULT,
 			"filtro_etiqueta": FILTRO_ETIQUETA_DEFAULT,
 			"busqueda": BUSQUEDA_DEFAULT,
+			"filtro_codigo": FILTRO_CODIGO_DEFAULT,
+			"filtro_dias": FILTRO_DIAS_DEFAULT,
+			"busqueda_modo": BUSQUEDA_MODO_DEFAULT,
 		}
 	return {
 		"paralelismo": _paralelismo_ok(v.get("paralelismo", PARALELO_DEFAULT)),
@@ -64,10 +72,13 @@ func cargar() -> Dictionary:
 		"filtro_categoria": _filtro_categoria_ok(v.get("filtro_categoria", FILTRO_CATEGORIA_DEFAULT)),
 		"filtro_etiqueta": _string_ok(v.get("filtro_etiqueta", FILTRO_ETIQUETA_DEFAULT)),
 		"busqueda": _string_ok(v.get("busqueda", BUSQUEDA_DEFAULT)),
+		"filtro_codigo": _string_ok(v.get("filtro_codigo", FILTRO_CODIGO_DEFAULT)),
+		"filtro_dias": _filtro_dias_ok(v.get("filtro_dias", FILTRO_DIAS_DEFAULT)),
+		"busqueda_modo": _busqueda_modo_ok(v.get("busqueda_modo", BUSQUEDA_MODO_DEFAULT)),
 	}
 
 
-func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT, filtro_estado := FILTRO_ESTADO_DEFAULT, filtro_categoria := FILTRO_CATEGORIA_DEFAULT, filtro_etiqueta := FILTRO_ETIQUETA_DEFAULT, busqueda := BUSQUEDA_DEFAULT) -> bool:
+func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT, filtro_estado := FILTRO_ESTADO_DEFAULT, filtro_categoria := FILTRO_CATEGORIA_DEFAULT, filtro_etiqueta := FILTRO_ETIQUETA_DEFAULT, busqueda := BUSQUEDA_DEFAULT, filtro_codigo := FILTRO_CODIGO_DEFAULT, filtro_dias := FILTRO_DIAS_DEFAULT, busqueda_modo := BUSQUEDA_MODO_DEFAULT) -> bool:
 	if not idioma in IDIOMAS_VALIDOS:
 		return false
 	var dato := {
@@ -84,8 +95,22 @@ func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT,
 		"filtro_categoria": _filtro_categoria_ok(filtro_categoria),
 		"filtro_etiqueta": _string_ok(filtro_etiqueta),
 		"busqueda": _string_ok(busqueda),
+		"filtro_codigo": _string_ok(filtro_codigo),
+		"filtro_dias": _filtro_dias_ok(filtro_dias),
+		"busqueda_modo": _busqueda_modo_ok(busqueda_modo),
 	}
 	return _escribir_json(_ruta("config.json"), dato)
+
+
+func _filtro_dias_ok(v: Variant) -> int:
+	if typeof(v) != TYPE_FLOAT and typeof(v) != TYPE_INT:
+		return FILTRO_DIAS_DEFAULT
+	return clampi(int(v), FILTRO_DIAS_DEFAULT, FILTRO_DIAS_MAX)
+
+
+func _busqueda_modo_ok(v: Variant) -> String:
+	var modo := str(v)
+	return modo if BUSQUEDA_MODOS_VALIDOS.has(modo) else BUSQUEDA_MODO_DEFAULT
 
 
 func _auto_abrir_ok(v: Variant) -> bool:

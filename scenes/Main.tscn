@@ -98,6 +98,21 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 
+[node name="FiltroCodigo" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="FiltroModo" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="FiltroDias" type="SpinBox" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0
+max_value = 3650
+step = 1
+
 [node name="Progreso" type="Label" parent="ColumnaApp/Margen/Columna/BarraAcciones" unique_id=1034102154]
 unique_name_in_owner = true
 layout_mode = 2
@@ -211,7 +226,7 @@ size_flags_horizontal = 3
 [node name="Version" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=539832310]
 unique_name_in_owner = true
 layout_mode = 2
-text = "v0.1.1"
+text = "v0.1.2"
 
 [node name="VentanaAgregar" parent="." unique_id=1378998124 instance=ExtResource("2_agregar")]
 unique_name_in_owner = true

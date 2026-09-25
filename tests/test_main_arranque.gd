@@ -36,6 +36,9 @@ func _arrancar() -> void:
 	_check(main.has_node("%ActivosValor"), "la barra tiene el label ActivosValor")
 	_check(main.has_node("%TotalValor"), "la barra tiene el label TotalValor")
 	_check(main.has_node("%Version"), "la barra tiene el label Version")
+	_check(main.has_node("%FiltroCodigo"), "la barra tiene el filtro de código HTTP")
+	_check(main.has_node("%FiltroModo"), "la barra tiene el modo de búsqueda")
+	_check(main.has_node("%FiltroDias"), "la barra tiene el filtro por días")
 
 	if not main.has_node("%Rotos"):
 		_cerrar()
@@ -205,6 +208,26 @@ func _arrancar() -> void:
 	_check(fila_es_i18n != null and fila_es_i18n.get_node("%EstadoLabel").text == "No existe (404)", "al volver a es la fila re-traduce el estado guardado")
 	_check(main.get_node("%Rotos").text == "Rotos:" and main.get_node("%RotosValor").text == "1", "al volver a es la barra de estado se re-traduce")
 	_check(filtro_estado_i18n.get_item_text(0) == "Todos", "al volver a es el filtro de estado se re-traduce")
+
+	var filtro_codigo_ui: OptionButton = main.get_node("%FiltroCodigo")
+	var indice_404 := 0
+	for i in range(filtro_codigo_ui.item_count):
+		if filtro_codigo_ui.get_item_id(i) == 404:
+			indice_404 = i
+	filtro_codigo_ui.select(indice_404)
+	main_script._ui_filtro_codigo(0)
+	_check(fila_es_i18n.visible, "el filtro por código 404 mantiene la fila 404 visible")
+	filtro_codigo_ui.select(0)
+	main_script._ui_filtro_codigo(0)
+	var indice_500 := 0
+	for i in range(filtro_codigo_ui.item_count):
+		if filtro_codigo_ui.get_item_id(i) == 500:
+			indice_500 = i
+	filtro_codigo_ui.select(indice_500)
+	main_script._ui_filtro_codigo(0)
+	_check(not fila_es_i18n.visible, "el filtro por código 500 oculta la fila 404")
+	filtro_codigo_ui.select(0)
+	main_script._ui_filtro_codigo(0)
 
 	# Actualización (#27): diálogo y comprobación en headless
 	_check(main_script.has_method("_lanzar_comprobacion_auto"), "main tiene el disparo automático")

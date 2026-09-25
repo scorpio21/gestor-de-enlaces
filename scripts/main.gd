@@ -20,6 +20,7 @@ const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const ActualizadorScript := preload("res://scripts/actualizador.gd")
 const OrdenadorScript := preload("res://scripts/ordenador.gd")
 const FiltrosScript := preload("res://scripts/filtros.gd")
+const CODIGOS_FILTRO := [200, 301, 302, 403, 404, 410, 500, 503]
 const ColaEscaneoScript := preload("res://scripts/cola_escaneo.gd")
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 
@@ -27,6 +28,9 @@ const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 @onready var busqueda: LineEdit = %Busqueda
 @onready var filtro_cat: OptionButton = %FiltroCategoria
 @onready var filtro_tag: OptionButton = %FiltroEtiqueta
+@onready var filtro_codigo: OptionButton = %FiltroCodigo
+@onready var filtro_dias: SpinBox = %FiltroDias
+@onready var filtro_modo: OptionButton = %FiltroModo
 @onready var progreso: Label = %Progreso
 @onready var filtro: OptionButton = %FiltroEstado
 @onready var ventana_agregar = %VentanaAgregar
@@ -105,6 +109,9 @@ func _ready() -> void:
 	filtro.select(clampi(int(cfg.get("filtro_estado", 0)), 0, 3))
 	filtro_cat.select(clampi(int(cfg.get("filtro_categoria", 0)), 0, GestorCatalogoScript.CATEGORIAS.size()))
 	filtro_tag.select(_indice_etiqueta(String(cfg.get("filtro_etiqueta", ""))))
+	filtro_codigo.select(_indice_codigo(String(cfg.get("filtro_codigo", ""))))
+	filtro_dias.value = int(cfg.get("filtro_dias", 0))
+	filtro_modo.select(0 if str(cfg.get("busqueda_modo", "and")) == "and" else 1)
 	_ui_pintar_cabeceras()
 	if _orden_columna != "":
 		_ui_aplicar_filtro()
@@ -250,6 +257,20 @@ func _cargar_filtros() -> void:
 		filtro_tag.item_selected.disconnect(_ui_filtro_etiqueta)
 	filtro_tag.item_selected.connect(_ui_filtro_etiqueta)
 	filtro_tag.select(_indice_etiqueta(sel_tag))
+	filtro_codigo.clear()
+	filtro_codigo.add_item(tr("Todos"), 0)
+	for codigo in CODIGOS_FILTRO:
+		filtro_codigo.add_item(str(codigo), codigo)
+	if filtro_codigo.item_selected.is_connected(_ui_filtro_codigo):
+		filtro_codigo.item_selected.disconnect(_ui_filtro_codigo)
+	filtro_codigo.item_selected.connect(_ui_filtro_codigo)
+	filtro_modo.clear()
+	filtro_modo.add_item(tr("Todas las palabras"), 0)
+	filtro_modo.add_item(tr("Cualquier palabra"), 1)
+	if filtro_modo.item_selected.is_connected(_ui_filtro_modo):
+		filtro_modo.item_selected.disconnect(_ui_filtro_modo)
+	filtro_modo.item_selected.connect(_ui_filtro_modo)
+	filtro_dias.suffix = " " + tr("días")
 
 
 func _etiqueta_seleccionada() -> String:
@@ -257,6 +278,24 @@ func _etiqueta_seleccionada() -> String:
 	if id > 0 and id < filtro_tag.item_count:
 		return filtro_tag.get_item_text(id)
 	return ""
+
+
+func _codigo_seleccionado() -> String:
+	return str(maxi(filtro_codigo.get_selected_id(), 0))
+
+
+func _indice_codigo(clave: String) -> int:
+	if clave.is_empty():
+		return 0
+	var codigo := int(clave)
+	for i in range(1, filtro_codigo.item_count):
+		if filtro_codigo.get_item_id(i) == codigo:
+			return i
+	return 0
+
+
+func _modo_busqueda() -> String:
+	return "or" if filtro_modo.get_selected_id() == 1 else "and"
 
 
 func _indice_etiqueta(etiqueta: String) -> int:
@@ -326,7 +365,7 @@ func _normalizar_categorias() -> void:
 
 
 func _ui_refrescar() -> void:
-	_ui_mostrar_lista(FiltrosScript.filtrar(_entradas, busqueda.text))
+	_ui_mostrar_lista(FiltrosScript.filtrar(_entradas, busqueda.text, _modo_busqueda()))
 
 
 func _ui_mostrar_lista(entradas: Array) -> void:
@@ -378,8 +417,13 @@ func _ui_aplicar_filtro() -> void:
 	if cat_id > 0:
 		clave_cat = GestorCatalogoScript.CATEGORIAS[cat_id - 1]
 	var clave_tag := _etiqueta_seleccionada()
+	var clave_codigo := ""
+	var id_codigo := filtro_codigo.get_selected_id()
+	if id_codigo > 0:
+		clave_codigo = str(id_codigo)
+	var fecha_minima := FiltrosScript.fecha_desde_dias(int(filtro_dias.value))
 	for hijo in lista.get_children():
-		hijo.visible = FiltrosScript.fila_visible(hijo.valido, hijo.categoria, modo, cat_id, clave_cat, hijo.tags, clave_tag)
+		hijo.visible = FiltrosScript.fila_visible(hijo.valido, hijo.categoria, modo, cat_id, clave_cat, hijo.tags, clave_tag, hijo.codigo, clave_codigo, hijo.fecha, fecha_minima)
 
 	if _orden_columna != "":
 		var hijos: Array = lista.get_children()
@@ -407,6 +451,21 @@ func _ui_filtro_categoria(_indice: int) -> void:
 
 func _ui_filtro_etiqueta(_indice: int) -> void:
 	_ui_aplicar_filtro()
+	_persistir_filtros()
+
+
+func _ui_filtro_codigo(_indice: int) -> void:
+	_ui_aplicar_filtro()
+	_persistir_filtros()
+
+
+func _ui_filtro_dias(_valor: float) -> void:
+	_ui_aplicar_filtro()
+	_persistir_filtros()
+
+
+func _ui_filtro_modo(_indice: int) -> void:
+	_ui_refrescar()
 	_persistir_filtros()
 
 
@@ -1076,7 +1135,7 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	_intervalo_auto = intervalo
 	TemaStoreScript.aplicar(tema, self)
 	TranslationServer.set_locale(idioma)
-	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma, filtro.get_selected_id(), filtro_cat.get_selected_id(), busqueda.text):
+	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma, filtro.get_selected_id(), filtro_cat.get_selected_id(), _etiqueta_seleccionada(), busqueda.text, _codigo_seleccionado(), int(filtro_dias.value), _modo_busqueda()):
 		TranslationServer.set_locale(locale_anterior)
 		progreso.text = tr("No se pudo guardar la configuración.")
 	_retraducir_ui()
@@ -1108,6 +1167,9 @@ func _persistir_orden() -> bool:
 		filtro_cat.get_selected_id(),
 		_etiqueta_seleccionada(),
 		busqueda.text,
+		_codigo_seleccionado(),
+		int(filtro_dias.value),
+		_modo_busqueda(),
 	)
 
 
@@ -1127,6 +1189,9 @@ func _persistir_filtros() -> bool:
 		filtro_cat.get_selected_id(),
 		_etiqueta_seleccionada(),
 		busqueda.text,
+		_codigo_seleccionado(),
+		int(filtro_dias.value),
+		_modo_busqueda(),
 	)
 
 
@@ -1214,6 +1279,9 @@ func _persistir_version_vista() -> void:
 		filtro_cat.get_selected_id(),
 		_etiqueta_seleccionada(),
 		busqueda.text,
+		_codigo_seleccionado(),
+		int(filtro_dias.value),
+		_modo_busqueda(),
 	)
 
 
