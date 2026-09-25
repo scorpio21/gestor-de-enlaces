@@ -285,6 +285,52 @@ func _arrancar() -> void:
 	main.get_node("%DialogoActualizacion").hide()
 	main_script._config_store.guardar(3, 10.0, false, 0, "oscuro", "")
 
+	# Vista de grilla (#43)
+	_check(main.has_node("%GridContenedor"), "existe el contenedor de grilla")
+	_check(main.has_node("%BotonVista"), "existe el botón de cambio de vista")
+	var lista_ui: Control = main.get_node("%ListaContenedor")
+	var grilla_ui: GridContainer = main.get_node("%GridContenedor")
+	var cabeceras_ui: HBoxContainer = main.get_node("%FilaCabeceras")
+	_check(lista_ui.visible and not grilla_ui.visible, "al arrancar se muestra la vista de lista")
+	main_script._ui_toggle_vista()
+	_check(not lista_ui.visible and grilla_ui.visible, "el toggle cambia a la vista de grilla")
+	_check(not cabeceras_ui.visible, "en grilla se ocultan las cabeceras de columna")
+	_check(main.get_node("%BotonVista").text == "Vista lista", "en grilla el botón ofrece volver a la lista")
+	main.get_node("%FiltroEstado").select(0)
+	main.get_node("%FiltroDias").value = 0
+	main.get_node("%Busqueda").text = ""
+	main_script._entradas = [
+		{"nombre": "A", "desc": "desc a", "url": "https://a.test", "img": ""},
+		{"nombre": "B", "desc": "desc b", "url": "https://b.test", "img": ""},
+		{"nombre": "C", "desc": "desc c", "url": "https://c.test", "img": ""},
+	]
+	main_script._estados = {}
+	main_script._ui_refrescar()
+	await process_frame
+	_check(grilla_ui.get_child_count() == 3, "en grilla se pintan las tarjetas de los enlaces")
+	var cartas_visibles := 0
+	for hijo in grilla_ui.get_children():
+		if hijo.visible:
+			cartas_visibles += 1
+	_check(cartas_visibles == 3, "sin filtros todas las tarjetas son visibles")
+	main.get_node("%FiltroEstado").select(2)
+	main_script._ui_filtro_estado(0)
+	var cartas_caidas := 0
+	for hijo in grilla_ui.get_children():
+		if hijo.visible:
+			cartas_caidas += 1
+	_check(cartas_caidas == 0, "el filtro de estado se aplica en grilla")
+	main.get_node("%FiltroEstado").select(0)
+	main_script._ui_filtro_estado(0)
+	main_script._ui_toggle_vista()
+	_check(lista_ui.visible and not grilla_ui.visible, "el toggle vuelve a la vista de lista")
+	_check(cabeceras_ui.visible, "en lista se muestran las cabeceras de columna")
+	_check(main.get_node("%BotonVista").text == "Vista grilla", "en lista el botón ofrece la vista de grilla")
+	main_script._ui_toggle_vista()
+	_check(main_script._config_store.cargar().get("vista", "") == "grilla", "el toggle persiste la vista elegida")
+	main_script._ui_toggle_vista()
+	_check(main_script._config_store.cargar().get("vista", "") == "lista", "volver a la lista persiste la vista")
+
 	main_script._persistir = false
 	_cerrar()
 

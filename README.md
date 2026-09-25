@@ -25,6 +25,7 @@
 - ➕ **Añadir enlaces** — ventana con nombre, descripción, URL validada y **captura/imagen opcional** (gráfico o screenshot del juego).
 - 🏷️ **Etiquetas personalizadas** — campo en el formulario con sugerencias por uso frecuente y filtro por etiqueta, combinable con estado y categoría (`#42`).
 - 🖼️ **Miniaturas** — cada fila muestra la captura (56 px) o el marcador `no-disponible` cuando no hay imagen.
+- 🧱 **Vista de grilla** — alterna entre lista y cuadrícula de tarjetas con miniatura grande, nombre y estado; filtros y ordenación funcionan igual en ambas vistas y la elegida queda persistida (`#43`).
 - 💾 **Persistencia del escaneo** — los resultados se guardan en `user://estados.json`; no hace falta re-escanear al abrir.
 - 🗑️ **Eliminación de enlaces caídos** — con confirmación, registra la URL eliminada (`user://borrados.json`) y borra también su captura de `Assets/png/`.
 - 🔁 **Re-verificación individual** — botón *Volver a comprobar* en cada fila caída.
@@ -99,7 +100,7 @@ La escena principal es `res://scenes/Main.tscn`.
 
 - **Presets de exportación** (`export_presets.cfg`) — Windows (exe), Linux/X11 (x86_64) y macOS (`.app` universal). La escena principal y los iconos (SVG/PNG/ICO/ICNS) se generan con `scripts/generar_iconos.gd`.
 - **GitHub Actions** (`.github/workflows/ci.yml`) — en cada push a `main`: descarga Godot 4.7.2 y las export templates (versión fija `4.7.2.stable`), importa el proyecto, ejecuta la batería de tests headless y exporta los 3 presets a `build/` (el `.app` de macOS se comprime a ZIP). Los artefactos quedan publicados en la página del run.
-- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 30 suites en orden; local (Windows, pwsh):
+- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 31 suites en orden; local (Windows, pwsh):
 
   ```bash
   & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_<area>.gd
@@ -141,8 +142,8 @@ gestor-de-enlaces/
 │   ├── extraer_cadenas.gd   # Scanner de cadenas de la UI
 │   └── generar_iconos.gd    # Regenera Assets/icon (svg/png/ico/icns)
 ├── tests/
-│   ├── run_battery.sh       # Ejecuta las 30 suites headless (Linux/CI)
-│   └── test_<area>.gd       # 30 suites SceneTree (TESTS OK / quit(0))
+│   ├── run_battery.sh       # Ejecuta las 31 suites headless (Linux/CI)
+│   └── test_<area>.gd       # 31 suites SceneTree (TESTS OK / quit(0))
 ├── locale/
 │   └── gestor_es_en.csv     # Traducciones ES/EN (clave ES, valor ES, valor EN)
 ├── data/

@@ -45,6 +45,9 @@ func _initialize() -> void:
 	_check(filtros_avanzados_persistidos(), "guardar() persiste código, días y modo de búsqueda")
 	_check(filtro_dias_invalido_normaliza(), "días fuera de rango se clampea")
 	_check(busqueda_modo_invalido_normaliza(), "modo de búsqueda inválido vuelve a and")
+	_check(vista_default_sin_fichero(), "sin fichero la vista es lista")
+	_check(vista_persistida(), "guardar() persiste la vista de grilla")
+	_check(vista_invalida_normaliza(), "vista inválida vuelve a lista")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -273,6 +276,23 @@ func busqueda_modo_invalido_normaliza() -> bool:
 	var store := ConfigStore.new(BASE)
 	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, 0, "", "", "", 0, "xor")
 	return store.cargar().get("busqueda_modo", "#") == "and"
+
+
+func vista_default_sin_fichero() -> bool:
+	return ConfigStore.new(BASE).cargar().get("vista", "#") == "lista"
+
+
+func vista_persistida() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, 0, "", "", "", 0, "and", "grilla"):
+		return false
+	return store.cargar().get("vista", "#") == "grilla"
+
+
+func vista_invalida_normaliza() -> bool:
+	var store := ConfigStore.new(BASE)
+	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, 0, "", "", "", 0, "and", "mosaico")
+	return store.cargar().get("vista", "#") == "lista"
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

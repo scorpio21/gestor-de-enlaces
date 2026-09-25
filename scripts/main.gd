@@ -1,6 +1,7 @@
 extends Control
 
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
+const GRID_ITEM_SCENE := preload("res://scenes/GridItem.tscn")
 const TOPE_POR_HOST := 2
 var DATA_RES := "res://data/data.json"
 var DATA_USER := "user://enlaces.json"
@@ -26,6 +27,9 @@ const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
+@onready var grilla: GridContainer = %GridContenedor
+@onready var boton_vista: Button = %BotonVista
+@onready var fila_cabeceras: HBoxContainer = %FilaCabeceras
 @onready var busqueda: LineEdit = %Busqueda
 @onready var filtro_cat: OptionButton = %FiltroCategoria
 @onready var filtro_tag: OptionButton = %FiltroEtiqueta
@@ -61,6 +65,7 @@ var _config_store: RefCounted
 var CONFIG_BASE := "user://"
 var _orden_columna := ""
 var _orden_direccion := 1
+var _modo_vista := "lista"
 var _logger = null
 var _paralelismo := 3
 var _timeout := 10.0
@@ -120,11 +125,14 @@ func _ready() -> void:
 	filtro_codigo.select(_indice_codigo(String(cfg.get("filtro_codigo", ""))))
 	filtro_modo.select(0 if str(cfg.get("busqueda_modo", "and")) == "and" else 1)
 	filtro_dias.value = int(cfg.get("filtro_dias", 0))
+	_modo_vista = "grilla" if str(cfg.get("vista", "lista")) == "grilla" else "lista"
 	_presets_recargar_ui()
 	boton_preset.pressed.connect(_ui_boton_preset)
 	%DialogoPreset.confirmed.connect(_dialogo_preset_confirmado)
 	_boton_eliminar_preset = %DialogoPreset.add_button(tr("Eliminar"))
 	_boton_eliminar_preset.pressed.connect(_dialogo_preset_eliminar)
+	boton_vista.pressed.connect(_ui_toggle_vista)
+	grilla.resized.connect(_grilla_redimensionada)
 	_ui_pintar_cabeceras()
 	if _orden_columna != "":
 		_ui_aplicar_filtro()
@@ -140,6 +148,7 @@ func _ready() -> void:
 	%DialogoExportar.access = FileDialog.ACCESS_FILESYSTEM
 	%DialogoInforme.access = FileDialog.ACCESS_FILESYSTEM
 	%DialogoDiagnostico.access = FileDialog.ACCESS_FILESYSTEM
+	_aplicar_vista()
 	_ui_refrescar()
 	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
 	_ui_status()
@@ -387,13 +396,13 @@ func _ui_refrescar() -> void:
 func _ui_mostrar_lista(entradas: Array) -> void:
 	_cola.clear()
 	_scan.reiniciar()
-	for hijo in lista.get_children():
+	for hijo in _contenedor_activo().get_children():
 		hijo.queue_free()
 
 	for entrada in entradas:
 		if typeof(entrada) != TYPE_DICTIONARY:
 			continue
-		var item: Button = LIST_ITEM_SCENE.instantiate()
+		var item: Button = GRID_ITEM_SCENE.instantiate() if _modo_vista == "grilla" else LIST_ITEM_SCENE.instantiate()
 		item.setup(
 			str(entrada.get("nombre", "")),
 			str(entrada.get("desc", "")),
@@ -420,10 +429,10 @@ func _ui_mostrar_lista(entradas: Array) -> void:
 		item.subir_pedido.connect(_ui_mover_fila.bind(item, -1))
 		item.bajar_pedido.connect(_ui_mover_fila.bind(item, 1))
 		item.menu_solicitado.connect(_ui_menu_fila.bind(item))
-		lista.add_child(item)
+		_contenedor_activo().add_child(item)
 
 	_ui_aplicar_filtro()
-	progreso.text = tr("%d enlaces") % lista.get_child_count()
+	progreso.text = tr("%d enlaces") % _contenedor_activo().get_child_count()
 
 
 func _ui_aplicar_filtro() -> void:
@@ -438,16 +447,45 @@ func _ui_aplicar_filtro() -> void:
 	if id_codigo > 0:
 		clave_codigo = str(id_codigo)
 	var fecha_minima := FiltrosScript.fecha_desde_dias(int(filtro_dias.value))
-	for hijo in lista.get_children():
+	for hijo in _contenedor_activo().get_children():
 		hijo.visible = FiltrosScript.fila_visible(hijo.valido, hijo.categoria, modo, cat_id, clave_cat, hijo.tags, clave_tag, hijo.codigo, clave_codigo, hijo.fecha, fecha_minima)
 
 	if _orden_columna != "":
-		var hijos: Array = lista.get_children()
+		var hijos: Array = _contenedor_activo().get_children()
 		hijos.sort_custom(func(a: Button, b: Button) -> bool:
 			return OrdenadorScript.comparar(a, b, _orden_columna, _orden_direccion)
 		)
 		for hijo in hijos:
-			lista.move_child(hijo, -1)
+			_contenedor_activo().move_child(hijo, -1)
+
+
+func _contenedor_activo() -> Node:
+	return grilla if _modo_vista == "grilla" else lista
+
+
+func _ui_toggle_vista() -> void:
+	_modo_vista = "lista" if _modo_vista == "grilla" else "grilla"
+	_aplicar_vista()
+	_ui_refrescar()
+	_persistir_filtros()
+
+
+func _aplicar_vista() -> void:
+	var es_grilla := _modo_vista == "grilla"
+	lista.visible = not es_grilla
+	grilla.visible = es_grilla
+	fila_cabeceras.visible = not es_grilla
+	boton_vista.text = tr("Vista lista") if es_grilla else tr("Vista grilla")
+	if es_grilla:
+		_grilla_redimensionada()
+
+
+func _grilla_redimensionada() -> void:
+	if not grilla.visible:
+		return
+	var n := clampi(floori(maxf(grilla.size.x, 620.0) / 170.0), 2, 8)
+	if grilla.columns != n:
+		grilla.columns = n
 
 
 func _ui_busqueda(_texto: String) -> void:
@@ -637,7 +675,7 @@ func _ui_cabecera(columna: String) -> void:
 
 func _ui_filas_visibles() -> Array:
 	var visibles: Array = []
-	for hijo in lista.get_children():
+	for hijo in _contenedor_activo().get_children():
 		if hijo.visible:
 			visibles.append(hijo)
 	return visibles
@@ -684,7 +722,7 @@ func _ui_historial(item: Button) -> void:
 
 func _ui_eliminar_fila(item: Button) -> void:
 	_item_pendiente_borrar = item
-	%ConfirmarBorrado.dialog_text = tr("¿Eliminar «%s» para siempre?") % item.get_node("Margen/Fila/Textos/NombreLabel").text
+	%ConfirmarBorrado.dialog_text = tr("¿Eliminar «%s» para siempre?") % item.get_node("%NombreLabel").text
 	%ConfirmarBorrado.popup_centered()
 
 
@@ -1242,7 +1280,7 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	_intervalo_auto = intervalo
 	TemaStoreScript.aplicar(tema, self)
 	TranslationServer.set_locale(idioma)
-	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma, filtro.get_selected_id(), filtro_cat.get_selected_id(), _etiqueta_seleccionada(), busqueda.text, _codigo_seleccionado(), int(filtro_dias.value), _modo_busqueda()):
+	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma, filtro.get_selected_id(), filtro_cat.get_selected_id(), _etiqueta_seleccionada(), busqueda.text, _codigo_seleccionado(), int(filtro_dias.value), _modo_busqueda(), _modo_vista):
 		TranslationServer.set_locale(locale_anterior)
 		progreso.text = tr("No se pudo guardar la configuración.")
 	_retraducir_ui()
@@ -1259,6 +1297,7 @@ func _retraducir_ui() -> void:
 		_boton_eliminar_preset.text = tr("Eliminar")
 	_ui_status()
 	_ui_refrescar()
+	boton_vista.text = tr("Vista lista") if _modo_vista == "grilla" else tr("Vista grilla")
 
 
 func _persistir_orden() -> bool:
@@ -1280,6 +1319,7 @@ func _persistir_orden() -> bool:
 		_codigo_seleccionado(),
 		int(filtro_dias.value),
 		_modo_busqueda(),
+		_modo_vista,
 	)
 
 
@@ -1302,6 +1342,7 @@ func _persistir_filtros() -> bool:
 		_codigo_seleccionado(),
 		int(filtro_dias.value),
 		_modo_busqueda(),
+		_modo_vista,
 	)
 
 
@@ -1392,6 +1433,7 @@ func _persistir_version_vista() -> void:
 		_codigo_seleccionado(),
 		int(filtro_dias.value),
 		_modo_busqueda(),
+		_modo_vista,
 	)
 
 

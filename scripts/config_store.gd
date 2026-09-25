@@ -29,6 +29,8 @@ const FILTRO_DIAS_DEFAULT := 0
 const FILTRO_DIAS_MAX := 3650
 const BUSQUEDA_MODO_DEFAULT := "and"
 const BUSQUEDA_MODOS_VALIDOS := ["and", "or"]
+const VISTA_DEFAULT := "lista"
+const VISTAS_VALIDAS := ["lista", "grilla"]
 
 var _base: String
 
@@ -57,6 +59,7 @@ func cargar() -> Dictionary:
 			"filtro_codigo": FILTRO_CODIGO_DEFAULT,
 			"filtro_dias": FILTRO_DIAS_DEFAULT,
 			"busqueda_modo": BUSQUEDA_MODO_DEFAULT,
+			"vista": VISTA_DEFAULT,
 		}
 	return {
 		"paralelismo": _paralelismo_ok(v.get("paralelismo", PARALELO_DEFAULT)),
@@ -75,10 +78,11 @@ func cargar() -> Dictionary:
 		"filtro_codigo": _string_ok(v.get("filtro_codigo", FILTRO_CODIGO_DEFAULT)),
 		"filtro_dias": _filtro_dias_ok(v.get("filtro_dias", FILTRO_DIAS_DEFAULT)),
 		"busqueda_modo": _busqueda_modo_ok(v.get("busqueda_modo", BUSQUEDA_MODO_DEFAULT)),
+		"vista": _vista_ok(v.get("vista", VISTA_DEFAULT)),
 	}
 
 
-func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT, filtro_estado := FILTRO_ESTADO_DEFAULT, filtro_categoria := FILTRO_CATEGORIA_DEFAULT, filtro_etiqueta := FILTRO_ETIQUETA_DEFAULT, busqueda := BUSQUEDA_DEFAULT, filtro_codigo := FILTRO_CODIGO_DEFAULT, filtro_dias := FILTRO_DIAS_DEFAULT, busqueda_modo := BUSQUEDA_MODO_DEFAULT) -> bool:
+func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT, filtro_estado := FILTRO_ESTADO_DEFAULT, filtro_categoria := FILTRO_CATEGORIA_DEFAULT, filtro_etiqueta := FILTRO_ETIQUETA_DEFAULT, busqueda := BUSQUEDA_DEFAULT, filtro_codigo := FILTRO_CODIGO_DEFAULT, filtro_dias := FILTRO_DIAS_DEFAULT, busqueda_modo := BUSQUEDA_MODO_DEFAULT, vista := VISTA_DEFAULT) -> bool:
 	if not idioma in IDIOMAS_VALIDOS:
 		return false
 	var dato := {
@@ -98,6 +102,7 @@ func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT,
 		"filtro_codigo": _string_ok(filtro_codigo),
 		"filtro_dias": _filtro_dias_ok(filtro_dias),
 		"busqueda_modo": _busqueda_modo_ok(busqueda_modo),
+		"vista": _vista_ok(vista),
 	}
 	return _escribir_json(_ruta("config.json"), dato)
 
@@ -111,6 +116,11 @@ func _filtro_dias_ok(v: Variant) -> int:
 func _busqueda_modo_ok(v: Variant) -> String:
 	var modo := str(v)
 	return modo if BUSQUEDA_MODOS_VALIDOS.has(modo) else BUSQUEDA_MODO_DEFAULT
+
+
+func _vista_ok(v: Variant) -> String:
+	var modo := str(v)
+	return modo if VISTAS_VALIDAS.has(modo) else VISTA_DEFAULT
 
 
 func _auto_abrir_ok(v: Variant) -> bool:

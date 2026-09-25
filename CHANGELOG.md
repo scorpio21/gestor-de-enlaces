@@ -11,6 +11,18 @@ Todos los cambios relevantes de GestorAO por día.
 
 ---
 
+## [0.1.4]
+
+### Añadido
+
+- **Vista de grilla** (`#43`): botón que alterna entre lista y cuadrícula de tarjetas (miniatura grande con nombre, estado y fecha); los filtros y la ordenación se aplican igual en ambas vistas y la vista elegida queda persistida en configuración.
+
+### Cambiado
+
+- Versión del proyecto a 0.1.4.
+
+---
+
 ## [0.1.3]
 
 ### Añadido
