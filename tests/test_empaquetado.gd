@@ -23,7 +23,8 @@ func _leer(ruta: String) -> String:
 
 func _export_presets_ok() -> bool:
 	var txt := _leer("res://export_presets.cfg")
-	return "name=\"Windows\"" in txt and "name=\"Linux/X11\"" in txt and "platform=\"Linux/X11\"" in txt \
+	return "name=\"Windows\"" in txt and "name=\"Linux/X11\"" in txt \
+		and ("platform=\"Linux/X11\"" in txt or "platform=\"Linux\"" in txt) \
 		and "name=\"macOS\"" in txt
 
 
