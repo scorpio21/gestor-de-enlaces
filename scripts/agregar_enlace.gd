@@ -199,7 +199,7 @@ func _on_guardar() -> void:
 		if _modo == "editar":
 			img_final = ""
 		else:
-			var resultado := GestorImagenesScript.copiar(_imagen_ruta)
+			var resultado := GestorImagenesScript.copiar(_imagen_ruta, n)
 			if not resultado.get("ok", false):
 				error_label.text = str(resultado.get("error", "No se pudo copiar la imagen."))
 				return

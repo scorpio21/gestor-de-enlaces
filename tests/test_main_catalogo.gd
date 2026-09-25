@@ -135,7 +135,7 @@ func _arrancar() -> void:
 	ventana._imagen_ruta = fuente
 	ventana.get_node("%BotonGuardar").pressed.emit()
 	var img_nueva := str(main_script._entradas[0].get("img", ""))
-	_check(img_nueva != vieja1 and img_nueva.begins_with("res://Assets/png/img_"), "cambiar captura apunta a un img_*.png nuevo")
+	_check(img_nueva != vieja1 and img_nueva == "res://Assets/png/A.png", "cambiar captura apunta a una captura nombrada según el enlace (#47)")
 	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(vieja1)), "cambiar captura borra el archivo viejo")
 
 	# 2) quitar captura: img vacío y archivo viejo borrado
@@ -252,7 +252,7 @@ func _listar_capturas() -> Array:
 		return []
 	var lista: Array = []
 	for f in carpeta.get_files():
-		if f.begins_with("img_") and f.ends_with(".png"):
+		if f.ends_with(".png") and f != "no-disponible.png":
 			lista.append(f)
 	lista.sort()
 	return lista

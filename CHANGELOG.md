@@ -15,6 +15,19 @@ Todos los cambios relevantes de GestorAO por día.
 
 ---
 
+## [0.1.9]
+
+### Añadido
+
+- **Capturas con el nombre del enlace** (`#47`): al adjuntar una imagen, el archivo se guarda en `Assets/png|jpg` con el nombre del enlace (p. ej. `BowAO (Cliente).png`), limpiando caracteres no válidos del sistema de archivos, colisiones con sufijo numérico (`-1`, `-2`…) y márgen de 60 caracteres. Sin nombre útil se conserva el patrón `img_<ts>`.
+- **Limpieza y dedup con capturas con nombre**: `copiar()` y `limpiar_huerfanas()` ya no filtran por prefijo `img_`; escanean cualquier `.png`/`.jpg` de las carpetas de capturas y protegen los recursos fijos (`no-disponible.png`). `copiar()` y `limpiar_huerfanas()` admiten una base de assets parametrizable (los tests usan `user://__test_*__`, sin residuos en `res://`).
+
+### Cambiado
+
+- Versión del proyecto a 0.1.9.
+
+---
+
 ## [0.1.8]
 
 ### Añadido

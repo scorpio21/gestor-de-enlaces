@@ -1132,7 +1132,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 	var destino := str(datos.get("img", ""))
 	var captura_reutilizada := false
 	if datos.has("img_pendiente"):
-		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]))
+		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]), str(datos.get("nombre", "")))
 		if not resultado.get("ok", false):
 			progreso.text = tr("No se pudo procesar la imagen.")
 			return
@@ -1213,7 +1213,7 @@ func _indice_entrada(url: String) -> int:
 func _borrar_captura_si_huerfana(ruta: String) -> void:
 	if not (ruta.begins_with("res://Assets/png/") or ruta.begins_with("res://Assets/jpg/")):
 		return
-	if not ruta.get_file().begins_with("img_"):
+	if ruta.get_file() in GestorImagenesScript.ARCHIVOS_FIJOS:
 		return
 	for entrada in _entradas:
 		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("img", "")) == ruta:
