@@ -349,6 +349,7 @@ func _arrancar() -> void:
 	_check(dash_ui.get_node("%ResumenLabel").text.contains("Válidos: 1"), "el dashboard pinta el resumen de válidos")
 	_check(dash_ui.get_node("%ListaCategorias").item_count >= 1, "el dashboard pinta las categorías")
 	_check(dash_ui.get_node("%ListaHosts").item_count >= 1, "el dashboard pinta los hosts")
+	_check(dash_ui.get_node("%DialogoExportar").use_native_dialog, "el exportador de estadísticas usa el diálogo nativo del SO (#38)")
 	var ruta_dash := ProjectSettings.globalize_path("user://__test_main_arranque__").path_join("estadisticas.csv")
 	dash_ui._formato = "csv"
 	dash_ui._on_exportar_elegido(ruta_dash)

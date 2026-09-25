@@ -123,5 +123,6 @@ text = ""
 
 [node name="DialogoExportar" type="FileDialog" parent="."]
 unique_name_in_owner = true
+use_native_dialog = true
 title = "Exportar estadísticas"
 file_mode = 4

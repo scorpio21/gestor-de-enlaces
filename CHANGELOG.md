@@ -15,6 +15,18 @@ Todos los cambios relevantes de GestorAO por día.
 
 ---
 
+## [0.1.8]
+
+### Añadido
+
+- **Diálogos de archivo nativos del sistema** (`#38`): los 6 `FileDialog` del proyecto (elegir imagen, importar catálogo, exportar, informe de disponibilidad, diagnóstico y exportar estadísticas del dashboard) usan `use_native_dialog = true`, abriendo el diálogo nativo de Windows/macOS y, en Linux, el del XDG desktop portal (proceso separado, no bloquea el hilo). Aporta historial de archivos recientes del SO y navegación completa del disco con aspecto familiar. En entornos sin soporte nativo (headless/CI) Godot mantiene el diálogo embebido.
+
+### Cambiado
+
+- Versión del proyecto a 0.1.8.
+
+---
+
 ## [0.1.7]
 
 ### Añadido

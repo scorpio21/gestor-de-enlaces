@@ -4,9 +4,9 @@ var _fallos := 0
 
 
 func _initialize() -> void:
-	_check(_version_ok(), "project.godot tiene config/version=0.1.7")
+	_check(_version_ok(), "project.godot tiene config/version=0.1.8")
 	_check(_icon_ok(), "project.godot apunta a Assets/icon/icon.svg")
-	_check(_title_ok(), "project.godot tiene título GestorAO v0.1.7")
+	_check(_title_ok(), "project.godot tiene título GestorAO v0.1.8")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -16,7 +16,7 @@ func _initialize() -> void:
 
 
 func _version_ok() -> bool:
-	return ProjectSettings.get_setting("application/config/version") == "0.1.7"
+	return ProjectSettings.get_setting("application/config/version") == "0.1.8"
 
 
 func _icon_ok() -> bool:
@@ -24,7 +24,7 @@ func _icon_ok() -> bool:
 
 
 func _title_ok() -> bool:
-	return ProjectSettings.get_setting("display/window/title") == "GestorAO v0.1.7"
+	return ProjectSettings.get_setting("display/window/title") == "GestorAO v0.1.8"
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

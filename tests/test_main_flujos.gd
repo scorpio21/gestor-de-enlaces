@@ -197,6 +197,7 @@ func _arrancar() -> void:
 	var diag_inf_i18n: FileDialog = main.get_node("%DialogoInforme")
 	var diag_diag_i18n: FileDialog = main.get_node("%DialogoDiagnostico")
 	_check(diag_imp.access == FileDialog.ACCESS_FILESYSTEM and diag_exp.access == FileDialog.ACCESS_FILESYSTEM and diag_inf_i18n.access == FileDialog.ACCESS_FILESYSTEM and diag_diag_i18n.access == FileDialog.ACCESS_FILESYSTEM, "los diálogos de archivo navegan por todo el disco (no quedan atrapados en res://)")
+	_check(diag_imp.use_native_dialog and diag_exp.use_native_dialog and diag_inf_i18n.use_native_dialog and diag_diag_i18n.use_native_dialog, "los diálogos de archivo del Main usan el diálogo nativo del SO (#38)")
 
 	# Informe de disponibilidad (#11)
 	var menu_file_inf: PopupMenu = main.get_node("%File")
