@@ -17,6 +17,10 @@ Todos los cambios relevantes de GestorAO por día.
 
 - **Limpieza de residuos sin versionar** (`#41`): versionados el addon tercero `addons/godot_ai` (Godot AI v3.2.1, licencia MIT incluida) y el bloque `[autoload]/[editor_plugins]` de `project.godot` (el addon retira su autoload MCP de los builds exportados); `export_presets.cfg` regenerado por el editor 4.7 (la CI exporta con rutas explícitas); metadatos de Godot pendientes (16 `.uid`, 2 `.translation`, 7 `.import`). Eliminados localmente `data/data2.json` (no lo usa la app) y 2 `.import` huérfanos de `Assets/png`. Los planes ajenos sin commitear quedan en `.gitignore`.
 
+### Corregido
+
+- **Ventana principal cortada/solapada a los lados**: la fila de acciones (12 controles tras los filtros avanzados de `#44`) exigía un ancho mínimo de ~1412 px, más que la ventana base de 1152 px (default de Godot: nunca hubo `viewport_width/height` definido), desbordando el contenido y recortándolo por ambos lados. Arreglado fijando el tamaño base de ventana a 1440×810 (`display/window/size`) y convirtiendo `BarraAcciones` de `HBoxContainer` a `FlowContainer`, de modo que la barra salta a dos líneas en ventanas más estrechas en vez de cortarse.
+
 ---
 
 ## [0.1.9]

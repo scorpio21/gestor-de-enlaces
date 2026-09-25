@@ -68,7 +68,7 @@ layout_mode = 2
 placeholder_text = "Buscar por nombre o descripción..."
 clear_button_enabled = true
 
-[node name="BarraAcciones" type="HBoxContainer" parent="ColumnaApp/Margen/Columna" unique_id=1767056047]
+[node name="BarraAcciones" type="FlowContainer" parent="ColumnaApp/Margen/Columna" unique_id=1767056047]
 layout_mode = 2
 theme_override_constants/separation = 8
 
@@ -131,14 +131,12 @@ text = "Vista grilla"
 [node name="Progreso" type="Label" parent="ColumnaApp/Margen/Columna/BarraAcciones" unique_id=1034102154]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="BarraProgreso" type="ProgressBar" parent="ColumnaApp/Margen/Columna/BarraAcciones" unique_id=732738429]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 show_percentage = false
 
 [node name="FilaCabeceras" type="HBoxContainer" parent="ColumnaApp/Margen/Columna"]

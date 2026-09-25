@@ -80,5 +80,6 @@ Entregables: `scripts/cola_store.gd`, `scripts/informe_store.gd`, `scripts/tema_
 - pwsh corrompe bytes al redirigir la salida de `git` a fichero → para salida byte-safe usar `cmd /c "... > <tmp>"` o redirección dentro de bash.
 - `git update-index --cacheinfo "100644,<blob>,project.godot"` (string única) servía para el "blob dance" (index ≠ worktree) al bumpear versión sin versionar el addon; ya no hace falta tras `c2d9e70`.
 - UTF-8 sin BOM: `[IO.File]::WriteAllText` produce `C3 AD` válido (la consola puede mostrarlo como "�", pero es correcto). `gh issue close --comment` con `>` u otros caracteres que pwsh parsee: evitarlos.
+- El ancho mínimo de la fila de acciones (12 controles, filtros #44) superaba la ventana default de 1152 px (en realidad nunca hubo `viewport_width/height` en project.godot → Godot usa 1152×648): el contenido desbordaba y se cortaba por ambos lados. Arreglado con base 1440×810 (`display/window/size`) y `BarraAcciones` como `FlowContainer` — su mínimo horizontal es el del hijo MÁS ANCHO (no la suma) y hace wrap al encoger, así que nunca vuelve a cortarse.
 - Motor local `Godot_v4.7.2-stable_win64(_console).exe` en `K:\Godot_v4.6.1\` (ruta peculiar; `AGENTS.md`).
 - Conv.: tabs, sin comentarios, UI en español, preload-const en vez de class_name en código nuevo, `.gd.uid` versionados, bases `user://__test_*__` limpiadas.

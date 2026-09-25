@@ -26,6 +26,8 @@ window/subwindows/embed_subwindows=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/per_pixel_transparency/allowed=true
+window/size/viewport_width=1440
+window/size/viewport_height=810
 window/title="GestorAO v0.1.9"
 
 [editor_plugins]
