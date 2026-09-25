@@ -22,7 +22,7 @@
 - ✅ **Verificación de enlaces** — comprueba la disponibilidad HTTP de cada URL con hasta **3 verificaciones en paralelo**, gestionando redirecciones, timeouts y marcadores típicos de archivo eliminado (4shared, RapidShare…).
 - 🎛️ **Filtros por estado** — Todos / Válidos / Caídos / Sin comprobar, combinables con categoría y etiqueta.
 - 🎛️ **Filtros avanzados** — búsqueda AND/OR por palabras (nombre/descripción/URL), código HTTP (200, 301, 302, 403, 404, 410, 500, 503) y última comprobación (últimos N días); todo combinable con estado, categoría y etiqueta (`#44`).
-- ➕ **Añadir enlaces** — ventana con nombre, descripción, URL validada y **captura/imagen opcional** (gráfico o screenshot del juego).
+- ➕ **Añadir enlaces** — ventana con nombre, descripción, URL validada y **captura/imagen opcional** (png/jpg/webp) que se guarda en `Assets/png|jpg` con el nombre del enlace y sin duplicados por contenido (`#36`, `#47`).
 - 🏷️ **Etiquetas personalizadas** — campo en el formulario con sugerencias por uso frecuente y filtro por etiqueta, combinable con estado y categoría (`#42`).
 - 🖼️ **Miniaturas** — cada fila muestra la captura (56 px) o el marcador `no-disponible` cuando no hay imagen.
 - 🧱 **Vista de grilla** — alterna entre lista y cuadrícula de tarjetas con miniatura grande, nombre y estado; filtros y ordenación funcionan igual en ambas vistas y la elegida queda persistida (`#43`).
@@ -34,6 +34,8 @@
 - 📊 **Progreso en tiempo real** — contador de verificaciones completadas.
 - 🗂️ **Ordenación por columnas** — pulsa las cabeceras de la lista para ordenar por fecha, nombre, imagen o estado (el criterio queda persistido, `#17`).
 - 🌐 **Internacionalización ES/EN** — selector de idioma con banderas en Preferencias; todos los textos de la UI se traducen al arrancar según tu elección (`#30`).
+- 🎨 **Tema claro/oscuro/automático** — selector en Preferencias; el modo **Automático** detecta el tema del sistema y lo sigue en vivo (`#19`, `#46`).
+- 🗂️ **Diálogos de archivo nativos** — elegir imagen, importar/exportar catálogo, informes y diagnóstico abren el diálogo nativo del sistema (`#38`).
 
 ---
 
@@ -67,7 +69,7 @@ La escena principal es `res://scenes/Main.tscn`.
    - 🟡 **Sin comprobar** — pendiente de verificación.
 3. **Filtrar** — usa el desplegable para ver solo válidos, caídos o sin comprobar.
 4. **Buscar** — escribe en el campo de búsqueda para filtrar por nombre/descripción.
-5. **Añadir** — menú *Utilidades → Agregar* (o atajo directo). La URL debe empezar por `http://` o `https://`; opcionalmente elige una **imagen/captura local** (png/jpg/webp) que se copia a `Assets/png/` y se muestra como miniatura al guardar.
+5. **Añadir** — menú *Utilidades → Agregar* (o atajo directo). La URL debe empezar por `http://` o `https://`; opcionalmente elige una **imagen/captura local** (png/jpg/webp) que se copia a `Assets/png|jpg` guardada con el nombre del enlace y se muestra como miniatura al guardar.
 6. **Abrir enlace** — clic sobre la fila del enlace.
 7. **Re-verificar un caído** — botón *Volver a comprobar* en la fila.
 8. **Eliminar un caído** — botón *Eliminar* (con confirmación); se registra la URL como eliminada y se borra su captura de `Assets/png/`.
@@ -83,7 +85,7 @@ La escena principal es `res://scenes/Main.tscn`.
 | `user://estados.json` | Resultados del último escaneo por URL |
 | `user://borrados.json` | URLs eliminadas definitivamente |
 | `user://logs/` | Logs rotativos de aplicación (`app_*.log`) y de escaneo (`scan_*.log`) |
-| `Assets/png/` | Capturas de imagen de los enlaces (carpeta versionada) |
+| `Assets/png/`, `Assets/jpg/` | Capturas de los enlaces, guardadas con el nombre del enlace (carpetas versionadas) |
 | `data/data.json.bak` | Copia de seguridad local (no versionada) |
 
 > `user://` equivale a la carpeta de datos del usuario del sistema según el sistema operativo.
@@ -147,6 +149,8 @@ gestor-de-enlaces/
 │   └── test_<area>.gd       # 33 suites SceneTree (TESTS OK / quit(0))
 ├── locale/
 │   └── gestor_es_en.csv     # Traducciones ES/EN (clave ES, valor ES, valor EN)
+├── addons/
+│   └── godot_ai/            # Plugin de editor Godot AI (MCP, tercero MIT)
 ├── data/
 │   └── data.json            # Catálogo base de enlaces
 ├── Assets/
@@ -173,6 +177,11 @@ gestor-de-enlaces/
 - [x] **Etiquetas personalizadas** — campo con sugerencias por uso frecuente y filtro combinado por etiqueta (`#42`)
 - [x] **Barra de estado con colores** — contadores Rotos/Activos/Total en rojo, verde y azul
 - [x] **Filtros avanzados** — búsqueda AND/OR, código HTTP y última comprobación por días, combinables; con **presets** guardables y aplicables (`#44`)
+- [x] **Vista de grilla** — alterna lista/cuadrícula de tarjetas con la vista elegida persistida (`#43`)
+- [x] **Dashboard de estadísticas** — resumen de disponibilidad, distribución por categoría/host y exportación CSV/JSON (`#45`)
+- [x] **Tema claro/oscuro/automático** — selector en Preferencias con detección del tema del sistema (`#19`, `#46`)
+- [x] **Capturas con nombre y deduplicadas** — guardado con el nombre del enlace y reutilización por contenido (`#36`, `#47`)
+- [x] **Diálogos de archivo nativos del sistema** (`#38`)
 
 > El diseño de cada funcionalidad está especificado en `docs/superpowers/specs/` (`2026-09-05-estado-escaneo-enlaces-design.md`, `2026-09-05-captura-enlaces-design.md`).
 

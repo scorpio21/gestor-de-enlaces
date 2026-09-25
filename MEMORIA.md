@@ -2,11 +2,11 @@
 
 ## Objetivo
 
-Repositorio `K:\gestor-de-enlaces` (Godot 4.7.2, GDScript) — gestor de enlaces para Argentum Online. Funcionalidad base + empaquetado (presets + CI + logs + diagnóstico + icono) + escaneo persistido (#13) + informe CSV/HTML (#11) + tema claro/oscuro (#19) **COMMITEADO y pungeado en `main`**. BASE local: `0a77542` → HEAD: `2327784`.
+Repositorio `K:\gestor-de-enlaces` (Godot 4.7.2, GDScript) — gestor de enlaces para Argentum Online: funcionalidad base + empaquetado (presets + CI + logs + diagnóstico + icono) + catálogo completo (etiquetas, filtros avanzados, grilla, dashboard, i18n, tema, capturas con nombre) **COMMITEADO y pusheado en `main`**. HEAD: `c2d9e70` (v0.1.9). Batería local **33/33 OK**, `git status` limpio, **0 issues abiertos** en GitHub.
 
 ## Comandos de verificación
 
-Batería completa (20 suites) vía Git Bash (mismo script que el CI):
+Batería completa (33 suites) vía Git Bash (mismo script que el CI):
 
 ```bash
 & "C:\Program Files\Git\bin\bash.exe" -c 'cd /k/gestor-de-enlaces && GODOT_BIN="K:/Godot_v4.6.1/Godot_v4.7.2-stable_win64_console.exe" bash tests/run_battery.sh'
@@ -22,15 +22,13 @@ Linux/CI: `GODOT_BIN=/ruta/a/godot bash tests/run_battery.sh`. Cada suite imprim
 
 ## Estado actual
 
-- ✅ Grupo C empaquetado COMPLETO (base `0a77542`), CI verde.
-- ✅ **#13** cola de escaneo persistida (`user://colas.json`) + reanudación por diálogo — commits `9c610d0`..`bf140b6`.
-- ✅ **#11** informe de disponibilidad CSV/HTML (`scripts/informe_store.gd`, menú Archivo id 5 + `%DialogoInforme`) — commits `e917357`..`99de9b2`.
-- ✅ **#19** tema claro/oscuro configurable (`scripts/tema_store.gd`, `%Tema` en Preferencias) — commits `f45ff67`..`2327784`.
-- ✅ HEAD `2327784` pungeado a `origin/main`; battery local **20/20 OK**.
-- ⚠️ Abiertas en GitHub: **#30** (i18n ES/EN), **#27** (auto-actualización), **#17** (ordenación tabla), **#6** (orden manual persistido).
-- ⏳ Abierto en local (sin commitear, NO tocar): `Assets/icon/icon.svg.import`, `Assets/icon/icon_256.png.import`, `data/data2.json`, `docs/superpowers/plans/2026-09-05-captura-enlaces.md`, `docs/superpowers/plans/2026-09-19-ampliar-detectores-enlace-caido.md`, `scripts/historial.gd.uid`.
+- ✅ HEAD `c2d9e70` (v0.1.9) pusheado a `origin/main`; battery local **33/33 OK**; `git status` limpio (sin untracked ni modificados).
+- ✅ **0 issues abiertos** en GitHub: toda la secuencia #25..#47 cerrada.
+- ✅ Ronda de versiones: 0.1.0 (empaquetado #26/#28/#29) → 0.1.9 (capturas con nombre #47). Últimas: etiquetas (#42), filtros avanzados + presets (#44 en 0.1.2/0.1.3), grilla (#43 0.1.4), dashboard (#45 0.1.5), dedup de capturas (#36 0.1.6), tema automático (#46 0.1.7), diálogos nativos (#38 0.1.8), caché reverse-lookup (#40), capturas con nombre (#47 0.1.9).
+- ✅ **#41 residuos cerrado** (`c2d9e70`): versionado el addon tercero `addons/godot_ai` (Godot AI v3.2.1, MIT) + bloque `[autoload]/[editor_plugins]` de `project.godot` (el addon retira su autoload MCP de los exports); `export_presets.cfg` regenerado por el editor 4.7; metadatos Godot pendientes (16 `.uid`, 2 `.translation`, 7 `.import`). Eliminados localmente `data/data2.json` (sin uso) y 2 `.import` huérfanos de `Assets/png`. Planes ajenos sin commitear en `.gitignore`.
+- ⏳ Backlog: ninguno. El CHANGELOG acumula en `[Sin publicar]` #30 (i18n), #17 (ordenación) y #40 (caché) sin elevar a release todavía.
 
-## Historial de trabajo (después de la base `0a77542`)
+## Historial de trabajo (Grupo C: después de la base `0a77542`)
 
 - `15d7665` feat(escaneo): marcas de enlace caído por host (MEGA/MediaFire/Drive/Sites/Dropbox/WeTransfer) con fallback genérico
 - `0e336a4` feat(escaneo): `_parece_muerto` aplica marcas por host actual (unión con genéricas)
@@ -49,11 +47,21 @@ Linux/CI: `GODOT_BIN=/ruta/a/godot bash tests/run_battery.sh`. Cada suite imprim
 
 Entregables: `scripts/cola_store.gd`, `scripts/informe_store.gd`, `scripts/tema_store.gd`, `tests/test_cola_store.gd`, `tests/test_informe_store.gd`, `tests/test_tema_store.gd`, specs en `docs/superpowers/specs/`, plans en `docs/superpowers/plans/`; `%DialogoInforme`, `%Tema` en escenas; checks de integración en `tests/test_main_barra.gd`. Batería ahora 20 suites.
 
+## Historial reciente (post `2327784` → `c2d9e70`, 62 commits)
+
+- **#27 aviso de versión + #6 orden manual**: comparador de versiones y consulta de `releases/latest` (TDD), aviso 1 vez por versión; menú contextual Subir/Bajar con persistencia y tests.
+- **#17 ordenación por columnas**: cabeceras pulsables con criterio persistido en config.
+- **#30 i18n ES/EN**: `config_store` valida el idioma, CSV `locale/gestor_es_en.csv` + scanner (`extraer_cadenas.gd`) + test de cobertura (`test_locale.gd`), banderas de idioma en `Assets/banderas`, selector en Preferencias y `tr()` runtime (re-traducción en vivo de estado/tooltip/historial/menús/filtros).
+- **Mejoras de base**: filtro de búsqueda también por URL (#35, `filtros.gd`), límite de concurrencia por dominio (#37, `cola_escaneo.gd`), persistencia de filtros entre sesiones (#39), refactor de `main.gd` en bloques `_ui_*`/`_scan_*` y división de `test_main_barra.gd` en 4 suites.
+- **Ronda de versiones**: 0.1.1 #42 etiquetas + barra coloreada, 0.1.2 filtros avanzados #44, 0.1.3 presets + filtro días, 0.1.4 grilla #43, 0.1.5 dashboard #45, 0.1.6 dedup capturas #36 (`b9378fb`), 0.1.7 tema auto #46 (`2ef5989`), 0.1.8 diálogos nativos #38 (`47da575`), 0.1.9 capturas con nombre #47 (`a9ef48d`).
+- **#40 caché reverse-lookup** (`0d5fcb4`) y **#41 residuos** (`c2d9e70`).
+- `2ece4b7` (commit ajeno del usuario): tema completo programático + catálogo con etiquetas y `data/data.json` real.
+
 ## Próximos pasos
 
-1. Siguiente issue sugerida (orden del usuario): **#30** Internacionalización ES/EN — requiere espec+plan antes de implementar (patrón superpowers).
-2. Backlog restante: #27 (auto-actualización, por decidir), #17 (vista de tabla), #6 (orden manual persistido).
-3. `scripts/historial.gd.uid` y los `.import` de Assets/icon siguen untracked; engánchalos cuando se toquen. `docs/superpowers/specs/` documenta los diseños por grupo; un nuevo grupo hace spec antes de código.
+1. Ningún issue abierto: la siguiente tarea es decisión del usuario (idea nueva o elevar `[Sin publicar]` de #30/#17/#40 con bump de versión).
+2. Si se abre el editor y guarda, `export_presets.cfg` se re-reescribe a su formato; comitear el cambio (AGENTS.md).
+3. `MEMORIA.md` y `README.md`/`CHANGELOG.md` se mantienen al día en cada ronda.
 
 ## Gotchas verificados (no repetir investigación)
 
@@ -66,5 +74,11 @@ Entregables: `scripts/cola_store.gd`, `scripts/informe_store.gd`, `scripts/tema_
 - Tema oscuro = aspecto actual literal: Main `Fondo` 0.10, diálogos 0.12; en claro 0.95. `tema_store.aplicar()` guarda el color original por `instance_id` para restaurar en oscuro (idempotente, `scripts/tema_store.gd`).
 - `OptionButton.get_selected_id()` devuelve `int`; leer color de override con `node.get("theme_override_colors/font_color")` (null si no existe) — verificado empíricamente.
 - `test_agregar_enlace` emite `ERROR: Error opening file … __no_existe__.png` A PROPÓSITO; no es fallo.
+- El editor Godot 4.7 re-reescribe `export_presets.cfg` a su formato al guardar (`[runnable_presets]`, `export_path="..//"`, knobs nuevos); la CI exporta con rutas explícitas → comitear tal cual (AGENTS.md).
+- Si `addons/godot_ai/` estuviera en `.gitignore`, el editor reinstala el plugin en `project.godot` (`[editor_plugins]` + autoload `_mcp_game_helper`) al detectarlo → `project.godot` se re-ensuciaría; por eso el addon se versionó (#41).
+- El addon `godot_ai` incluye un `EditorExportPlugin` (`export/mcp_export_plugin.gd`) que retira el autoload MCP de los builds exportados: no llega a los juegos finales.
+- pwsh corrompe bytes al redirigir la salida de `git` a fichero → para salida byte-safe usar `cmd /c "... > <tmp>"` o redirección dentro de bash.
+- `git update-index --cacheinfo "100644,<blob>,project.godot"` (string única) servía para el "blob dance" (index ≠ worktree) al bumpear versión sin versionar el addon; ya no hace falta tras `c2d9e70`.
+- UTF-8 sin BOM: `[IO.File]::WriteAllText` produce `C3 AD` válido (la consola puede mostrarlo como "�", pero es correcto). `gh issue close --comment` con `>` u otros caracteres que pwsh parsee: evitarlos.
 - Motor local `Godot_v4.7.2-stable_win64(_console).exe` en `K:\Godot_v4.6.1\` (ruta peculiar; `AGENTS.md`).
 - Conv.: tabs, sin comentarios, UI en español, preload-const en vez de class_name en código nuevo, `.gd.uid` versionados, bases `user://__test_*__` limpiadas.

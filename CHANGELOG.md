@@ -13,6 +13,10 @@ Todos los cambios relevantes de GestorAO por día.
 
 - **Reverse-lookup de mensajes de estado cachado** (`#40`): mapa render→clave construido una vez por locale para los mensajes fijos y caché memoizada para los mensajes con `%d`; `_clave_de_mensaje()` ya no recorre todas las claves del CSV por fila y por tooltip en cada reconstrucción de la lista.
 
+### Mantenimiento
+
+- **Limpieza de residuos sin versionar** (`#41`): versionados el addon tercero `addons/godot_ai` (Godot AI v3.2.1, licencia MIT incluida) y el bloque `[autoload]/[editor_plugins]` de `project.godot` (el addon retira su autoload MCP de los builds exportados); `export_presets.cfg` regenerado por el editor 4.7 (la CI exporta con rutas explícitas); metadatos de Godot pendientes (16 `.uid`, 2 `.translation`, 7 `.import`). Eliminados localmente `data/data2.json` (no lo usa la app) y 2 `.import` huérfanos de `Assets/png`. Los planes ajenos sin commitear quedan en `.gitignore`.
+
 ---
 
 ## [0.1.9]
