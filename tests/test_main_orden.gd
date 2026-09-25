@@ -60,20 +60,20 @@ func _arrancar() -> void:
 		"a.test": {"valido": true, "mensaje": "OK", "codigo": 200, "fecha": 1000},
 		"b.test": {"valido": true, "mensaje": "OK", "codigo": 200, "fecha": 2000},
 	}
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	await process_frame
 
-	main_script._pulsar_cabecera("fecha")
+	main_script._ui_cabecera("fecha")
 	_check(main_script._orden_columna == "fecha" and main_script._orden_direccion == -1, "primer clic en Fecha activa descendente")
 	_check(cab_fecha_btn.text == "Fecha ▼", "la cabecera Fecha activa muestra indicador descendente")
 	_check(_urls_visibles(main) == ["https://b.test", "https://a.test", "https://c.test"], "Fecha descendente: más recientes primero y lo sin comprobar al final")
 
-	main_script._pulsar_cabecera("fecha")
+	main_script._ui_cabecera("fecha")
 	_check(main_script._orden_direccion == 1, "segundo clic en la misma cabecera invierte a ascendente")
 	_check(cab_fecha_btn.text == "Fecha ▲", "la cabecera Fecha invertida muestra indicador ascendente")
 	_check(_urls_visibles(main) == ["https://a.test", "https://b.test", "https://c.test"], "Fecha ascendente: más antiguos primero y lo sin comprobar al final")
 
-	main_script._pulsar_cabecera("fecha")
+	main_script._ui_cabecera("fecha")
 	_check(main_script._orden_columna == "", "tercer clic desactiva la columna")
 	_check(_urls_visibles(main) == ["https://a.test", "https://b.test", "https://c.test"], "sin columna conserva el orden de inserción")
 
@@ -84,13 +84,13 @@ func _arrancar() -> void:
 		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
 	]
 	main_script._estados = {}
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	await process_frame
-	main_script._pulsar_cabecera("nombre")
+	main_script._ui_cabecera("nombre")
 	_check(_urls_visibles(main) == ["https://a.test", "https://b.test", "https://c.test"], "Nombre ascendente ordena alfabéticamente")
-	main_script._pulsar_cabecera("nombre")
+	main_script._ui_cabecera("nombre")
 	_check(_urls_visibles(main) == ["https://c.test", "https://b.test", "https://a.test"], "Nombre descendente invierte el orden")
-	main_script._pulsar_cabecera("nombre")
+	main_script._ui_cabecera("nombre")
 	_check(main_script._orden_columna == "", "3 clics en Nombre vuelven a sin ordenar")
 
 	# #17: columna Imagen (con imagen primero en asc)
@@ -102,13 +102,13 @@ func _arrancar() -> void:
 		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ruta_c},
 	]
 	main_script._estados = {}
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	await process_frame
-	main_script._pulsar_cabecera("imagen")
+	main_script._ui_cabecera("imagen")
 	_check(_urls_visibles(main) == ["https://b.test", "https://c.test", "https://a.test"], "Imagen ascendente pone con captura primero (alfabético luego)")
-	main_script._pulsar_cabecera("imagen")
+	main_script._ui_cabecera("imagen")
 	_check(_urls_visibles(main) == ["https://a.test", "https://b.test", "https://c.test"], "Imagen descendente pone sin captura primero")
-	main_script._pulsar_cabecera("imagen")
+	main_script._ui_cabecera("imagen")
 	_check(main_script._orden_columna == "", "3 clics en Imagen vuelven a sin ordenar")
 
 	# #17: columna Estado (sin comprobar → válidos → caídos)
@@ -121,13 +121,13 @@ func _arrancar() -> void:
 		"a.test": {"valido": true, "mensaje": "OK", "codigo": 200, "fecha": 1000},
 		"b.test": {"valido": false, "mensaje": "No existe", "codigo": 404, "fecha": 1000},
 	}
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	await process_frame
-	main_script._pulsar_cabecera("estado")
+	main_script._ui_cabecera("estado")
 	_check(_urls_visibles(main) == ["https://b.test", "https://a.test", "https://c.test"], "Estado descendente: caídos, válidos, sin comprobar")
-	main_script._pulsar_cabecera("estado")
+	main_script._ui_cabecera("estado")
 	_check(_urls_visibles(main) == ["https://c.test", "https://a.test", "https://b.test"], "Estado ascendente: sin comprobar, válidos, caídos")
-	main_script._pulsar_cabecera("estado")
+	main_script._ui_cabecera("estado")
 	_check(main_script._orden_columna == "", "3 clics en Estado vuelven a sin ordenar")
 
 	# Task 2: helpers de reorden y estados del menú contextual
@@ -137,11 +137,11 @@ func _arrancar() -> void:
 		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
 		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""}
 	]
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	await process_frame
 
-	var visibles_t2: Array = main_script._filas_visibles()
-	_check(visibles_t2.size() == 3, "_filas_visibles devuelve las 3 filas sin filtros")
+	var visibles_t2: Array = main_script._ui_filas_visibles()
+	_check(visibles_t2.size() == 3, "_ui_filas_visibles devuelve las 3 filas sin filtros")
 
 	var ind_b_t2: int = main_script._indice_entrada("https://b.test")
 	_check(ind_b_t2 == 1, "_indice_entrada localiza B en _entradas")
@@ -156,17 +156,17 @@ func _arrancar() -> void:
 	var menu_ctx_c: PopupMenu = fila_c.get_node("%MenuContexto")
 
 	# en la primera fila Subir deshabilitada y Bajar habilitada
-	main_script._on_menu_solicitado(fila_a)
+	main_script._ui_menu_fila(fila_a)
 	_check(menu_ctx_a.is_item_disabled(menu_ctx_a.get_item_index(5)), "primera fila: Subir deshabilitada")
 	_check(not menu_ctx_a.is_item_disabled(menu_ctx_a.get_item_index(6)), "primera fila: Bajar habilitada")
 
 	# fila central: ambas habilitadas
-	main_script._on_menu_solicitado(fila_b)
+	main_script._ui_menu_fila(fila_b)
 	_check(not menu_ctx_b.is_item_disabled(menu_ctx_b.get_item_index(5)), "fila central: Subir habilitada")
 	_check(not menu_ctx_b.is_item_disabled(menu_ctx_b.get_item_index(6)), "fila central: Bajar habilitada")
 
 	# última fila: Subir habilitada y Bajar deshabilitada
-	main_script._on_menu_solicitado(fila_c)
+	main_script._ui_menu_fila(fila_c)
 	_check(not menu_ctx_c.is_item_disabled(menu_ctx_c.get_item_index(5)), "última fila: Subir habilitada")
 	_check(menu_ctx_c.is_item_disabled(menu_ctx_c.get_item_index(6)), "última fila: Bajar deshabilitada")
 
@@ -177,13 +177,13 @@ func _arrancar() -> void:
 		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
 		{"nombre": "C", "desc": "", "url": "https://c.test", "img": ""}
 	]
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	await process_frame
 
-	var visibles_t3: Array = main_script._filas_visibles()
+	var visibles_t3: Array = main_script._ui_filas_visibles()
 	var item_b_real: Button = visibles_t3[1]
 	main_script._persistir = true
-	main_script._on_mover_pedido(item_b_real, -1)
+	main_script._ui_mover_fila(item_b_real, -1)
 	main_script._persistir = false
 	_check(main_script._indice_entrada("https://a.test") == 1 and main_script._indice_entrada("https://b.test") == 0, "Subir B la coloca antes de A en _entradas")
 
@@ -198,8 +198,8 @@ func _arrancar() -> void:
 		orden_persistido.append(str(e.get("url", "")))
 	_check(orden_persistido == ["https://b.test", "https://a.test", "https://c.test"], "tras guardar el orden B,A,C queda en el archivo de usuario")
 
-	var item_b_rest: Button = main_script._filas_visibles()[0]
-	main_script._on_mover_pedido(item_b_rest, 1)
+	var item_b_rest: Button = main_script._ui_filas_visibles()[0]
+	main_script._ui_mover_fila(item_b_rest, 1)
 	_check(main_script._indice_entrada("https://b.test") == 1, "Bajar devuelve B a su posición original")
 
 	main_script._entradas = [
@@ -209,39 +209,39 @@ func _arrancar() -> void:
 	]
 	main_script._estados = {}
 	main_script.filtro_cat.select(2)
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	await process_frame
 
-	var visibles_filtradas: Array = main_script._filas_visibles()
+	var visibles_filtradas: Array = main_script._ui_filas_visibles()
 	_check(visibles_filtradas.size() == 2, "el filtro Cliente oculta la fila A (otro)")
 
 	var item_c2: Button = visibles_filtradas[1]
-	main_script._on_mover_pedido(item_c2, -1)
+	main_script._ui_mover_fila(item_c2, -1)
 	_check(main_script._indice_entrada("https://b.test") == 2 and main_script._indice_entrada("https://c.test") == 0, "Subir C la cruza con B saltando la fila oculta A")
 	main_script.filtro_cat.select(0)
 
-	main_script._pulsar_cabecera("imagen")
-	main_script._on_mover_pedido(main_script._filas_visibles()[0], -1)
+	main_script._ui_cabecera("imagen")
+	main_script._ui_mover_fila(main_script._ui_filas_visibles()[0], -1)
 	var antes: Array = []
 	for e in main_script._entradas:
 		antes.append(str(e.get("url", "")))
-	_check(antes == ["https://c.test", "https://a.test", "https://b.test"], "con columna activa _on_mover_pedido no modifica _entradas")
-	main_script._on_menu_solicitado(main_script._filas_visibles()[0])
-	_check(main_script._filas_visibles()[0].get_node("%MenuContexto").is_item_disabled(
-		main_script._filas_visibles()[0].get_node("%MenuContexto").get_item_index(5)), "con columna activa Subir queda deshabilitada")
-	main_script._pulsar_cabecera("imagen")
-	main_script._pulsar_cabecera("imagen")
+	_check(antes == ["https://c.test", "https://a.test", "https://b.test"], "con columna activa _ui_mover_fila no modifica _entradas")
+	main_script._ui_menu_fila(main_script._ui_filas_visibles()[0])
+	_check(main_script._ui_filas_visibles()[0].get_node("%MenuContexto").is_item_disabled(
+		main_script._ui_filas_visibles()[0].get_node("%MenuContexto").get_item_index(5)), "con columna activa Subir queda deshabilitada")
+	main_script._ui_cabecera("imagen")
+	main_script._ui_cabecera("imagen")
 	_check(main_script._orden_columna == "", "3 clics en la columna activa vuelven a sin ordenar")
 
 	# #17: persistencia y restauración del criterio
-	main_script._pulsar_cabecera("fecha")
+	main_script._ui_cabecera("fecha")
 	var guardado: Dictionary = main_script._config_store.cargar()
 	_check(guardado.get("orden_columna", "") == "fecha" and guardado.get("orden_direccion", 0) == -1, "pulsar una cabecera persiste el criterio")
 	main_script._persistir_version_vista()
 	var preservado: Dictionary = main_script._config_store.cargar()
 	_check(preservado.get("orden_columna", "") == "fecha", "persistir la versión vista conserva el criterio")
-	main_script._pulsar_cabecera("fecha")
-	main_script._pulsar_cabecera("fecha")
+	main_script._ui_cabecera("fecha")
+	main_script._ui_cabecera("fecha")
 	_check(main_script._config_store.cargar().get("orden_columna", "#") == "", "desactivar la columna persiste sin criterio")
 
 	var base_orden := "user://__test_orden_restore__"
@@ -265,7 +265,7 @@ func _arrancar() -> void:
 	# #17: si no se puede guardar, se revierte el criterio
 	var store_roto := ConfigStoreScript.new("user://__test_main_orden__/nada/cfg")
 	main_script._config_store = store_roto
-	main_script._pulsar_cabecera("nombre")
+	main_script._ui_cabecera("nombre")
 	_check(main_script._orden_columna == "", "si la persistencia falla se revierte el criterio")
 	_check(store_roto.cargar().get("orden_columna", "") == "", "el fallo no deja criterio guardado")
 	main_script._config_store = ConfigStoreScript.new()

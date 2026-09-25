@@ -41,25 +41,25 @@ func _arrancar() -> void:
 
 	# Catálogo: copiar URL desde la fila informa en la barra
 	main_script._entradas = [{"nombre": "Copiar", "desc": "", "url": "https://copiar.test", "img": ""}]
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	await process_frame
 	var fila = main.get_node("%ListaContenedor").get_child(0)
 	fila.copiar_pedido.emit(fila.url)
 	_check(main.get_node("%Progreso").text == "URL copiada: https://copiar.test", "copiar desde la fila informa en la barra")
 
 	_check(not main.get_node("%BarraProgreso").visible, "la barra de progreso nace oculta")
-	main_script._actualizar_barra(3, 5)
+	main_script._ui_barra(3, 5)
 	_check(main.get_node("%BarraProgreso").value == 3, "la barra refleja los enlaces comprobados")
 	_check(main.get_node("%BarraProgreso").max_value == 5, "la barra usa el total de enlaces como máximo")
-	main_script._marcar_barra_final(0)
+	main_script._ui_barra_final(0)
 	var verde: StyleBoxFlat = main.get_node("%BarraProgreso").get_theme_stylebox("fill")
 	_check(verde.bg_color.is_equal_approx(Color(0.35, 0.85, 0.45, 1)), "con 0 caídos la barra se pone verde")
-	main_script._marcar_barra_final(2)
+	main_script._ui_barra_final(2)
 	var rojo: StyleBoxFlat = main.get_node("%BarraProgreso").get_theme_stylebox("fill")
 	_check(rojo.bg_color.is_equal_approx(Color(0.95, 0.35, 0.35, 1)), "con caídos la barra se pone roja")
 	for hijo in main.get_node("%ListaContenedor").get_children():
 		hijo.visible = false
-	main_script._comprobar_visibles()
+	main_script._scan_iniciar()
 	_check(not main.get_node("%BarraProgreso").visible, "sin enlaces visibles la barra se oculta")
 	_check(main.get_node("%Progreso").text == "Nada que comprobar", "sin enlaces visibles se muestra el aviso")
 
@@ -73,7 +73,7 @@ func _arrancar() -> void:
 	main_script._cola.append(item_c)
 	var item_b: Button = LIST_ITEM_SCENE.instantiate()
 	item_b.url = "https://b.test"
-	main_script._persistir_cola()
+	main_script._scan_persistir_cola()
 	var cola_guardada: Array = main_script._cola_store.cargar().get("urls", [])
 	_check(cola_guardada.size() == 2 and "https://a.test" in cola_guardada and "https://c.test" in cola_guardada, "persistir cola guarda las urls de los items")
 	item_a.free()
@@ -86,16 +86,16 @@ func _arrancar() -> void:
 		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
 		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
 	]
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	await process_frame
 	_check(main.has_node("%ConfirmarReanudar"), "el diálogo ConfirmarReanudar existe en Main.tscn")
 	main_script._cola.clear()
-	main_script._rearmar_cola_pendiente(["https://b.test"])
+	main_script._scan_rearmar_pendientes(["https://b.test"])
 	_check(main_script._cola.size() == 1 and main_script._cola[0].url == "https://b.test", "reanudar reconstruye la cola con solo las urls pendientes")
 	main_script._cola.clear()
 
 	main_script._cola_store.guardar(["https://nope.test"])
-	main_script._reanudar_escaneo()
+	main_script._scan_reanudar()
 	_check(main_script._cola.is_empty() and (main_script._cola_store.cargar().get("urls", []) as Array).is_empty(), "reanudar con urls inexistentes descarta y limpia")
 	DirAccess.remove_absolute("user://__test_main__")
 
@@ -125,17 +125,17 @@ func _arrancar() -> void:
 		"srv2.test": {"valido": false},
 		"cli.test": {"valido": true},
 	}
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	main.get_node("%FiltroEstado").select(1)
 	main.get_node("%FiltroCategoria").select(3)
-	main_script._aplicar_filtro()
+	main_script._ui_aplicar_filtro()
 	var visibles: Array = []
 	for hijo in main.get_node("%ListaContenedor").get_children():
 		if hijo.visible:
 			visibles.append(hijo.url)
 	_check(visibles == ["https://srv.test"], "el filtro combina estado válido y categoría servidor")
 	main.get_node("%FiltroCategoria").select(0)
-	main_script._aplicar_filtro()
+	main_script._ui_aplicar_filtro()
 	var visibles_todas: Array = []
 	for hijo in main.get_node("%ListaContenedor").get_children():
 		if hijo.visible:

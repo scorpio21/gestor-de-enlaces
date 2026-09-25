@@ -44,14 +44,14 @@ func _arrancar() -> void:
 	_check(not main.get_node("%Total").text.is_empty(), "Total muestra un valor")
 
 	var main_script = main.get_node(".")
-	if main_script.has_method("_persistir_recompra"):
+	if main_script.has_method("_scan_recompra"):
 		main_script._estados.clear()
 		var item = LIST_ITEM_SCENE.instantiate()
 		item.url = "https://prueba-ejemplo.test"
 		item.valido = false
 		item.mensaje = "No existe"
 		main_script._entradas.append({"nombre": "Prueba", "url": "https://prueba-ejemplo.test"})
-		main_script._persistir_recompra(item)
+		main_script._scan_recompra(item)
 		var estado_memoria: Dictionary = main_script._estados.get(GestorCatalogoScript.clave_unica(item.url), {})
 		_check(estado_memoria.has("codigo") and int(estado_memoria.get("codigo", -1)) == 0, "el estado en memoria conserva el código tras re-comprobar")
 		_check(int(estado_memoria.get("fecha", 0)) > 0, "el estado en memoria conserva la fecha tras re-comprobar")
@@ -83,7 +83,7 @@ func _arrancar() -> void:
 	_check(main.get_node("%VentanaAgregar").visible, "Ctrl+N abre la ventana Agregar enlace")
 
 	main_script._entradas = []
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	for hijo in main.get_node("%ListaContenedor").get_children():
 		hijo.visible = false
 	var ev_r := InputEventKey.new()
@@ -100,21 +100,21 @@ func _arrancar() -> void:
 		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
 	]
 	main_script._estados = {}
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	await process_frame
 	main_script._estado_store = _FakeHistorial.new()
 	var fila_hist: Button = main.get_node("%ListaContenedor").get_child(0)
-	main_script._on_historial_pedido(fila_hist)
+	main_script._ui_historial(fila_hist)
 	_check(main.has_node("%DialogoHistorial") and main.get_node("%DialogoHistorial").visible, "el historial de la fila abre el diálogo")
 	_check(main.get_node("%DialogoHistorial").get_node("%ListaHistorial").get_child_count() == 1, "el diálogo muestra una fila por entrada del historial")
 	main.get_node("%DialogoHistorial").hide()
 
 	# Disponibilidad: auto-escaneo desactivado en headless/intervalo 0 (#8)
 	main_script._intervalo_auto = 0
-	main_script._rearmar_auto_escaneo()
+	main_script._scan_rearmar_auto()
 	_check(main.get_node("%AutoEscaneo").is_stopped(), "intervalo 0 deja el Timer detenido")
 	main_script._intervalo_auto = 15
-	main_script._rearmar_auto_escaneo()
+	main_script._scan_rearmar_auto()
 	_check(main.get_node("%AutoEscaneo").is_stopped(), "en headless el intervalo no arranca el Timer")
 
 	var ev_esc := InputEventKey.new()
@@ -173,7 +173,7 @@ func _arrancar() -> void:
 	main_script._persistir = false
 	main_script._entradas = [{"nombre": "SIN", "desc": "", "url": "https://sin.test", "img": ""}]
 	main_script._estados = {"sin.test": {"valido": false, "mensaje": "No existe (404)", "codigo": 404, "fecha": 0}}
-	main_script._refrescar_vista()
+	main_script._ui_refrescar()
 	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro", "en")
 	await process_frame
 	var fila_en_i18n: Control = null

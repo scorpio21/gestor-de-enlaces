@@ -67,19 +67,19 @@ var _dialogo_con_aviso := false
 
 func _ready() -> void:
 	_configurar_menus()
-	busqueda.text_changed.connect(_on_busqueda_changed)
-	%BotonComprobar.pressed.connect(_comprobar_visibles)
-	%ConfirmarBorrado.confirmed.connect(_confirmar_borrado)
+	busqueda.text_changed.connect(_ui_busqueda)
+	%BotonComprobar.pressed.connect(_scan_iniciar)
+	%ConfirmarBorrado.confirmed.connect(_ui_confirmar_borrado)
 	%ConfirmarLimpieza.confirmed.connect(_confirmar_limpieza)
 	%ConfirmarRestaurar.confirmed.connect(_confirmar_restaurar)
-	%ConfirmarReanudar.confirmed.connect(_reanudar_escaneo)
-	%ConfirmarReanudar.canceled.connect(_descartar_cola_pendiente)
+	%ConfirmarReanudar.confirmed.connect(_scan_reanudar)
+	%ConfirmarReanudar.canceled.connect(_scan_descartar_pendientes)
 	_cargar_filtros()
-	cab_nombre.pressed.connect(func() -> void: _pulsar_cabecera("nombre"))
-	cab_estado.pressed.connect(func() -> void: _pulsar_cabecera("estado"))
-	cab_fecha.pressed.connect(func() -> void: _pulsar_cabecera("fecha"))
-	cab_imagen.pressed.connect(func() -> void: _pulsar_cabecera("imagen"))
-	timer_auto.timeout.connect(_on_auto_timer)
+	cab_nombre.pressed.connect(func() -> void: _ui_cabecera("nombre"))
+	cab_estado.pressed.connect(func() -> void: _ui_cabecera("estado"))
+	cab_fecha.pressed.connect(func() -> void: _ui_cabecera("fecha"))
+	cab_imagen.pressed.connect(func() -> void: _ui_cabecera("imagen"))
+	timer_auto.timeout.connect(_scan_auto_timer)
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
 	ventana_agregar.lote_guardado.connect(_on_lote_guardado)
 	ventana_agregar.editado.connect(_on_enlace_editado)
@@ -96,9 +96,9 @@ func _ready() -> void:
 	TemaStoreScript.aplicar(String(cfg.get("tema", "oscuro")), self)
 	_orden_columna = str(cfg.get("orden_columna", ""))
 	_orden_direccion = -1 if int(cfg.get("orden_direccion", 1)) < 0 else 1
-	_pintar_cabeceras()
+	_ui_pintar_cabeceras()
 	if _orden_columna != "":
-		_aplicar_filtro()
+		_ui_aplicar_filtro()
 	preferencias.aplicado.connect(_aplicar_preferencias)
 	%DialogoImportar.file_selected.connect(_on_importar_elegido)
 	%DialogoExportar.file_selected.connect(_on_exportar_elegido)
@@ -111,15 +111,23 @@ func _ready() -> void:
 	%DialogoExportar.access = FileDialog.ACCESS_FILESYSTEM
 	%DialogoInforme.access = FileDialog.ACCESS_FILESYSTEM
 	%DialogoDiagnostico.access = FileDialog.ACCESS_FILESYSTEM
-	_refrescar_vista()
+	_ui_refrescar()
 	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
-	_actualizar_status()
-	_revisar_cola_pendiente()
-	_rearmar_auto_escaneo()
-	_iniciar_auto_escaneo()
+	_ui_status()
+	_scan_revisar_pendientes()
+	_scan_rearmar_auto()
+	_scan_iniciar_auto()
 	%DialogoActualizacion.confirmed.connect(_on_actualizacion_ver)
 	%DialogoActualizacion.canceled.connect(_on_actualizacion_cerrar)
 	_lanzar_comprobacion_auto()
+
+
+func _exit_tree() -> void:
+	_hacer_limpieza_capturas()
+
+
+func _es_headless() -> bool:
+	return DisplayServer.get_name() == "headless"
 
 
 func _configurar_menus() -> void:
@@ -147,36 +155,6 @@ func _configurar_menus() -> void:
 	menu_util.id_pressed.connect(_on_utilidades_id)
 
 
-func _cargar_filtros() -> void:
-	var sel_estado := filtro.get_selected()
-	var sel_cat := filtro_cat.get_selected()
-	filtro.clear()
-	filtro.add_item(tr("Todos"), 0)
-	filtro.add_item(tr("Válidos"), 1)
-	filtro.add_item(tr("Caídos / no existen"), 2)
-	filtro.add_item(tr("Sin comprobar"), 3)
-	if filtro.item_selected.is_connected(_on_filtro_seleccionado):
-		filtro.item_selected.disconnect(_on_filtro_seleccionado)
-	filtro.item_selected.connect(_on_filtro_seleccionado)
-	filtro.select(maxi(sel_estado, 0))
-	filtro_cat.clear()
-	filtro_cat.add_item(tr("Todas"), 0)
-	for i in range(GestorCatalogoScript.CATEGORIAS.size()):
-		filtro_cat.add_item(GestorCatalogoScript.new().categoria_display(GestorCatalogoScript.CATEGORIAS[i]), i + 1)
-	if filtro_cat.item_selected.is_connected(_on_filtro_cat_seleccionado):
-		filtro_cat.item_selected.disconnect(_on_filtro_cat_seleccionado)
-	filtro_cat.item_selected.connect(_on_filtro_cat_seleccionado)
-	filtro_cat.select(maxi(sel_cat, 0))
-
-
-func _on_filtro_seleccionado(_indice: int) -> void:
-	_aplicar_filtro()
-
-
-func _on_filtro_cat_seleccionado(_indice: int) -> void:
-	_aplicar_filtro()
-
-
 func _on_file_id(id: int) -> void:
 	match id:
 		1:
@@ -189,6 +167,526 @@ func _on_file_id(id: int) -> void:
 			get_tree().quit()
 		4:
 			_on_restaurar_copia()
+
+
+func _on_utilidades_id(id: int) -> void:
+	if id == 0:
+		ventana_agregar.abrir()
+	elif id == 1:
+		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "oscuro")), String(_config_store.cargar().get("idioma", "")))
+	elif id == 2:
+		_solicitar_limpieza_capturas()
+	elif id == 3:
+		%DialogoDiagnostico.popup_centered()
+	elif id == 4:
+		_comprobar_actualizaciones(true)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("atajo_buscar"):
+		_on_atajo("atajo_buscar")
+	elif event.is_action_pressed("atajo_agregar"):
+		_on_atajo("atajo_agregar")
+	elif event.is_action_pressed("atajo_comprobar"):
+		_on_atajo("atajo_comprobar")
+	elif event.is_action_pressed("ui_cancel"):
+		_on_atajo("ui_cancel")
+
+
+func _on_atajo(accion: String) -> void:
+	match accion:
+		"atajo_buscar":
+			busqueda.grab_focus()
+		"atajo_agregar":
+			ventana_agregar.abrir()
+		"atajo_comprobar":
+			_scan_iniciar()
+		"ui_cancel":
+			if ventana_agregar.visible:
+				ventana_agregar.hide()
+			elif preferencias.visible:
+				preferencias.hide()
+
+
+func _cargar_filtros() -> void:
+	var sel_estado := filtro.get_selected()
+	var sel_cat := filtro_cat.get_selected()
+	filtro.clear()
+	filtro.add_item(tr("Todos"), 0)
+	filtro.add_item(tr("Válidos"), 1)
+	filtro.add_item(tr("Caídos / no existen"), 2)
+	filtro.add_item(tr("Sin comprobar"), 3)
+	if filtro.item_selected.is_connected(_ui_filtro_estado):
+		filtro.item_selected.disconnect(_ui_filtro_estado)
+	filtro.item_selected.connect(_ui_filtro_estado)
+	filtro.select(maxi(sel_estado, 0))
+	filtro_cat.clear()
+	filtro_cat.add_item(tr("Todas"), 0)
+	for i in range(GestorCatalogoScript.CATEGORIAS.size()):
+		filtro_cat.add_item(GestorCatalogoScript.new().categoria_display(GestorCatalogoScript.CATEGORIAS[i]), i + 1)
+	if filtro_cat.item_selected.is_connected(_ui_filtro_categoria):
+		filtro_cat.item_selected.disconnect(_ui_filtro_categoria)
+	filtro_cat.item_selected.connect(_ui_filtro_categoria)
+	filtro_cat.select(maxi(sel_cat, 0))
+
+
+func _cargar_datos() -> void:
+	var base := GestorDatosScript.cargar(DATA_RES)
+	var usuario := GestorDatosScript.cargar(DATA_USER)
+	_entradas = base
+	if not usuario.is_empty():
+		var urls := {}
+		for entrada in _entradas:
+			if typeof(entrada) == TYPE_DICTIONARY:
+				urls[GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))] = true
+		for entrada in usuario:
+			if typeof(entrada) != TYPE_DICTIONARY:
+				continue
+			var url := str(entrada.get("url", ""))
+			if url.is_empty() or urls.has(GestorCatalogoScript.clave_unica(url)):
+				continue
+			_entradas.append(entrada)
+			urls[GestorCatalogoScript.clave_unica(url)] = true
+
+	_estado_store = EstadoStoreScript.new()
+	var datos: Dictionary = _estado_store.cargar()
+	_estados = datos.get("estados", {})
+	_borrados = datos.get("borrados", [])
+	_normalizar_urls()
+	_entradas = _entradas.filter(
+		func(entrada: Variant) -> bool:
+			return typeof(entrada) != TYPE_DICTIONARY \
+				or not _borrados.has(GestorCatalogoScript.clave_unica(str(entrada.get("url", ""))))
+	)
+	_normalizar_categorias()
+
+
+func _normalizar_urls() -> void:
+	var estados := {}
+	for url_clave in _estados:
+		estados[GestorCatalogoScript.clave_unica(str(url_clave))] = _estados[url_clave]
+	_estados = estados
+	var borrados_unicos := {}
+	var borrados: Array = []
+	for b in _borrados:
+		var clave_b := GestorCatalogoScript.clave_unica(str(b))
+		if clave_b.is_empty():
+			continue
+		if not borrados_unicos.has(clave_b):
+			borrados_unicos[clave_b] = true
+			borrados.append(clave_b)
+	_borrados = borrados
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY:
+			entrada["url"] = GestorCatalogoScript.normalizar_url(str(entrada.get("url", "")))
+
+
+func _normalizar_categorias() -> void:
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY:
+			entrada["cat"] = GestorCatalogoScript.normalizar_categoria(entrada.get("cat", ""))
+
+
+func _ui_refrescar() -> void:
+	_ui_mostrar_lista(FiltrosScript.filtrar(_entradas, busqueda.text))
+
+
+func _ui_mostrar_lista(entradas: Array) -> void:
+	_cola.clear()
+	_scan.reiniciar()
+	for hijo in lista.get_children():
+		hijo.queue_free()
+
+	for entrada in entradas:
+		if typeof(entrada) != TYPE_DICTIONARY:
+			continue
+		var item: Button = LIST_ITEM_SCENE.instantiate()
+		item.setup(
+			str(entrada.get("nombre", "")),
+			str(entrada.get("desc", "")),
+			str(entrada.get("url", "")),
+			str(entrada.get("img", "")),
+			GestorCatalogoScript.normalizar_categoria(entrada.get("cat", ""))
+		)
+		item.configurar_timeout(_timeout)
+		var url_item := str(entrada.get("url", ""))
+		var estado: Dictionary = _estados.get(GestorCatalogoScript.clave_unica(url_item), {})
+		if not estado.is_empty():
+			item.aplicar_estado(
+				estado.get("valido"),
+				str(estado.get("mensaje", "")),
+				int(estado.get("codigo", 0)),
+				int(estado.get("fecha", 0))
+			)
+		item.eliminar_pedido.connect(_ui_eliminar_fila.bind(item))
+		item.recomprobar_pedido.connect(_scan_recomprobar.bind(item))
+		item.copiar_pedido.connect(_ui_copiar_url.bind(item))
+		item.editar_pedido.connect(_ui_editar_fila.bind(item))
+		item.historial_pedido.connect(_ui_historial.bind(item))
+		item.subir_pedido.connect(_ui_mover_fila.bind(item, -1))
+		item.bajar_pedido.connect(_ui_mover_fila.bind(item, 1))
+		item.menu_solicitado.connect(_ui_menu_fila.bind(item))
+		lista.add_child(item)
+
+	_ui_aplicar_filtro()
+	progreso.text = tr("%d enlaces") % lista.get_child_count()
+
+
+func _ui_aplicar_filtro() -> void:
+	var modo := filtro.get_selected_id()
+	var cat_id := filtro_cat.get_selected_id()
+	var clave_cat := ""
+	if cat_id > 0:
+		clave_cat = GestorCatalogoScript.CATEGORIAS[cat_id - 1]
+	for hijo in lista.get_children():
+		hijo.visible = FiltrosScript.fila_visible(hijo.valido, hijo.categoria, modo, cat_id, clave_cat)
+
+	if _orden_columna != "":
+		var hijos: Array = lista.get_children()
+		hijos.sort_custom(func(a: Button, b: Button) -> bool:
+			return OrdenadorScript.comparar(a, b, _orden_columna, _orden_direccion)
+		)
+		for hijo in hijos:
+			lista.move_child(hijo, -1)
+
+
+func _ui_busqueda(_texto: String) -> void:
+	_ui_refrescar()
+
+
+func _ui_filtro_estado(_indice: int) -> void:
+	_ui_aplicar_filtro()
+
+
+func _ui_filtro_categoria(_indice: int) -> void:
+	_ui_aplicar_filtro()
+
+
+func _ui_status() -> void:
+	var c: Dictionary = ContadoresScript.contar(_entradas, _estados)
+	rotos_label.text = tr("Rotos: %d") % c.get("rotos", 0)
+	activos_label.text = tr("Activos: %d") % c.get("activos", 0)
+	total_label.text = tr("Total: %d") % c.get("total", 0)
+
+
+func _ui_barra(hechos: int, total: int) -> void:
+	%BarraProgreso.max_value = maxi(total, 1)
+	%BarraProgreso.value = hechos
+
+
+func _ui_barra_final(caidos: int) -> void:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color(0.35, 0.85, 0.45, 1) if caidos == 0 else Color(0.95, 0.35, 0.35, 1)
+	%BarraProgreso.add_theme_stylebox_override("fill", estilo)
+
+
+func _ui_pintar_cabeceras() -> void:
+	var titulos := {"nombre": "Nombre", "estado": "Estado", "fecha": "Fecha", "imagen": "Imagen"}
+	var flecha := "▼" if _orden_direccion == -1 else "▲"
+	var pares := {
+		"nombre": cab_nombre,
+		"estado": cab_estado,
+		"fecha": cab_fecha,
+		"imagen": cab_imagen,
+	}
+	for col in pares:
+		var boton: Button = pares[col]
+		boton.button_pressed = _orden_columna == col
+		boton.text = tr("%s %s") % [tr(titulos[col]), flecha] if _orden_columna == col else tr(titulos[col])
+
+
+func _ui_cabecera(columna: String) -> void:
+	var prev_col := _orden_columna
+	var prev_dir := _orden_direccion
+	if _orden_columna != columna:
+		_orden_columna = columna
+		_orden_direccion = OrdenadorScript.direccion_por_defecto(columna)
+	elif _orden_direccion == OrdenadorScript.direccion_por_defecto(columna):
+		_orden_direccion = -_orden_direccion
+	else:
+		_orden_columna = ""
+	_ui_pintar_cabeceras()
+	_ui_aplicar_filtro()
+	if not _persistir_orden():
+		_orden_columna = prev_col
+		_orden_direccion = prev_dir
+		_ui_pintar_cabeceras()
+		_ui_aplicar_filtro()
+		progreso.text = tr("No se pudo guardar el orden.")
+
+
+func _ui_filas_visibles() -> Array:
+	var visibles: Array = []
+	for hijo in lista.get_children():
+		if hijo.visible:
+			visibles.append(hijo)
+	return visibles
+
+
+func _ui_menu_fila(item: Button) -> void:
+	if _orden_columna != "":
+		item.fijar_estado_reorden(false, false)
+		return
+	var visibles := _ui_filas_visibles()
+	var idx := visibles.find(item)
+	item.fijar_estado_reorden(idx > 0, idx >= 0 and idx < visibles.size() - 1)
+
+
+func _ui_mover_fila(item: Button, delta: int) -> void:
+	if _orden_columna != "":
+		return
+	var visibles := _ui_filas_visibles()
+	var idx := visibles.find(item)
+	if idx < 0:
+		return
+	var vecino_idx := idx + delta
+	if vecino_idx < 0 or vecino_idx >= visibles.size():
+		return
+	var i := _indice_entrada(item.url)
+	var j := _indice_entrada(visibles[vecino_idx].url)
+	if i < 0 or j < 0:
+		return
+	var tmp = _entradas[i]
+	_entradas[i] = _entradas[j]
+	_entradas[j] = tmp
+	if not _guardar_datos():
+		_entradas[j] = _entradas[i]
+		_entradas[i] = tmp
+		progreso.text = tr("No se pudo guardar el orden.")
+		return
+	_ui_refrescar()
+func _ui_historial(item: Button) -> void:
+	if not is_instance_valid(item):
+		return
+	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
+	dialogo_historial.abrir(_estado_store.historial_de(clave_estado))
+
+
+func _ui_eliminar_fila(item: Button) -> void:
+	_item_pendiente_borrar = item
+	%ConfirmarBorrado.dialog_text = tr("¿Eliminar «%s» para siempre?") % item.get_node("Margen/Fila/Textos/NombreLabel").text
+	%ConfirmarBorrado.popup_centered()
+
+
+func _ui_confirmar_borrado() -> void:
+	var item := _item_pendiente_borrar
+	_item_pendiente_borrar = null
+	if not is_instance_valid(item):
+		return
+
+	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
+	_estado_store.marcar_borrado(clave_estado)
+	_estado_store.borrar_estado(clave_estado)
+	_estados.erase(clave_estado)
+
+	var imagen_borrada := ""
+	for i in range(_entradas.size() - 1, -1, -1):
+		if typeof(_entradas[i]) == TYPE_DICTIONARY and str(_entradas[i].get("url", "")) == item.url:
+			imagen_borrada = str(_entradas[i].get("img", ""))
+			_entradas.remove_at(i)
+
+	item.queue_free()
+	if (imagen_borrada.begins_with("res://Assets/png/") or imagen_borrada.begins_with("res://Assets/jpg/")) and imagen_borrada != "res://Assets/png/no-disponible.png":
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(imagen_borrada))
+	progreso.text = tr("Enlace eliminado")
+	_ui_aplicar_filtro()
+	_ui_status()
+
+
+func _ui_copiar_url(url: String, item: Button) -> void:
+	if not is_instance_valid(item):
+		return
+	DisplayServer.clipboard_set(url)
+	progreso.text = tr("URL copiada: %s") % url
+
+
+func _ui_editar_fila(item: Button) -> void:
+	if not is_instance_valid(item):
+		return
+	var datos := _buscar_entrada(item.url)
+	if datos.is_empty():
+		progreso.text = tr("No se encontró el enlace.")
+		return
+	ventana_agregar.abrir_edicion(datos, item.url)
+
+
+func _scan_iniciar() -> void:
+	_cola.clear()
+	for hijo in lista.get_children():
+		if hijo.visible:
+			_cola.append(hijo)
+
+	_scan.configurar(_cola, _paralelismo, _scan_lanzar_item, TOPE_POR_HOST)
+	if _scan.total == 0:
+		%BarraProgreso.visible = false
+		progreso.text = tr("Nada que comprobar")
+		return
+
+	%BotonComprobar.disabled = true
+	%BarraProgreso.visible = true
+	%BarraProgreso.remove_theme_stylebox_override("fill")
+	_ui_barra(0, _scan.total)
+	progreso.text = tr("Comprobando 0/%d…") % _scan.total
+	_scan_persistir_cola()
+	_scan.lanzar()
+
+
+func _scan_lanzar_item(item: Button) -> void:
+	item.verificacion_terminada.connect(_scan_item_terminado.bind(item), CONNECT_ONE_SHOT)
+	item.verificar()
+
+
+func _scan_item_terminado(item: Button) -> void:
+	_scan.terminar(item)
+	_ui_barra(_scan.hechos, _scan.total)
+	progreso.text = tr("Comprobando %d/%d…") % [_scan.hechos, _scan.total]
+	var ahora := int(Time.get_unix_time_from_system())
+	if is_instance_valid(item):
+		var clave_estado := GestorCatalogoScript.clave_unica(item.url)
+		_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
+		_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
+		_scan_log(item.url, "valido" if item.valido == true else "caido", item.mensaje)
+	_ui_aplicar_filtro()
+	_ui_status()
+	if _scan.queda_trabajo():
+		_scan.lanzar()
+		_scan_persistir_cola()
+		return
+
+	%BotonComprobar.disabled = false
+	if _cola_store != null:
+		_cola_store.limpiar()
+	var caidos := 0
+	for hijo in lista.get_children():
+		if is_instance_valid(hijo) and hijo.valido == false:
+			caidos += 1
+	_ui_barra_final(caidos)
+	progreso.text = tr("Listo: %d caídos de %d") % [caidos, _scan.total]
+
+
+func _scan_log(url: String, resultado: String, detalle := "") -> void:
+	if _logger != null:
+		_logger.scan(url, resultado, detalle)
+
+
+func _scan_persistir_cola() -> void:
+	if _cola_store == null:
+		return
+	var urls: Array = []
+	for item in _cola:
+		if is_instance_valid(item):
+			urls.append(item.url)
+	_cola_store.guardar(urls)
+
+
+func _scan_recomprobar(item: Button) -> void:
+	if not is_instance_valid(item):
+		return
+	if item.estado == "comprobando":
+		return
+	progreso.text = tr("Re-comprobando %s…") % item.url
+	item.verificacion_terminada.connect(_scan_recompra.bind(item), CONNECT_ONE_SHOT)
+	item.verificar()
+
+
+func _scan_recompra(item: Button) -> void:
+	if not is_instance_valid(item):
+		return
+	var ahora := int(Time.get_unix_time_from_system())
+	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
+	_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
+	_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
+	_scan_log(item.url, "valido" if item.valido == true else "caido", item.mensaje)
+	_ui_aplicar_filtro()
+	_ui_status()
+
+
+func _scan_revisar_pendientes() -> void:
+	if _cola_store == null:
+		return
+	var pendientes: Array = _cola_store.cargar().get("urls", [])
+	if pendientes.is_empty():
+		return
+	var set_catalogo := {}
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY:
+			set_catalogo[GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))] = true
+	var validas: Array = []
+	for url in pendientes:
+		if set_catalogo.has(GestorCatalogoScript.clave_unica(str(url))):
+			validas.append(str(url))
+	if validas.is_empty():
+		_cola_store.limpiar()
+		return
+	%ConfirmarReanudar.dialog_text = tr("¿Reanudar escaneo de %d enlaces?") % validas.size()
+	%ConfirmarReanudar.popup_centered()
+
+
+func _scan_reanudar() -> void:
+	if _cola_store == null:
+		return
+	var pendientes: Array = _cola_store.cargar().get("urls", [])
+	if pendientes.is_empty():
+		return
+	_scan_rearmar_pendientes(pendientes)
+	_scan.configurar(_cola, _paralelismo, _scan_lanzar_item, TOPE_POR_HOST)
+	if _scan.total == 0:
+		_cola_store.limpiar()
+		%BotonComprobar.disabled = false
+		return
+	%BotonComprobar.disabled = true
+	%BarraProgreso.visible = true
+	%BarraProgreso.remove_theme_stylebox_override("fill")
+	_ui_barra(0, _scan.total)
+	progreso.text = tr("Comprobando 0/%d…") % _scan.total
+	_scan.lanzar()
+
+
+func _scan_rearmar_pendientes(pendientes: Array) -> void:
+	_cola.clear()
+	for hijo in lista.get_children():
+		if is_instance_valid(hijo) and pendientes.has(hijo.url):
+			_cola.append(hijo)
+
+
+func _scan_descartar_pendientes() -> void:
+	if _cola_store != null:
+		_cola_store.limpiar()
+
+
+func _scan_rearmar_auto() -> void:
+	if _es_headless() or _intervalo_auto <= 0:
+		timer_auto.stop()
+		return
+	timer_auto.wait_time = float(_intervalo_auto * 60)
+	timer_auto.start()
+
+
+func _scan_iniciar_auto() -> void:
+	if _es_headless() or not _auto_abrir:
+		return
+	await get_tree().create_timer(0.5).timeout
+	if _scan_auto_posible():
+		_scan_iniciar()
+	_scan_rearmar_auto()
+
+
+func _scan_auto_posible() -> bool:
+	return not _es_headless() and _cola.is_empty() and _scan.en_vuelo == 0
+
+
+func _scan_auto_timer() -> void:
+	if _scan_auto_posible():
+		_scan_iniciar()
+
+
+func _logger_base() -> String:
+	return _logger.get("_base") if _logger != null else "user://"
+
+
+func _log_app(tipo: String, msg: String) -> void:
+	if _logger != null:
+		_logger.app(tipo, msg)
 
 
 func _on_importar_elegido(ruta: String) -> void:
@@ -206,11 +704,11 @@ func _on_importar_elegido(ruta: String) -> void:
 		_entradas.append(entrada)
 	if not _guardar_datos():
 		_cargar_datos()
-		_refrescar_vista()
+		_ui_refrescar()
 		progreso.text = tr("No se pudo guardar el catálogo.")
 		return
-	_refrescar_vista()
-	_actualizar_status()
+	_ui_refrescar()
+	_ui_status()
 	progreso.text = tr("%d importados, %d omitidos.") % [importados, omitidas]
 
 
@@ -271,57 +769,184 @@ func _on_diag_elegido(ruta: String) -> void:
 	progreso.text = tr("Diagnóstico guardado en %s.") % ruta
 
 
-func _logger_base() -> String:
-	return _logger.get("_base") if _logger != null else "user://"
+func _on_enlace_guardado(datos: Dictionary) -> void:
+	var url_nueva := GestorCatalogoScript.normalizar_url(str(datos.get("url", "")))
+	var existente := _url_existente(url_nueva)
+	if not existente.is_empty():
+		progreso.text = tr("Ya existe: %s") % existente
+		return
+	datos["url"] = url_nueva
+	datos["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", "otro"))
+	_entradas.append(datos)
+	if not _guardar_datos():
+		_entradas.pop_back()
+		return
+	_ui_refrescar()
+	_ui_status()
+	progreso.text = tr("Enlace agregado: %s") % datos.get("nombre", "")
 
 
-func _log_app(tipo: String, msg: String) -> void:
-	if _logger != null:
-		_logger.app(tipo, msg)
+func _on_lote_guardado(urls: Array) -> void:
+	var canonicas: Array = []
+	for linea in urls:
+		var u: String = GestorCatalogoScript.normalizar_url(linea.strip_edges() if typeof(linea) == TYPE_STRING else "")
+		if not u.is_empty():
+			canonicas.append(u)
+	var validas: Array = []
+	var invalidas: Array = []
+	for u in canonicas:
+		if u.begins_with("http://") or u.begins_with("https://"):
+			validas.append(u)
+		else:
+			invalidas.append(u)
+	var res := GestorCatalogoScript.separar(validas, _urls_existentes())
+	var nuevas: Array = res.get("nuevas", [])
+	var repetidas: Array = res.get("repetidas", [])
+	if nuevas.is_empty():
+		var partes_vacias: Array = ["No se añadió ningún enlace."]
+		if not repetidas.is_empty():
+			partes_vacias.append(tr("%d repetidas ignoradas.") % repetidas.size())
+		if not invalidas.is_empty():
+			partes_vacias.append(tr("%d inválidas ignoradas.") % invalidas.size())
+		progreso.text = " ".join(partes_vacias)
+		return
+	for u in nuevas:
+		_entradas.append({
+			"nombre": GestorCatalogoScript.dominio(u),
+			"desc": "",
+			"url": u,
+			"img": "",
+			"cat": "otro",
+		})
+	if not _guardar_datos():
+		for i in range(nuevas.size()):
+			_entradas.pop_back()
+		progreso.text = tr("No se pudo guardar el lote.")
+		return
+	var partes: Array = [tr("Se añadieron %d enlaces.") % nuevas.size()]
+	if not repetidas.is_empty():
+		partes.append(tr("%d repetidas ignoradas.") % repetidas.size())
+	if not invalidas.is_empty():
+		partes.append(tr("%d inválidas ignoradas.") % invalidas.size())
+	_ui_refrescar()
+	_ui_status()
+	progreso.text = " ".join(partes)
 
 
-func _log_scan(url: String, resultado: String, detalle := "") -> void:
-	if _logger != null:
-		_logger.scan(url, resultado, detalle)
+func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
+	var url_nueva := GestorCatalogoScript.normalizar_url(str(datos.get("url", "")))
+	var indice := -1
+	for i in range(_entradas.size()):
+		if typeof(_entradas[i]) == TYPE_DICTIONARY and str(_entradas[i].get("url", "")) == url_original:
+			indice = i
+			break
+	if indice == -1:
+		progreso.text = tr("No se encontró el enlace.")
+		return
+	var entrada: Dictionary = _entradas[indice]
+	var img_anterior := str(entrada.get("img", ""))
+	if url_nueva != url_original and not _cambios_url_validos(url_original, url_nueva):
+		progreso.text = tr("Ya existe: %s") % url_nueva
+		var datos_reabrir := datos.duplicate(true)
+		datos_reabrir["img"] = img_anterior
+		datos_reabrir.erase("img_pendiente")
+		ventana_agregar.abrir_edicion(datos_reabrir, url_original)
+		return
+	if url_nueva != url_original:
+		var clave_original := GestorCatalogoScript.clave_unica(url_original)
+		var clave_nueva := GestorCatalogoScript.clave_unica(url_nueva)
+		_estado_store.renombrar(clave_original, clave_nueva)
+		if _estados.has(clave_original):
+			_estados[clave_nueva] = _estados[clave_original]
+			_estados.erase(clave_original)
+		for i_b in range(_borrados.size()):
+			if str(_borrados[i_b]) == clave_original:
+				_borrados[i_b] = clave_nueva
+	var destino := str(datos.get("img", ""))
+	if datos.has("img_pendiente"):
+		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]))
+		if not resultado.get("ok", false):
+			progreso.text = tr("No se pudo procesar la imagen.")
+			return
+		destino = str(resultado.get("destino", ""))
+	entrada["nombre"] = str(datos.get("nombre", ""))
+	entrada["desc"] = str(datos.get("desc", ""))
+	entrada["url"] = url_nueva
+	entrada["img"] = destino
+	entrada["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", entrada.get("cat", "otro")))
+	if not _guardar_datos():
+		_cargar_datos()
+		_ui_refrescar()
+		progreso.text = tr("No se pudo guardar el enlace.")
+		return
+	if destino != img_anterior:
+		_borrar_captura_si_huerfana(img_anterior)
+	_ui_refrescar()
+	_ui_status()
+	progreso.text = tr("Enlace actualizado: %s") % str(datos.get("nombre", ""))
 
 
-func _on_utilidades_id(id: int) -> void:
-	if id == 0:
-		ventana_agregar.abrir()
-	elif id == 1:
-		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "oscuro")), String(_config_store.cargar().get("idioma", "")))
-	elif id == 2:
-		_solicitar_limpieza_capturas()
-	elif id == 3:
-		%DialogoDiagnostico.popup_centered()
-	elif id == 4:
-		_comprobar_actualizaciones(true)
+func _guardar_datos() -> bool:
+	if not _persistir:
+		return true
+	if not GestorDatosScript.guardar(DATA_USER, _entradas):
+		progreso.text = tr("No se pudo guardar el enlace.")
+		return false
+	GestorDatosScript.guardar(DATA_RES, _entradas)
+	return true
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("atajo_buscar"):
-		_on_atajo("atajo_buscar")
-	elif event.is_action_pressed("atajo_agregar"):
-		_on_atajo("atajo_agregar")
-	elif event.is_action_pressed("atajo_comprobar"):
-		_on_atajo("atajo_comprobar")
-	elif event.is_action_pressed("ui_cancel"):
-		_on_atajo("ui_cancel")
+func _urls_existentes() -> Array:
+	var urls: Array = []
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY:
+			urls.append(str(entrada.get("url", "")))
+	return urls
 
 
-func _on_atajo(accion: String) -> void:
-	match accion:
-		"atajo_buscar":
-			busqueda.grab_focus()
-		"atajo_agregar":
-			ventana_agregar.abrir()
-		"atajo_comprobar":
-			_comprobar_visibles()
-		"ui_cancel":
-			if ventana_agregar.visible:
-				ventana_agregar.hide()
-			elif preferencias.visible:
-				preferencias.hide()
+func _url_existente(url: String) -> String:
+	var clave := GestorCatalogoScript.clave_unica(url)
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY:
+			var c := GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))
+			if not c.is_empty() and c == clave:
+				return str(entrada.get("url", ""))
+	return ""
+
+
+func _buscar_entrada(url_entrada: String) -> Dictionary:
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("url", "")) == url_entrada:
+			return entrada
+	return {}
+
+
+func _cambios_url_validos(url_original: String, url_nueva: String) -> bool:
+	var existentes: Array = []
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("url", "")) != url_original:
+			existentes.append(str(entrada.get("url", "")))
+	var res := GestorCatalogoScript.separar([url_nueva], existentes)
+	return (res.get("repetidas", []) as Array).is_empty()
+
+
+func _indice_entrada(url: String) -> int:
+	for i in _entradas.size():
+		var entrada: Dictionary = _entradas[i]
+		if GestorCatalogoScript.clave_unica(str(entrada.get("url", ""))) == GestorCatalogoScript.clave_unica(url):
+			return i
+	return -1
+
+
+func _borrar_captura_si_huerfana(ruta: String) -> void:
+	if not (ruta.begins_with("res://Assets/png/") or ruta.begins_with("res://Assets/jpg/")):
+		return
+	if not ruta.get_file().begins_with("img_"):
+		return
+	for entrada in _entradas:
+		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("img", "")) == ruta:
+			return
+	GestorImagenesScript.borrar(ruta)
 
 
 func _rutas_captura_referidas() -> Array:
@@ -382,514 +1007,9 @@ func _confirmar_restaurar() -> void:
 		progreso.text = tr("No se pudo restaurar la copia.")
 		return
 	_cargar_datos()
-	_refrescar_vista()
-	_actualizar_status()
+	_ui_refrescar()
+	_ui_status()
 	progreso.text = tr("Catálogo restaurado desde la copia.")
-
-
-func _exit_tree() -> void:
-	_hacer_limpieza_capturas()
-
-
-func _cargar_datos() -> void:
-	var base := GestorDatosScript.cargar(DATA_RES)
-	var usuario := GestorDatosScript.cargar(DATA_USER)
-	_entradas = base
-	if not usuario.is_empty():
-		var urls := {}
-		for entrada in _entradas:
-			if typeof(entrada) == TYPE_DICTIONARY:
-				urls[GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))] = true
-		for entrada in usuario:
-			if typeof(entrada) != TYPE_DICTIONARY:
-				continue
-			var url := str(entrada.get("url", ""))
-			if url.is_empty() or urls.has(GestorCatalogoScript.clave_unica(url)):
-				continue
-			_entradas.append(entrada)
-			urls[GestorCatalogoScript.clave_unica(url)] = true
-
-	_estado_store = EstadoStoreScript.new()
-	var datos: Dictionary = _estado_store.cargar()
-	_estados = datos.get("estados", {})
-	_borrados = datos.get("borrados", [])
-	_normalizar_urls()
-	_entradas = _entradas.filter(
-		func(entrada: Variant) -> bool:
-			return typeof(entrada) != TYPE_DICTIONARY \
-				or not _borrados.has(GestorCatalogoScript.clave_unica(str(entrada.get("url", ""))))
-	)
-	_normalizar_categorias()
-
-
-func _normalizar_categorias() -> void:
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY:
-			entrada["cat"] = GestorCatalogoScript.normalizar_categoria(entrada.get("cat", ""))
-
-
-func _normalizar_urls() -> void:
-	var estados := {}
-	for url_clave in _estados:
-		estados[GestorCatalogoScript.clave_unica(str(url_clave))] = _estados[url_clave]
-	_estados = estados
-	var borrados_unicos := {}
-	var borrados: Array = []
-	for b in _borrados:
-		var clave_b := GestorCatalogoScript.clave_unica(str(b))
-		if clave_b.is_empty():
-			continue
-		if not borrados_unicos.has(clave_b):
-			borrados_unicos[clave_b] = true
-			borrados.append(clave_b)
-	_borrados = borrados
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY:
-			entrada["url"] = GestorCatalogoScript.normalizar_url(str(entrada.get("url", "")))
-
-
-func _guardar_datos() -> bool:
-	if not _persistir:
-		return true
-	if not GestorDatosScript.guardar(DATA_USER, _entradas):
-		progreso.text = tr("No se pudo guardar el enlace.")
-		return false
-	GestorDatosScript.guardar(DATA_RES, _entradas)
-	return true
-
-
-func _on_enlace_guardado(datos: Dictionary) -> void:
-	var url_nueva := GestorCatalogoScript.normalizar_url(str(datos.get("url", "")))
-	var existente := _url_existente(url_nueva)
-	if not existente.is_empty():
-		progreso.text = tr("Ya existe: %s") % existente
-		return
-	datos["url"] = url_nueva
-	datos["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", "otro"))
-	_entradas.append(datos)
-	if not _guardar_datos():
-		_entradas.pop_back()
-		return
-	_refrescar_vista()
-	_actualizar_status()
-	progreso.text = tr("Enlace agregado: %s") % datos.get("nombre", "")
-
-
-func _on_lote_guardado(urls: Array) -> void:
-	var canonicas: Array = []
-	for linea in urls:
-		var u: String = GestorCatalogoScript.normalizar_url(linea.strip_edges() if typeof(linea) == TYPE_STRING else "")
-		if not u.is_empty():
-			canonicas.append(u)
-	var validas: Array = []
-	var invalidas: Array = []
-	for u in canonicas:
-		if u.begins_with("http://") or u.begins_with("https://"):
-			validas.append(u)
-		else:
-			invalidas.append(u)
-	var res := GestorCatalogoScript.separar(validas, _urls_existentes())
-	var nuevas: Array = res.get("nuevas", [])
-	var repetidas: Array = res.get("repetidas", [])
-	if nuevas.is_empty():
-		var partes_vacias: Array = ["No se añadió ningún enlace."]
-		if not repetidas.is_empty():
-			partes_vacias.append(tr("%d repetidas ignoradas.") % repetidas.size())
-		if not invalidas.is_empty():
-			partes_vacias.append(tr("%d inválidas ignoradas.") % invalidas.size())
-		progreso.text = " ".join(partes_vacias)
-		return
-	for u in nuevas:
-		_entradas.append({
-			"nombre": GestorCatalogoScript.dominio(u),
-			"desc": "",
-			"url": u,
-			"img": "",
-			"cat": "otro",
-		})
-	if not _guardar_datos():
-		for i in range(nuevas.size()):
-			_entradas.pop_back()
-		progreso.text = tr("No se pudo guardar el lote.")
-		return
-	var partes: Array = [tr("Se añadieron %d enlaces.") % nuevas.size()]
-	if not repetidas.is_empty():
-		partes.append(tr("%d repetidas ignoradas.") % repetidas.size())
-	if not invalidas.is_empty():
-		partes.append(tr("%d inválidas ignoradas.") % invalidas.size())
-	_refrescar_vista()
-	_actualizar_status()
-	progreso.text = " ".join(partes)
-
-
-func _urls_existentes() -> Array:
-	var urls: Array = []
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY:
-			urls.append(str(entrada.get("url", "")))
-	return urls
-
-
-func _url_existente(url: String) -> String:
-	var clave := GestorCatalogoScript.clave_unica(url)
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY:
-			var c := GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))
-			if not c.is_empty() and c == clave:
-				return str(entrada.get("url", ""))
-	return ""
-
-
-func _on_editar_pedido(item: Button) -> void:
-	if not is_instance_valid(item):
-		return
-	var datos := _buscar_entrada(item.url)
-	if datos.is_empty():
-		progreso.text = tr("No se encontró el enlace.")
-		return
-	ventana_agregar.abrir_edicion(datos, item.url)
-
-
-func _buscar_entrada(url_entrada: String) -> Dictionary:
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("url", "")) == url_entrada:
-			return entrada
-	return {}
-
-
-func _cambios_url_validos(url_original: String, url_nueva: String) -> bool:
-	var existentes: Array = []
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("url", "")) != url_original:
-			existentes.append(str(entrada.get("url", "")))
-	var res := GestorCatalogoScript.separar([url_nueva], existentes)
-	return (res.get("repetidas", []) as Array).is_empty()
-
-
-func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
-	var url_nueva := GestorCatalogoScript.normalizar_url(str(datos.get("url", "")))
-	var indice := -1
-	for i in range(_entradas.size()):
-		if typeof(_entradas[i]) == TYPE_DICTIONARY and str(_entradas[i].get("url", "")) == url_original:
-			indice = i
-			break
-	if indice == -1:
-		progreso.text = tr("No se encontró el enlace.")
-		return
-	var entrada: Dictionary = _entradas[indice]
-	var img_anterior := str(entrada.get("img", ""))
-	if url_nueva != url_original and not _cambios_url_validos(url_original, url_nueva):
-		progreso.text = tr("Ya existe: %s") % url_nueva
-		var datos_reabrir := datos.duplicate(true)
-		datos_reabrir["img"] = img_anterior
-		datos_reabrir.erase("img_pendiente")
-		ventana_agregar.abrir_edicion(datos_reabrir, url_original)
-		return
-	if url_nueva != url_original:
-		var clave_original := GestorCatalogoScript.clave_unica(url_original)
-		var clave_nueva := GestorCatalogoScript.clave_unica(url_nueva)
-		_estado_store.renombrar(clave_original, clave_nueva)
-		if _estados.has(clave_original):
-			_estados[clave_nueva] = _estados[clave_original]
-			_estados.erase(clave_original)
-		for i_b in range(_borrados.size()):
-			if str(_borrados[i_b]) == clave_original:
-				_borrados[i_b] = clave_nueva
-	var destino := str(datos.get("img", ""))
-	if datos.has("img_pendiente"):
-		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]))
-		if not resultado.get("ok", false):
-			progreso.text = tr("No se pudo procesar la imagen.")
-			return
-		destino = str(resultado.get("destino", ""))
-	entrada["nombre"] = str(datos.get("nombre", ""))
-	entrada["desc"] = str(datos.get("desc", ""))
-	entrada["url"] = url_nueva
-	entrada["img"] = destino
-	entrada["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", entrada.get("cat", "otro")))
-	if not _guardar_datos():
-		_cargar_datos()
-		_refrescar_vista()
-		progreso.text = tr("No se pudo guardar el enlace.")
-		return
-	if destino != img_anterior:
-		_borrar_captura_si_huerfana(img_anterior)
-	_refrescar_vista()
-	_actualizar_status()
-	progreso.text = tr("Enlace actualizado: %s") % str(datos.get("nombre", ""))
-
-
-func _borrar_captura_si_huerfana(ruta: String) -> void:
-	if not (ruta.begins_with("res://Assets/png/") or ruta.begins_with("res://Assets/jpg/")):
-		return
-	if not ruta.get_file().begins_with("img_"):
-		return
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("img", "")) == ruta:
-			return
-	GestorImagenesScript.borrar(ruta)
-
-
-func _refrescar_vista() -> void:
-	_mostrar_lista(FiltrosScript.filtrar(_entradas, busqueda.text))
-
-
-func _mostrar_lista(entradas: Array) -> void:
-	_cola.clear()
-	_scan.reiniciar()
-	for hijo in lista.get_children():
-		hijo.queue_free()
-
-	for entrada in entradas:
-		if typeof(entrada) != TYPE_DICTIONARY:
-			continue
-		var item: Button = LIST_ITEM_SCENE.instantiate()
-		item.setup(
-			str(entrada.get("nombre", "")),
-			str(entrada.get("desc", "")),
-			str(entrada.get("url", "")),
-			str(entrada.get("img", "")),
-			GestorCatalogoScript.normalizar_categoria(entrada.get("cat", ""))
-		)
-		item.configurar_timeout(_timeout)
-		var url_item := str(entrada.get("url", ""))
-		var estado: Dictionary = _estados.get(GestorCatalogoScript.clave_unica(url_item), {})
-		if not estado.is_empty():
-			item.aplicar_estado(
-				estado.get("valido"),
-				str(estado.get("mensaje", "")),
-				int(estado.get("codigo", 0)),
-				int(estado.get("fecha", 0))
-			)
-		item.eliminar_pedido.connect(_on_eliminar_pedido.bind(item))
-		item.recomprobar_pedido.connect(_on_recomprobar_pedido.bind(item))
-		item.copiar_pedido.connect(_on_copiar_pedido.bind(item))
-		item.editar_pedido.connect(_on_editar_pedido.bind(item))
-		item.historial_pedido.connect(_on_historial_pedido.bind(item))
-		item.subir_pedido.connect(_on_mover_pedido.bind(item, -1))
-		item.bajar_pedido.connect(_on_mover_pedido.bind(item, 1))
-		item.menu_solicitado.connect(_on_menu_solicitado.bind(item))
-		lista.add_child(item)
-
-	_aplicar_filtro()
-	progreso.text = tr("%d enlaces") % lista.get_child_count()
-
-
-func _actualizar_barra(hechos: int, total: int) -> void:
-	%BarraProgreso.max_value = maxi(total, 1)
-	%BarraProgreso.value = hechos
-
-
-func _marcar_barra_final(caidos: int) -> void:
-	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = Color(0.35, 0.85, 0.45, 1) if caidos == 0 else Color(0.95, 0.35, 0.35, 1)
-	%BarraProgreso.add_theme_stylebox_override("fill", estilo)
-
-
-func _persistir_cola() -> void:
-	if _cola_store == null:
-		return
-	var urls: Array = []
-	for item in _cola:
-		if is_instance_valid(item):
-			urls.append(item.url)
-	_cola_store.guardar(urls)
-
-
-func _comprobar_visibles() -> void:
-	_cola.clear()
-	for hijo in lista.get_children():
-		if hijo.visible:
-			_cola.append(hijo)
-
-	_scan.configurar(_cola, _paralelismo, _lanzar_item, TOPE_POR_HOST)
-	if _scan.total == 0:
-		%BarraProgreso.visible = false
-		progreso.text = tr("Nada que comprobar")
-		return
-
-	%BotonComprobar.disabled = true
-	%BarraProgreso.visible = true
-	%BarraProgreso.remove_theme_stylebox_override("fill")
-	_actualizar_barra(0, _scan.total)
-	progreso.text = tr("Comprobando 0/%d…") % _scan.total
-	_persistir_cola()
-	_scan.lanzar()
-
-
-func _lanzar_item(item: Button) -> void:
-	item.verificacion_terminada.connect(_on_item_terminado.bind(item), CONNECT_ONE_SHOT)
-	item.verificar()
-
-
-func _on_item_terminado(item: Button) -> void:
-	_scan.terminar(item)
-	_actualizar_barra(_scan.hechos, _scan.total)
-	progreso.text = tr("Comprobando %d/%d…") % [_scan.hechos, _scan.total]
-	var ahora := int(Time.get_unix_time_from_system())
-	if is_instance_valid(item):
-		var clave_estado := GestorCatalogoScript.clave_unica(item.url)
-		_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
-		_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
-		_log_scan(item.url, "valido" if item.valido == true else "caido", item.mensaje)
-	_aplicar_filtro()
-	_actualizar_status()
-	if _scan.queda_trabajo():
-		_scan.lanzar()
-		_persistir_cola()
-		return
-
-	%BotonComprobar.disabled = false
-	if _cola_store != null:
-		_cola_store.limpiar()
-	var caidos := 0
-	for hijo in lista.get_children():
-		if is_instance_valid(hijo) and hijo.valido == false:
-			caidos += 1
-	_marcar_barra_final(caidos)
-	progreso.text = tr("Listo: %d caídos de %d") % [caidos, _scan.total]
-
-
-func _revisar_cola_pendiente() -> void:
-	if _cola_store == null:
-		return
-	var pendientes: Array = _cola_store.cargar().get("urls", [])
-	if pendientes.is_empty():
-		return
-	var set_catalogo := {}
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY:
-			set_catalogo[GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))] = true
-	var validas: Array = []
-	for url in pendientes:
-		if set_catalogo.has(GestorCatalogoScript.clave_unica(str(url))):
-			validas.append(str(url))
-	if validas.is_empty():
-		_cola_store.limpiar()
-		return
-	%ConfirmarReanudar.dialog_text = tr("¿Reanudar escaneo de %d enlaces?") % validas.size()
-	%ConfirmarReanudar.popup_centered()
-
-
-func _reanudar_escaneo() -> void:
-	if _cola_store == null:
-		return
-	var pendientes: Array = _cola_store.cargar().get("urls", [])
-	if pendientes.is_empty():
-		return
-	_rearmar_cola_pendiente(pendientes)
-	_scan.configurar(_cola, _paralelismo, _lanzar_item, TOPE_POR_HOST)
-	if _scan.total == 0:
-		_cola_store.limpiar()
-		%BotonComprobar.disabled = false
-		return
-	%BotonComprobar.disabled = true
-	%BarraProgreso.visible = true
-	%BarraProgreso.remove_theme_stylebox_override("fill")
-	_actualizar_barra(0, _scan.total)
-	progreso.text = tr("Comprobando 0/%d…") % _scan.total
-	_scan.lanzar()
-
-
-func _rearmar_cola_pendiente(pendientes: Array) -> void:
-	_cola.clear()
-	for hijo in lista.get_children():
-		if is_instance_valid(hijo) and pendientes.has(hijo.url):
-			_cola.append(hijo)
-
-
-func _descartar_cola_pendiente() -> void:
-	if _cola_store != null:
-		_cola_store.limpiar()
-
-
-func _on_recomprobar_pedido(item: Button) -> void:
-	if not is_instance_valid(item):
-		return
-	if item.estado == "comprobando":
-		return
-	progreso.text = tr("Re-comprobando %s…") % item.url
-	item.verificacion_terminada.connect(_persistir_recompra.bind(item), CONNECT_ONE_SHOT)
-	item.verificar()
-
-
-func _persistir_recompra(item: Button) -> void:
-	if not is_instance_valid(item):
-		return
-	var ahora := int(Time.get_unix_time_from_system())
-	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
-	_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
-	_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
-	_log_scan(item.url, "valido" if item.valido == true else "caido", item.mensaje)
-	_aplicar_filtro()
-	_actualizar_status()
-
-
-func _on_eliminar_pedido(item: Button) -> void:
-	_item_pendiente_borrar = item
-	%ConfirmarBorrado.dialog_text = tr("¿Eliminar «%s» para siempre?") % item.get_node("Margen/Fila/Textos/NombreLabel").text
-	%ConfirmarBorrado.popup_centered()
-
-
-func _on_copiar_pedido(url: String, item: Button) -> void:
-	if not is_instance_valid(item):
-		return
-	DisplayServer.clipboard_set(url)
-	progreso.text = tr("URL copiada: %s") % url
-
-
-func _confirmar_borrado() -> void:
-	var item := _item_pendiente_borrar
-	_item_pendiente_borrar = null
-	if not is_instance_valid(item):
-		return
-
-	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
-	_estado_store.marcar_borrado(clave_estado)
-	_estado_store.borrar_estado(clave_estado)
-	_estados.erase(clave_estado)
-
-	var imagen_borrada := ""
-	for i in range(_entradas.size() - 1, -1, -1):
-		if typeof(_entradas[i]) == TYPE_DICTIONARY and str(_entradas[i].get("url", "")) == item.url:
-			imagen_borrada = str(_entradas[i].get("img", ""))
-			_entradas.remove_at(i)
-
-	item.queue_free()
-	if (imagen_borrada.begins_with("res://Assets/png/") or imagen_borrada.begins_with("res://Assets/jpg/")) and imagen_borrada != "res://Assets/png/no-disponible.png":
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(imagen_borrada))
-	progreso.text = tr("Enlace eliminado")
-	_aplicar_filtro()
-	_actualizar_status()
-
-
-func _aplicar_filtro() -> void:
-	var modo := filtro.get_selected_id()
-	var cat_id := filtro_cat.get_selected_id()
-	var clave_cat := ""
-	if cat_id > 0:
-		clave_cat = GestorCatalogoScript.CATEGORIAS[cat_id - 1]
-	for hijo in lista.get_children():
-		hijo.visible = FiltrosScript.fila_visible(hijo.valido, hijo.categoria, modo, cat_id, clave_cat)
-
-	if _orden_columna != "":
-		var hijos: Array = lista.get_children()
-		hijos.sort_custom(func(a: Button, b: Button) -> bool:
-			return OrdenadorScript.comparar(a, b, _orden_columna, _orden_direccion)
-		)
-		for hijo in hijos:
-			lista.move_child(hijo, -1)
-
-
-func _on_busqueda_changed(_texto: String) -> void:
-	_refrescar_vista()
-
-
-func _actualizar_status() -> void:
-	var c: Dictionary = ContadoresScript.contar(_entradas, _estados)
-	rotos_label.text = tr("Rotos: %d") % c.get("rotos", 0)
-	activos_label.text = tr("Activos: %d") % c.get("activos", 0)
-	total_label.text = tr("Total: %d") % c.get("total", 0)
 
 
 func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "oscuro", idioma := "es") -> void:
@@ -904,20 +1024,31 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 		TranslationServer.set_locale(locale_anterior)
 		progreso.text = tr("No se pudo guardar la configuración.")
 	_retraducir_ui()
-	_rearmar_auto_escaneo()
-	if _auto_abrir and _puede_auto_escanear():
-		_comprobar_visibles()
+	_scan_rearmar_auto()
+	if _auto_abrir and _scan_auto_posible():
+		_scan_iniciar()
 
 
 func _retraducir_ui() -> void:
 	_configurar_menus()
 	_cargar_filtros()
-	_actualizar_status()
-	_refrescar_vista()
+	_ui_status()
+	_ui_refrescar()
 
 
-func _es_headless() -> bool:
-	return DisplayServer.get_name() == "headless"
+func _persistir_orden() -> bool:
+	var cfg: Dictionary = _config_store.cargar()
+	return _config_store.guardar(
+		int(cfg.get("paralelismo", 3)),
+		float(cfg.get("timeout", 10.0)),
+		bool(cfg.get("auto_abrir", true)),
+		int(cfg.get("intervalo", 0)),
+		str(cfg.get("tema", "oscuro")),
+		str(cfg.get("ultima_version_vista", "")),
+		_orden_columna,
+		_orden_direccion,
+		str(cfg.get("idioma", "")),
+	)
 
 
 func _lanzar_comprobacion_auto() -> void:
@@ -1009,134 +1140,3 @@ func _limpiar_aviso() -> void:
 	_dialogo_con_aviso = false
 
 
-func _rearmar_auto_escaneo() -> void:
-	if _es_headless() or _intervalo_auto <= 0:
-		timer_auto.stop()
-		return
-	timer_auto.wait_time = float(_intervalo_auto * 60)
-	timer_auto.start()
-
-
-func _iniciar_auto_escaneo() -> void:
-	if _es_headless() or not _auto_abrir:
-		return
-	await get_tree().create_timer(0.5).timeout
-	if _puede_auto_escanear():
-		_comprobar_visibles()
-	_rearmar_auto_escaneo()
-
-
-func _puede_auto_escanear() -> bool:
-	return not _es_headless() and _cola.is_empty() and _scan.en_vuelo == 0
-
-
-func _on_auto_timer() -> void:
-	if _puede_auto_escanear():
-		_comprobar_visibles()
-
-
-func _pulsar_cabecera(columna: String) -> void:
-	var prev_col := _orden_columna
-	var prev_dir := _orden_direccion
-	if _orden_columna != columna:
-		_orden_columna = columna
-		_orden_direccion = OrdenadorScript.direccion_por_defecto(columna)
-	elif _orden_direccion == OrdenadorScript.direccion_por_defecto(columna):
-		_orden_direccion = -_orden_direccion
-	else:
-		_orden_columna = ""
-	_pintar_cabeceras()
-	_aplicar_filtro()
-	if not _persistir_orden():
-		_orden_columna = prev_col
-		_orden_direccion = prev_dir
-		_pintar_cabeceras()
-		_aplicar_filtro()
-		progreso.text = tr("No se pudo guardar el orden.")
-
-
-func _pintar_cabeceras() -> void:
-	var titulos := {"nombre": "Nombre", "estado": "Estado", "fecha": "Fecha", "imagen": "Imagen"}
-	var flecha := "▼" if _orden_direccion == -1 else "▲"
-	var pares := {
-		"nombre": cab_nombre,
-		"estado": cab_estado,
-		"fecha": cab_fecha,
-		"imagen": cab_imagen,
-	}
-	for col in pares:
-		var boton: Button = pares[col]
-		boton.button_pressed = _orden_columna == col
-		boton.text = tr("%s %s") % [tr(titulos[col]), flecha] if _orden_columna == col else tr(titulos[col])
-
-
-func _persistir_orden() -> bool:
-	var cfg: Dictionary = _config_store.cargar()
-	return _config_store.guardar(
-		int(cfg.get("paralelismo", 3)),
-		float(cfg.get("timeout", 10.0)),
-		bool(cfg.get("auto_abrir", true)),
-		int(cfg.get("intervalo", 0)),
-		str(cfg.get("tema", "oscuro")),
-		str(cfg.get("ultima_version_vista", "")),
-		_orden_columna,
-		_orden_direccion,
-		str(cfg.get("idioma", "")),
-	)
-
-
-func _on_historial_pedido(item: Button) -> void:
-	if not is_instance_valid(item):
-		return
-	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
-	dialogo_historial.abrir(_estado_store.historial_de(clave_estado))
-
-
-func _filas_visibles() -> Array:
-	var visibles: Array = []
-	for hijo in lista.get_children():
-		if hijo.visible:
-			visibles.append(hijo)
-	return visibles
-
-
-func _indice_entrada(url: String) -> int:
-	for i in _entradas.size():
-		var entrada: Dictionary = _entradas[i]
-		if GestorCatalogoScript.clave_unica(str(entrada.get("url", ""))) == GestorCatalogoScript.clave_unica(url):
-			return i
-	return -1
-
-
-func _on_menu_solicitado(item: Button) -> void:
-	if _orden_columna != "":
-		item.fijar_estado_reorden(false, false)
-		return
-	var visibles := _filas_visibles()
-	var idx := visibles.find(item)
-	item.fijar_estado_reorden(idx > 0, idx >= 0 and idx < visibles.size() - 1)
-
-
-func _on_mover_pedido(item: Button, delta: int) -> void:
-	if _orden_columna != "":
-		return
-	var visibles := _filas_visibles()
-	var idx := visibles.find(item)
-	if idx < 0:
-		return
-	var vecino_idx := idx + delta
-	if vecino_idx < 0 or vecino_idx >= visibles.size():
-		return
-	var i := _indice_entrada(item.url)
-	var j := _indice_entrada(visibles[vecino_idx].url)
-	if i < 0 or j < 0:
-		return
-	var tmp = _entradas[i]
-	_entradas[i] = _entradas[j]
-	_entradas[j] = tmp
-	if not _guardar_datos():
-		_entradas[j] = _entradas[i]
-		_entradas[i] = tmp
-		progreso.text = tr("No se pudo guardar el orden.")
-		return
-	_refrescar_vista()
