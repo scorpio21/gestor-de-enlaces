@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Repositorio `K:\gestor-de-enlaces` (Godot 4.7.2, GDScript) — gestor de enlaces para Argentum Online: funcionalidad base + empaquetado (presets + CI + logs + diagnóstico + icono) + catálogo completo (etiquetas, filtros avanzados, grilla, dashboard, i18n, tema, capturas con nombre) **COMMITEADO y pusheado en `main`**. HEAD: `f27e943` (v0.1.9 + fixes de ventana 1440×810 y export .exe). Batería local **33/33 OK**, `git status` limpio, **0 issues abiertos** en GitHub.
+Repositorio `K:\gestor-de-enlaces` (Godot 4.7.2, GDScript) — gestor de enlaces para Argentum Online: funcionalidad base + empaquetado (presets + CI + logs + diagnóstico + icono) + catálogo completo (etiquetas, filtros avanzados, grilla, dashboard, i18n, tema, capturas con nombre) **COMMITEADO y pusheado en `main`**. HEAD: `7c03fe5` (v0.1.9 + fixes ventana 1440×810 y export .exe). Batería local **33/33 OK**, `git status` limpio, **0 issues abiertos** en GitHub.
 
 ## Comandos de verificación
 
@@ -22,7 +22,7 @@ Linux/CI: `GODOT_BIN=/ruta/a/godot bash tests/run_battery.sh`. Cada suite imprim
 
 ## Estado actual
 
-- ✅ HEAD `f27e943` (v0.1.9 + fixes de ventana y export .exe) pusheado a `origin/main`; battery local **33/33 OK**; `git status` limpio (sin untracked ni modificados).
+- ✅ HEAD `7c03fe5` (v0.1.9 + fixes de ventana y export .exe) pusheado a `origin/main`; battery local **33/33 OK**; `git status` limpio (sin untracked ni modificados).
 - ✅ **0 issues abiertos** en GitHub: toda la secuencia #25..#47 cerrada.
 - ✅ Ronda de versiones: 0.1.0 (empaquetado #26/#28/#29) → 0.1.9 (capturas con nombre #47). Últimas: etiquetas (#42), filtros avanzados + presets (#44 en 0.1.2/0.1.3), grilla (#43 0.1.4), dashboard (#45 0.1.5), dedup de capturas (#36 0.1.6), tema automático (#46 0.1.7), diálogos nativos (#38 0.1.8), caché reverse-lookup (#40), capturas con nombre (#47 0.1.9).
 - ✅ **#41 residuos cerrado** (`c2d9e70`): versionado el addon tercero `addons/godot_ai` (Godot AI v3.2.1, MIT) + bloque `[autoload]/[editor_plugins]` de `project.godot` (el addon retira su autoload MCP de los exports); `export_presets.cfg` regenerado por el editor 4.7; metadatos Godot pendientes (16 `.uid`, 2 `.translation`, 7 `.import`). Eliminados localmente `data/data2.json` (sin uso) y 2 `.import` huérfanos de `Assets/png`. Planes ajenos sin commitear en `.gitignore`.
