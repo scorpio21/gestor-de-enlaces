@@ -21,6 +21,7 @@ const ActualizadorScript := preload("res://scripts/actualizador.gd")
 const OrdenadorScript := preload("res://scripts/ordenador.gd")
 const FiltrosScript := preload("res://scripts/filtros.gd")
 const ColaEscaneoScript := preload("res://scripts/cola_escaneo.gd")
+const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
@@ -174,7 +175,7 @@ func _on_file_id(id: int) -> void:
 
 func _on_utilidades_id(id: int) -> void:
 	if id == 0:
-		ventana_agregar.abrir()
+		ventana_agregar.abrir(_sugerir_etiquetas())
 	elif id == 1:
 		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "oscuro")), String(_config_store.cargar().get("idioma", "")))
 	elif id == 2:
@@ -201,7 +202,7 @@ func _on_atajo(accion: String) -> void:
 		"atajo_buscar":
 			busqueda.grab_focus()
 		"atajo_agregar":
-			ventana_agregar.abrir()
+			ventana_agregar.abrir(_sugerir_etiquetas())
 		"atajo_comprobar":
 			_scan_iniciar()
 		"ui_cancel":
@@ -209,6 +210,10 @@ func _on_atajo(accion: String) -> void:
 				ventana_agregar.hide()
 			elif preferencias.visible:
 				preferencias.hide()
+
+
+func _sugerir_etiquetas() -> Array:
+	return EtiquetasScript.frecuentes(_entradas, 8)
 
 
 func _cargar_filtros() -> void:
@@ -288,6 +293,7 @@ func _normalizar_categorias() -> void:
 	for entrada in _entradas:
 		if typeof(entrada) == TYPE_DICTIONARY:
 			entrada["cat"] = GestorCatalogoScript.normalizar_categoria(entrada.get("cat", ""))
+			entrada["tags"] = EtiquetasScript.parsear(entrada.get("tags", []))
 
 
 func _ui_refrescar() -> void:
@@ -513,7 +519,7 @@ func _ui_editar_fila(item: Button) -> void:
 	if datos.is_empty():
 		progreso.text = tr("No se encontró el enlace.")
 		return
-	ventana_agregar.abrir_edicion(datos, item.url)
+	ventana_agregar.abrir_edicion(datos, item.url, _sugerir_etiquetas())
 
 
 func _scan_iniciar() -> void:
@@ -783,6 +789,7 @@ func _on_enlace_guardado(datos: Dictionary) -> void:
 		return
 	datos["url"] = url_nueva
 	datos["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", "otro"))
+	datos["tags"] = EtiquetasScript.parsear(datos.get("tags", []))
 	_entradas.append(datos)
 	if not _guardar_datos():
 		_entradas.pop_back()
@@ -856,7 +863,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 		var datos_reabrir := datos.duplicate(true)
 		datos_reabrir["img"] = img_anterior
 		datos_reabrir.erase("img_pendiente")
-		ventana_agregar.abrir_edicion(datos_reabrir, url_original)
+		ventana_agregar.abrir_edicion(datos_reabrir, url_original, _sugerir_etiquetas())
 		return
 	if url_nueva != url_original:
 		var clave_original := GestorCatalogoScript.clave_unica(url_original)
@@ -880,6 +887,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 	entrada["url"] = url_nueva
 	entrada["img"] = destino
 	entrada["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", entrada.get("cat", "otro")))
+	entrada["tags"] = EtiquetasScript.parsear(datos.get("tags", entrada.get("tags", [])))
 	if not _guardar_datos():
 		_cargar_datos()
 		_ui_refrescar()

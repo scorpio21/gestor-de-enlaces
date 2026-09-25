@@ -104,16 +104,34 @@ func _arrancar() -> void:
 	_check(emitido.get("cat") == "cliente", "alta individual usa la categoría elegida")
 
 	dialogo.abrir()
+	emitido = {}
+	dialogo.get_node("%Nombre").text = "Con tags"
+	dialogo.get_node("%Url").text = "https://tags.test"
+	dialogo.get_node("%Etiquetas").text = "AO 1.6, español;servidor PVP"
+	dialogo.get_node("%BotonGuardar").pressed.emit()
+	_check(emitido.get("tags") == ["AO 1.6", "español", "servidor PVP"], "el alta individual emite las etiquetas normalizadas")
+
+	dialogo.abrir()
 	dialogo.get_node("%Modo").select(1)
 	dialogo.get_node("%Modo").item_selected.emit(1)
 	_check(not dialogo.get_node("%Categoria").visible and not dialogo.get_node("%EtiquetaCategoria").visible, "en modo Varias se oculta la categoría")
+	_check(not dialogo.get_node("%Etiquetas").visible and not dialogo.get_node("%EtiquetaEtiquetas").visible, "en modo Varias se ocultan las etiquetas")
 
-	dialogo.abrir_edicion({"nombre": "Srv", "desc": "", "url": "https://srv.test", "img": "", "cat": "servidor"}, "https://srv.test")
+	dialogo.abrir(["servidor", "PVP"])
+	_check(dialogo.get_node("%Sugerencias").get_child_count() == 2, "abrir con sugerencias crea los chips")
+	dialogo.get_node("%Sugerencias").get_child(0).pressed.emit()
+	_check(dialogo.get_node("%Etiquetas").text == "servidor", "pulsar un chip añade la etiqueta al campo")
+	dialogo.get_node("%Sugerencias").get_child(0).pressed.emit()
+	_check(dialogo.get_node("%Etiquetas").text == "", "pulsar otra vez el chip la quita")
+
+	dialogo.abrir_edicion({"nombre": "Srv", "desc": "", "url": "https://srv.test", "img": "", "cat": "servidor", "tags": ["servidor", "PVP"]}, "https://srv.test")
 	_check(dialogo.get_node("%Categoria").selected == 2, "edición selecciona la categoría del enlace")
+	_check(dialogo.get_node("%Etiquetas").text == "servidor, PVP", "edición precarga las etiquetas del enlace")
 	emitido = {}
 	url_original_emitida = ""
 	dialogo.get_node("%BotonGuardar").pressed.emit()
 	_check(emitido.get("cat") == "servidor", "editar conserva la categoría")
+	_check(emitido.get("tags") == ["PVP", "servidor"], "editar reemite las etiquetas normalizadas")
 
 	dialogo.abrir_edicion({"nombre": "Sin", "desc": "", "url": "https://sin.test", "img": ""}, "https://sin.test")
 	_check(dialogo.get_node("%Categoria").selected == 0, "edición sin cat selecciona otro")

@@ -6,9 +6,9 @@
 [node name="VentanaAgregar" type="Window"]
 title = "Agregar enlace"
 initial_position = 2
-size = Vector2i(540, 680)
+size = Vector2i(540, 760)
 unresizable = false
-min_size = Vector2i(540, 680)
+min_size = Vector2i(540, 760)
 exclusive = true
 visible = false
 script = ExtResource("1_agregar")
@@ -87,6 +87,20 @@ layout_mode = 2
 text = "Categoría"
 
 [node name="Categoria" type="OptionButton" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="EtiquetaEtiquetas" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Etiquetas"
+
+[node name="Etiquetas" type="LineEdit" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Ej. AO 1.6, español, servidor PVP"
+
+[node name="Sugerencias" type="FlowContainer" parent="Margen/Columna"]
 unique_name_in_owner = true
 layout_mode = 2
 

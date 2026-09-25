@@ -233,6 +233,7 @@ func _arrancar() -> void:
 	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(huerfana_exit)), "al cerrar la app se barre lo huérfano")
 
 	main_script._persistir = false
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(ref_huerfana))
 	_cerrar()
 
 

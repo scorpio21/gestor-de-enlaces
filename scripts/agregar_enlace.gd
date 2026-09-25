@@ -7,10 +7,13 @@ signal lote_guardado(urls: Array)
 const PLACEHOLDER := preload("res://Assets/png/no-disponible.png")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
+const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 
 @onready var nombre: LineEdit = %Nombre
 @onready var descripcion: LineEdit = %Descripcion
 @onready var url: LineEdit = %Url
+@onready var etiquetas: LineEdit = %Etiquetas
+@onready var sugerencias: FlowContainer = %Sugerencias
 @onready var error_label: Label = %Error
 @onready var vista_previa: TextureRect = %VistaPrevia
 @onready var dialogo_imagen: FileDialog = %DialogoImagen
@@ -34,12 +37,13 @@ func _ready() -> void:
 	nombre.text_submitted.connect(func(_t: String) -> void: descripcion.grab_focus())
 	descripcion.text_submitted.connect(func(_t: String) -> void: url.grab_focus())
 	url.text_submitted.connect(func(_t: String) -> void: _on_guardar())
+	etiquetas.text_submitted.connect(func(_t: String) -> void: _on_guardar())
 	%Modo.item_selected.connect(_cambiar_modo)
 	for i in range(GestorCatalogoScript.CATEGORIAS.size()):
 		%Categoria.add_item(GestorCatalogoScript.new().categoria_display(GestorCatalogoScript.CATEGORIAS[i]))
 
 
-func abrir() -> void:
+func abrir(sugeridas: Array = []) -> void:
 	_modo = "individual"
 	%Modo.select(0)
 	_cambiar_modo(0)
@@ -52,12 +56,14 @@ func abrir() -> void:
 	nombre.text = ""
 	descripcion.text = ""
 	url.text = ""
+	etiquetas.text = ""
 	error_label.text = ""
+	_mostrar_sugerencias(sugeridas)
 	popup_centered()
 	nombre.grab_focus()
 
 
-func abrir_edicion(datos: Dictionary, url_original: String) -> void:
+func abrir_edicion(datos: Dictionary, url_original: String, sugeridas: Array = []) -> void:
 	_modo = "editar"
 	fila_modo.visible = false
 	%Modo.visible = false
@@ -66,11 +72,13 @@ func abrir_edicion(datos: Dictionary, url_original: String) -> void:
 	nombre.text = str(datos.get("nombre", ""))
 	descripcion.text = str(datos.get("desc", ""))
 	url.text = str(datos.get("url", ""))
+	etiquetas.text = EtiquetasScript.unir(datos.get("tags", []))
 	error_label.text = ""
 	_url_original = url_original
 	_imagen_original = str(datos.get("img", ""))
 	_fijar_imagen(_imagen_original)
 	%Categoria.select(GestorCatalogoScript.CATEGORIAS.find(GestorCatalogoScript.normalizar_categoria(datos.get("cat", ""))))
+	_mostrar_sugerencias(sugeridas)
 	title = tr("Editar enlace")
 	%BotonGuardar.text = tr("Guardar cambios")
 	popup_centered()
@@ -103,9 +111,37 @@ func _mostrar_individual(individual: bool) -> void:
 	%Url.visible = individual
 	%EtiquetaCategoria.visible = individual
 	%Categoria.visible = individual
+	%EtiquetaEtiquetas.visible = individual
+	%Etiquetas.visible = individual
+	%Sugerencias.visible = individual
 	%VistaPrevia.visible = individual
 	%FilaImagen.visible = individual
 	caja_varias.visible = not individual
+
+
+func _mostrar_sugerencias(sugeridas: Array) -> void:
+	for hijo in sugerencias.get_children():
+		hijo.free()
+	for etiqueta in sugeridas:
+		if str(etiqueta).is_empty():
+			continue
+		var boton := Button.new()
+		boton.text = str(etiqueta)
+		boton.flat = true
+		boton.pressed.connect(_alternar_etiqueta.bind(str(etiqueta)))
+		sugerencias.add_child(boton)
+
+
+func _alternar_etiqueta(etiqueta: String) -> void:
+	var lista: Array = EtiquetasScript.parsear(etiquetas.text)
+	var clave := etiqueta.to_lower()
+	var sin_ella: Array = []
+	for etiqueta_existente in lista:
+		if str(etiqueta_existente).to_lower() != clave:
+			sin_ella.append(etiqueta_existente)
+	if sin_ella.size() == lista.size():
+		sin_ella.append(etiqueta)
+	etiquetas.text = EtiquetasScript.unir(sin_ella)
 
 
 func _fijar_imagen(ruta: String) -> void:
@@ -169,7 +205,7 @@ func _on_guardar() -> void:
 			img_final = str(resultado.get("destino", ""))
 
 	var cat_clave: String = GestorCatalogoScript.CATEGORIAS[%Categoria.selected]
-	var datos := {"nombre": n, "desc": d, "url": u, "img": img_final, "cat": cat_clave}
+	var datos := {"nombre": n, "desc": d, "url": u, "img": img_final, "cat": cat_clave, "tags": EtiquetasScript.parsear(etiquetas.text)}
 	if _modo == "editar" and _imagen_ruta != "" and not _quitar_imagen:
 		datos["img_pendiente"] = _imagen_ruta
 	hide()

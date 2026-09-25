@@ -49,6 +49,7 @@ Editar…,Editar…,Edit…
 Editar enlace,Editar enlace,Edit link
 Ej. (Cliente + códigos),Ej. (Cliente + códigos),E.g. (Client + code)
 Ej. Mi servidor AO,Ej. Mi servidor AO,E.g. My AO server
+"Ej. AO 1.6, español, servidor PVP","Ej. AO 1.6, español, servidor PVP","E.g. AO 1.6, Spanish, PvP server"
 El nombre no puede estar vacío.,El nombre no puede estar vacío.,The name cannot be empty.
 Elegir imagen,Elegir imagen,Choose image
 Elegir imagen…,Elegir imagen…,Choose image…
@@ -61,6 +62,7 @@ Error HTTP %d,Error HTTP %d,HTTP error %d
 Error TLS/HTTPS,Error TLS/HTTPS,TLS/HTTPS error
 Error de conexión,Error de conexión,Connection error
 Estado,Estado,Status
+Etiquetas,Etiquetas,Tags
 Estás al día (v%s),Estás al día (v%s),You are up to date (v%s)
 "Existe, acceso restringido (%d)","Existe, acceso restringido (%d)","Exists, restricted access (%d)"
 Exportar catálogo JSON,Exportar catálogo JSON,Export JSON catalogue
