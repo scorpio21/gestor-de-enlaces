@@ -95,19 +95,62 @@ static func formatear_mensaje(mensaje: String, codigo: int) -> String:
 	return TranslationServer.translate(clave)
 
 
+static var _mapas_render := {}
+static var _cache_dinamica := {}
+
+
 static func _clave_de_mensaje(mensaje: String, codigo: int) -> String:
+	if TranslationServer.get_loaded_locales().is_empty():
+		return ""
+	for locale in TranslationServer.get_loaded_locales():
+		var mapa := _mapa_render(locale)
+		if mapa.has(mensaje):
+			return mapa[mensaje]
+	return _clave_dinamica(mensaje, codigo)
+
+
+static func _mapa_render(locale: String) -> Dictionary:
+	if _mapas_render.has(locale):
+		return _mapas_render[locale]
+	var mapa := {}
+	var traduccion: Translation = TranslationServer.get_translation_object(locale)
+	if traduccion != null:
+		for clave in traduccion.get_message_list():
+			var valor := traduccion.get_message(clave)
+			if _es_dinamica(clave, valor):
+				continue
+			if not mapa.has(clave):
+				mapa[clave] = clave
+			if not valor.is_empty() and valor != clave and not mapa.has(valor):
+				mapa[valor] = clave
+	_mapas_render[locale] = mapa
+	return mapa
+
+
+static func _clave_dinamica(mensaje: String, codigo: int) -> String:
+	var t := mensaje + "\n" + str(codigo)
+	if _cache_dinamica.has(t):
+		return _cache_dinamica[t]
+	var res := ""
 	for locale in TranslationServer.get_loaded_locales():
 		var traduccion: Translation = TranslationServer.get_translation_object(locale)
 		if traduccion == null:
 			continue
 		for clave in traduccion.get_message_list():
 			var valor := traduccion.get_message(clave)
-			if clave.count("%d") == 1 and clave.count("%") == 1 and valor.count("%d") == 1 and valor.count("%") == 1:
-				if (clave % codigo) == mensaje or (valor % codigo) == mensaje:
-					return clave
-			elif clave == mensaje or valor == mensaje:
-				return clave
-	return ""
+			if not _es_dinamica(clave, valor):
+				continue
+			if (clave % codigo) == mensaje or (valor % codigo) == mensaje:
+				res = clave
+				break
+		if not res.is_empty():
+			break
+	_cache_dinamica[t] = res
+	return res
+
+
+static func _es_dinamica(clave: String, valor: String) -> bool:
+	return clave.count("%d") == 1 and clave.count("%") == 1 and valor.count("%d") == 1 and valor.count("%") == 1
 
 
 func _actualizar_tooltip() -> void:

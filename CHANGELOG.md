@@ -9,6 +9,10 @@ Todos los cambios relevantes de GestorAO por día.
 - **Internacionalización ES/EN** (`#30`): selector de idioma con banderas en Preferencias, CSV de traducciones (`locale/gestor_es_en.csv`), carga de traducciones al arrancar y `tr()` en toda la UI (textos de escaneo, dialogs, menús, cabeceras de columna e historial). Scanner de cadenas de UI (`scripts/extraer_cadenas.gd`) con test de cobertura (`test_locale.gd`).
 - **Ordenación por columnas** (`#17`): cabeceras pulsables en la lista (fecha, nombre, imagen, estado) con criterio persistido en configuración y restauración al arrancar.
 
+### Rendimiento
+
+- **Reverse-lookup de mensajes de estado cachado** (`#40`): mapa render→clave construido una vez por locale para los mensajes fijos y caché memoizada para los mensajes con `%d`; `_clave_de_mensaje()` ya no recorre todas las claves del CSV por fila y por tooltip en cada reconstrucción de la lista.
+
 ---
 
 ## [0.1.5]

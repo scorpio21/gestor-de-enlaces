@@ -178,6 +178,18 @@ func _arrancar() -> void:
 	_check(i18n_es_item.get_node("%EstadoLabel").text == "Conexión cerrada", "vuelto a es, el estado guardado en en se repinta traducido")
 	TranslationServer.set_locale("en")
 
+	# Reverse-lookup cachado (#40)
+	_check(ListItemScript.formatear_mensaje("Error HTTP 500", 500) == "HTTP error 500", "el mensaje con %d se re-traduce desde el caché")
+	_check(ListItemScript.formatear_mensaje("Redirección inválida (301)", 301) == "Invalid redirect (301)", "el mensaje de redirección se re-traduce desde el caché")
+	_check(ListItemScript.formatear_mensaje("Existe, acceso restringido (403)", 403) == "Exists, restricted access (403)", "el acceso restringido se re-traduce desde el caché")
+	_check(ListItemScript._mapas_render.size() > 0, "el mapa render→clave se construye por locale")
+	var dinamicas_antes := ListItemScript._cache_dinamica.size()
+	var mapas_antes := ListItemScript._mapas_render.size()
+	ListItemScript._clave_de_mensaje("No existe (404)", 404)
+	ListItemScript._clave_de_mensaje("No existe (404)", 404)
+	_check(ListItemScript._cache_dinamica.size() == dinamicas_antes, "el reverse-lookup con %d se sirve del caché sin re-escaneo")
+	_check(ListItemScript._mapas_render.size() == mapas_antes, "el mapa render→clave no se reconstruye al repetir")
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
