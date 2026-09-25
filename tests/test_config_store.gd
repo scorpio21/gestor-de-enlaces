@@ -37,6 +37,9 @@ func _initialize() -> void:
 	_check(filtros_persistidos(), "guardar() persiste estado, categoría y búsqueda")
 	_check(filtro_estado_invalido_normaliza(), "filtro de estado fuera de rango se clampea")
 	_check(filtro_categoria_invalida_normaliza(), "filtro de categoría fuera de rango se clampea")
+	_check(filtro_etiqueta_default_sin_fichero(), "sin fichero filtro de etiqueta vacío")
+	_check(filtro_etiqueta_persistida(), "guardar() persiste el filtro de etiqueta")
+	_check(filtro_etiqueta_no_string_normaliza(), "filtro de etiqueta no-string cae a vacía")
 	_check(busqueda_no_string_normaliza(), "búsqueda no-string cae a vacía")
 	_limpiar()
 	if _fallos == 0:
@@ -197,10 +200,11 @@ func filtros_default_sin_fichero() -> bool:
 
 func filtros_persistidos() -> bool:
 	var store := ConfigStore.new(BASE)
-	if not store.guardar(4, 12.0, true, 30, "oscuro", "", "fecha", 1, "es", 2, 3, "srv"):
+	if not store.guardar(4, 12.0, true, 30, "oscuro", "", "fecha", 1, "es", 2, 3, "glaciar", "srv"):
 		return false
 	var c := store.cargar()
-	return c.get("filtro_estado", -1) == 2 and c.get("filtro_categoria", -1) == 3 and c.get("busqueda", "#") == "srv"
+	return c.get("filtro_estado", -1) == 2 and c.get("filtro_categoria", -1) == 3 \
+		and c.get("filtro_etiqueta", "#") == "glaciar" and c.get("busqueda", "#") == "srv"
 
 
 func filtro_estado_invalido_normaliza() -> bool:
@@ -217,6 +221,22 @@ func filtro_categoria_invalida_normaliza() -> bool:
 	var alto: bool = store.cargar().get("filtro_categoria", -1) == GestorCatalogoScript.CATEGORIAS.size()
 	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, -3, "")
 	return alto and store.cargar().get("filtro_categoria", -1) == 0
+
+
+func filtro_etiqueta_default_sin_fichero() -> bool:
+	return ConfigStore.new(BASE).cargar().get("filtro_etiqueta", "#") == ""
+
+
+func filtro_etiqueta_persistida() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, 0, "glaciar", ""):
+		return false
+	return store.cargar().get("filtro_etiqueta", "#") == "glaciar"
+
+
+func filtro_etiqueta_no_string_normaliza() -> bool:
+	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"filtro_etiqueta": 42}')
+	return ConfigStore.new(BASE).cargar().get("filtro_etiqueta", "#") == ""
 
 
 func busqueda_no_string_normaliza() -> bool:

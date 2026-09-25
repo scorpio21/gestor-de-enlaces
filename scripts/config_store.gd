@@ -22,6 +22,7 @@ const IDIOMAS_VALIDOS := ["", "es", "en"]
 const FILTRO_ESTADO_DEFAULT := 0
 const FILTRO_ESTADO_MAX := 3
 const FILTRO_CATEGORIA_DEFAULT := 0
+const FILTRO_ETIQUETA_DEFAULT := ""
 const BUSQUEDA_DEFAULT := ""
 
 var _base: String
@@ -46,6 +47,7 @@ func cargar() -> Dictionary:
 			"idioma": IDIOMA_DEFAULT,
 			"filtro_estado": FILTRO_ESTADO_DEFAULT,
 			"filtro_categoria": FILTRO_CATEGORIA_DEFAULT,
+			"filtro_etiqueta": FILTRO_ETIQUETA_DEFAULT,
 			"busqueda": BUSQUEDA_DEFAULT,
 		}
 	return {
@@ -60,11 +62,12 @@ func cargar() -> Dictionary:
 		"idioma": _idioma_ok(v.get("idioma", IDIOMA_DEFAULT)),
 		"filtro_estado": _filtro_estado_ok(v.get("filtro_estado", FILTRO_ESTADO_DEFAULT)),
 		"filtro_categoria": _filtro_categoria_ok(v.get("filtro_categoria", FILTRO_CATEGORIA_DEFAULT)),
+		"filtro_etiqueta": _string_ok(v.get("filtro_etiqueta", FILTRO_ETIQUETA_DEFAULT)),
 		"busqueda": _string_ok(v.get("busqueda", BUSQUEDA_DEFAULT)),
 	}
 
 
-func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT, filtro_estado := FILTRO_ESTADO_DEFAULT, filtro_categoria := FILTRO_CATEGORIA_DEFAULT, busqueda := BUSQUEDA_DEFAULT) -> bool:
+func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT, filtro_estado := FILTRO_ESTADO_DEFAULT, filtro_categoria := FILTRO_CATEGORIA_DEFAULT, filtro_etiqueta := FILTRO_ETIQUETA_DEFAULT, busqueda := BUSQUEDA_DEFAULT) -> bool:
 	if not idioma in IDIOMAS_VALIDOS:
 		return false
 	var dato := {
@@ -79,6 +82,7 @@ func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT,
 		"idioma": idioma,
 		"filtro_estado": _filtro_estado_ok(filtro_estado),
 		"filtro_categoria": _filtro_categoria_ok(filtro_categoria),
+		"filtro_etiqueta": _string_ok(filtro_etiqueta),
 		"busqueda": _string_ok(busqueda),
 	}
 	return _escribir_json(_ruta("config.json"), dato)

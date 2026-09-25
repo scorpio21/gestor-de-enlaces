@@ -1,5 +1,7 @@
 extends RefCounted
 
+const EtiquetasScript := preload("res://scripts/etiquetas.gd")
+
 
 static func filtrar(entradas: Array, texto: String) -> Array:
 	var filtro := texto.strip_edges().to_lower()
@@ -23,7 +25,7 @@ static func coincide_busqueda(entrada: Dictionary, filtro: String) -> bool:
 	return filtro in haystack.to_lower()
 
 
-static func fila_visible(valido, categoria: String, modo: int, cat_id: int, clave_cat: String) -> bool:
+static func fila_visible(valido, categoria: String, modo: int, cat_id: int, clave_cat: String, tags: Array = [], clave_tag: String = "") -> bool:
 	var visible_estado := true
 	match modo:
 		1:
@@ -32,4 +34,5 @@ static func fila_visible(valido, categoria: String, modo: int, cat_id: int, clav
 			visible_estado = valido == false
 		3:
 			visible_estado = valido == null
-	return visible_estado and (cat_id == 0 or categoria == clave_cat)
+	var coincide_tag := clave_tag.is_empty() or EtiquetasScript.coincide(tags, [clave_tag])
+	return visible_estado and (cat_id == 0 or categoria == clave_cat) and coincide_tag

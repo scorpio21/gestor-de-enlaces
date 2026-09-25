@@ -142,6 +142,35 @@ func _arrancar() -> void:
 			visibles_todas.append(hijo.url)
 	_check(visibles_todas == ["https://srv.test", "https://cli.test"], "categoría Todas no filtra por categoría y mantiene el estado")
 
+	# Filtros: etiquetas (#42)
+	main.get_node("%FiltroEstado").select(0)
+	main_script._entradas = [
+		{"nombre": "SOK", "url": "https://srv.test", "cat": "servidor", "tags": ["AO 1.6", "servidor"]},
+		{"nombre": "SCAI", "url": "https://srv2.test", "cat": "servidor", "tags": ["AO 1.4"]},
+		{"nombre": "COK", "url": "https://cli.test", "cat": "cliente", "tags": ["AO 1.6"]},
+	]
+	main_script._cargar_filtros()
+	main_script._ui_refrescar()
+	var filtro_tag: OptionButton = main.get_node("%FiltroEtiqueta")
+	_check(filtro_tag.item_count == 4 and filtro_tag.get_item_text(0) == "Todas" and filtro_tag.get_item_text(1) == "AO 1.6" and filtro_tag.get_item_text(2) == "AO 1.4" and filtro_tag.get_item_text(3) == "servidor", "el filtro de etiquetas ofrece Todas y las etiquetas por frecuencia")
+	filtro_tag.select(1)
+	main_script._ui_aplicar_filtro()
+	var visibles_tag: Array = []
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		if hijo.visible:
+			visibles_tag.append(hijo.url)
+	_check(visibles_tag == ["https://srv.test", "https://cli.test"], "el filtro de etiquetas muestra solo las filas que la tienen")
+	filtro_tag.select(3)
+	main_script._ui_filtro_etiqueta(3)
+	var visibles_servidor: Array = []
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		if hijo.visible:
+			visibles_servidor.append(hijo.url)
+	_check(visibles_servidor == ["https://srv.test"], "etiqueta servidor deja fuera a las filas sin esa etiqueta")
+	_check(main_script._config_store.cargar().get("filtro_etiqueta", "#") == "servidor", "cambiar el filtro de etiqueta persiste en config")
+	filtro_tag.select(0)
+	main_script._ui_aplicar_filtro()
+
 	# Filtros: persistencia en config (#39)
 	filtro_cat.select(4)
 	main_script._ui_filtro_categoria(4)

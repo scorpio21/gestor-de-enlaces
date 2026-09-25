@@ -26,6 +26,7 @@ const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var busqueda: LineEdit = %Busqueda
 @onready var filtro_cat: OptionButton = %FiltroCategoria
+@onready var filtro_tag: OptionButton = %FiltroEtiqueta
 @onready var progreso: Label = %Progreso
 @onready var filtro: OptionButton = %FiltroEstado
 @onready var ventana_agregar = %VentanaAgregar
@@ -75,7 +76,6 @@ func _ready() -> void:
 	%ConfirmarRestaurar.confirmed.connect(_confirmar_restaurar)
 	%ConfirmarReanudar.confirmed.connect(_scan_reanudar)
 	%ConfirmarReanudar.canceled.connect(_scan_descartar_pendientes)
-	_cargar_filtros()
 	cab_nombre.pressed.connect(func() -> void: _ui_cabecera("nombre"))
 	cab_estado.pressed.connect(func() -> void: _ui_cabecera("estado"))
 	cab_fecha.pressed.connect(func() -> void: _ui_cabecera("fecha"))
@@ -97,9 +97,11 @@ func _ready() -> void:
 	TemaStoreScript.aplicar(String(cfg.get("tema", "oscuro")), self)
 	_orden_columna = str(cfg.get("orden_columna", ""))
 	_orden_direccion = -1 if int(cfg.get("orden_direccion", 1)) < 0 else 1
+	busqueda.text = str(cfg.get("busqueda", ""))
+	_cargar_filtros()
 	filtro.select(clampi(int(cfg.get("filtro_estado", 0)), 0, 3))
 	filtro_cat.select(clampi(int(cfg.get("filtro_categoria", 0)), 0, GestorCatalogoScript.CATEGORIAS.size()))
-	busqueda.text = str(cfg.get("busqueda", ""))
+	filtro_tag.select(_indice_etiqueta(String(cfg.get("filtro_etiqueta", ""))))
 	_ui_pintar_cabeceras()
 	if _orden_columna != "":
 		_ui_aplicar_filtro()
@@ -219,6 +221,7 @@ func _sugerir_etiquetas() -> Array:
 func _cargar_filtros() -> void:
 	var sel_estado := filtro.get_selected()
 	var sel_cat := filtro_cat.get_selected()
+	var sel_tag := _etiqueta_seleccionada()
 	filtro.clear()
 	filtro.add_item(tr("Todos"), 0)
 	filtro.add_item(tr("Válidos"), 1)
@@ -236,6 +239,29 @@ func _cargar_filtros() -> void:
 		filtro_cat.item_selected.disconnect(_ui_filtro_categoria)
 	filtro_cat.item_selected.connect(_ui_filtro_categoria)
 	filtro_cat.select(maxi(sel_cat, 0))
+	filtro_tag.clear()
+	filtro_tag.add_item(tr("Todas"), 0)
+	for etiqueta in EtiquetasScript.frecuentes(_entradas, 0):
+		filtro_tag.add_item(str(etiqueta), filtro_tag.item_count)
+	if filtro_tag.item_selected.is_connected(_ui_filtro_etiqueta):
+		filtro_tag.item_selected.disconnect(_ui_filtro_etiqueta)
+	filtro_tag.item_selected.connect(_ui_filtro_etiqueta)
+	filtro_tag.select(_indice_etiqueta(sel_tag))
+
+
+func _etiqueta_seleccionada() -> String:
+	var id := filtro_tag.get_selected_id()
+	if id > 0 and id < filtro_tag.item_count:
+		return filtro_tag.get_item_text(id)
+	return ""
+
+
+func _indice_etiqueta(etiqueta: String) -> int:
+	var clave := etiqueta.strip_edges().to_lower()
+	for i in range(1, filtro_tag.item_count):
+		if filtro_tag.get_item_text(i).to_lower() == clave:
+			return i
+	return 0
 
 
 func _cargar_datos() -> void:
@@ -317,6 +343,7 @@ func _ui_mostrar_lista(entradas: Array) -> void:
 			str(entrada.get("img", "")),
 			GestorCatalogoScript.normalizar_categoria(entrada.get("cat", ""))
 		)
+		item.tags = EtiquetasScript.parsear(entrada.get("tags", []))
 		item.configurar_timeout(_timeout)
 		var url_item := str(entrada.get("url", ""))
 		var estado: Dictionary = _estados.get(GestorCatalogoScript.clave_unica(url_item), {})
@@ -347,8 +374,9 @@ func _ui_aplicar_filtro() -> void:
 	var clave_cat := ""
 	if cat_id > 0:
 		clave_cat = GestorCatalogoScript.CATEGORIAS[cat_id - 1]
+	var clave_tag := _etiqueta_seleccionada()
 	for hijo in lista.get_children():
-		hijo.visible = FiltrosScript.fila_visible(hijo.valido, hijo.categoria, modo, cat_id, clave_cat)
+		hijo.visible = FiltrosScript.fila_visible(hijo.valido, hijo.categoria, modo, cat_id, clave_cat, hijo.tags, clave_tag)
 
 	if _orden_columna != "":
 		var hijos: Array = lista.get_children()
@@ -370,6 +398,11 @@ func _ui_filtro_estado(_indice: int) -> void:
 
 
 func _ui_filtro_categoria(_indice: int) -> void:
+	_ui_aplicar_filtro()
+	_persistir_filtros()
+
+
+func _ui_filtro_etiqueta(_indice: int) -> void:
 	_ui_aplicar_filtro()
 	_persistir_filtros()
 
@@ -1064,6 +1097,7 @@ func _persistir_orden() -> bool:
 		str(cfg.get("idioma", "")),
 		filtro.get_selected_id(),
 		filtro_cat.get_selected_id(),
+		_etiqueta_seleccionada(),
 		busqueda.text,
 	)
 
@@ -1082,6 +1116,7 @@ func _persistir_filtros() -> bool:
 		str(cfg.get("idioma", "")),
 		filtro.get_selected_id(),
 		filtro_cat.get_selected_id(),
+		_etiqueta_seleccionada(),
 		busqueda.text,
 	)
 
@@ -1168,6 +1203,7 @@ func _persistir_version_vista() -> void:
 		str(cfg.get("idioma", "")),
 		filtro.get_selected_id(),
 		filtro_cat.get_selected_id(),
+		_etiqueta_seleccionada(),
 		busqueda.text,
 	)
 

@@ -41,6 +41,14 @@ func _arrancar() -> void:
 	_check(FiltrosScript.fila_visible(true, "cliente", 1, 2, "cliente") == true, "estado y categoría coinciden → visible")
 	_check(FiltrosScript.fila_visible(false, "cliente", 1, 2, "cliente") == false, "estado no coincide aunque la categoría sí")
 
+	_check(FiltrosScript.fila_visible(true, "cliente", 0, 0, "", ["oso", "glaciar"], "oso") == true, "etiqueta coincidente visible")
+	_check(FiltrosScript.fila_visible(true, "cliente", 0, 0, "", ["oso", "glaciar"], "luna") == false, "otra etiqueta oculta")
+	_check(FiltrosScript.fila_visible(true, "cliente", 0, 0, "", [], "oso") == false, "sin etiquetas oculta con filtro activo")
+	_check(FiltrosScript.fila_visible(true, "cliente", 0, 0, "", ["Glaciar"], "glaciar") == true, "etiqueta sin distinguir mayusculas")
+	_check(FiltrosScript.fila_visible(true, "cliente", 0, 0, "", ["oso"], "") == true, "filtro de etiqueta vacio no filtra")
+	_check(FiltrosScript.fila_visible(false, "cliente", 1, 2, "cliente", ["oso"], "oso") == false, "estado no coincide aunque la etiqueta si")
+	_check(FiltrosScript.fila_visible(true, "cliente", 1, 2, "cliente", ["oso"], "oso") == true, "estado, categoria y etiqueta coinciden -> visible")
+
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

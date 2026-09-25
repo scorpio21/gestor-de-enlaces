@@ -1,11 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://bgestormain001"]
+[gd_scene format=3 uid="uid://bqp4r7fqunage"]
 
-[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
-[ext_resource type="PackedScene" path="res://scenes/AgregarEnlace.tscn" id="2_agregar"]
-[ext_resource type="PackedScene" path="res://scenes/Preferencias.tscn" id="3_preferencias"]
-[ext_resource type="PackedScene" path="res://scenes/Historial.tscn" id="4_historial"]
+[ext_resource type="Script" uid="uid://cqjehi7g3idb7" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://hthjcyt02ca3" path="res://scenes/AgregarEnlace.tscn" id="2_agregar"]
+[ext_resource type="PackedScene" uid="uid://cxtkcrqj7ne7i" path="res://scenes/Preferencias.tscn" id="3_preferencias"]
+[ext_resource type="PackedScene" uid="uid://cup4r7bqx0age" path="res://scenes/Historial.tscn" id="4_historial"]
 
-[node name="Main" type="Control"]
+[node name="Main" type="Control" unique_id=1904280085]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,7 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main")
 
-[node name="Fondo" type="ColorRect" parent="."]
+[node name="Fondo" type="ColorRect" parent="." unique_id=1091155671]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,7 +24,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.1, 0.1, 0.1, 1)
 
-[node name="ColumnaApp" type="VBoxContainer" parent="."]
+[node name="ColumnaApp" type="VBoxContainer" parent="." unique_id=480946336]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,18 +33,18 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 0
 
-[node name="MenuBar" type="MenuBar" parent="ColumnaApp"]
+[node name="MenuBar" type="MenuBar" parent="ColumnaApp" unique_id=1345014706]
 unique_name_in_owner = true
 layout_mode = 2
 prefer_global_menu = false
 
-[node name="File" type="PopupMenu" parent="ColumnaApp/MenuBar"]
+[node name="File" type="PopupMenu" parent="ColumnaApp/MenuBar" unique_id=1046844404]
 unique_name_in_owner = true
 
-[node name="Utilidades" type="PopupMenu" parent="ColumnaApp/MenuBar"]
+[node name="Utilidades" type="PopupMenu" parent="ColumnaApp/MenuBar" unique_id=2088414192]
 unique_name_in_owner = true
 
-[node name="Margen" type="MarginContainer" parent="ColumnaApp"]
+[node name="Margen" type="MarginContainer" parent="ColumnaApp" unique_id=201477013]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 16
@@ -52,31 +52,31 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="Columna" type="VBoxContainer" parent="ColumnaApp/Margen"]
+[node name="Columna" type="VBoxContainer" parent="ColumnaApp/Margen" unique_id=1796769463]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Titulo" type="Label" parent="ColumnaApp/Margen/Columna"]
+[node name="Titulo" type="Label" parent="ColumnaApp/Margen/Columna" unique_id=630631345]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Gestor de enlaces AO"
 
-[node name="Busqueda" type="LineEdit" parent="ColumnaApp/Margen/Columna"]
+[node name="Busqueda" type="LineEdit" parent="ColumnaApp/Margen/Columna" unique_id=1853413043]
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "Buscar por nombre o descripción..."
 clear_button_enabled = true
 
-[node name="BarraAcciones" type="HBoxContainer" parent="ColumnaApp/Margen/Columna"]
+[node name="BarraAcciones" type="HBoxContainer" parent="ColumnaApp/Margen/Columna" unique_id=1767056047]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="BotonComprobar" type="Button" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+[node name="BotonComprobar" type="Button" parent="ColumnaApp/Margen/Columna/BarraAcciones" unique_id=1546919750]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Comprobar enlaces"
 
-[node name="FiltroEstado" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+[node name="FiltroEstado" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones" unique_id=1680024375]
 unique_name_in_owner = true
 layout_mode = 2
 selected = 0
@@ -90,24 +90,25 @@ popup/item_2/id = 2
 popup/item_3/text = "Sin comprobar"
 popup/item_3/id = 3
 
-[node name="FiltroCategoria" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+[node name="FiltroCategoria" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones" unique_id=569734920]
 unique_name_in_owner = true
 layout_mode = 2
-selected = 0
 
-[node name="Progreso" type="Label" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+[node name="FiltroEtiqueta" type="OptionButton" parent="ColumnaApp/Margen/Columna/BarraAcciones" unique_id=1460218346]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Progreso" type="Label" parent="ColumnaApp/Margen/Columna/BarraAcciones" unique_id=1034102154]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = ""
 
-[node name="BarraProgreso" type="ProgressBar" parent="ColumnaApp/Margen/Columna/BarraAcciones"]
+[node name="BarraProgreso" type="ProgressBar" parent="ColumnaApp/Margen/Columna/BarraAcciones" unique_id=732738429]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-value = 0
-visible = false
 show_percentage = false
 
 [node name="FilaCabeceras" type="HBoxContainer" parent="ColumnaApp/Margen/Columna"]
@@ -139,113 +140,110 @@ layout_mode = 2
 toggle_mode = true
 text = "Imagen"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="ColumnaApp/Margen/Columna"]
+[node name="ScrollContainer" type="ScrollContainer" parent="ColumnaApp/Margen/Columna" unique_id=1357195967]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ListaContenedor" type="VBoxContainer" parent="ColumnaApp/Margen/Columna/ScrollContainer"]
+[node name="ListaContenedor" type="VBoxContainer" parent="ColumnaApp/Margen/Columna/ScrollContainer" unique_id=144371960]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
-[node name="VentanaAgregar" parent="." instance=ExtResource("2_agregar")]
+[node name="BarraEstado" type="PanelContainer" parent="ColumnaApp" unique_id=496934962]
+layout_mode = 2
+
+[node name="MargenBarra" type="MarginContainer" parent="ColumnaApp/BarraEstado" unique_id=1165340770]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+
+[node name="Box" type="HBoxContainer" parent="ColumnaApp/BarraEstado/MargenBarra" unique_id=517741999]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Rotos" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=146938937]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Rotos: 0"
+
+[node name="Activos" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=1017804561]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Activos: 0"
+
+[node name="Total" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=1556023556]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Total: 0"
+
+[node name="Empuje" type="Control" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=357735125]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Version" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box" unique_id=539832310]
+unique_name_in_owner = true
+layout_mode = 2
+text = "v0.0.1"
+
+[node name="VentanaAgregar" parent="." unique_id=1378998124 instance=ExtResource("2_agregar")]
 unique_name_in_owner = true
 
-[node name="ConfirmarBorrado" type="ConfirmationDialog" parent="."]
+[node name="ConfirmarBorrado" type="ConfirmationDialog" parent="." unique_id=624127308]
 unique_name_in_owner = true
 title = "Eliminar enlace"
 ok_button_text = "Eliminar"
 
-[node name="ConfirmarLimpieza" type="ConfirmationDialog" parent="."]
+[node name="ConfirmarLimpieza" type="ConfirmationDialog" parent="." unique_id=217548021]
 unique_name_in_owner = true
 title = "Limpiar capturas huérfanas"
 ok_button_text = "Limpiar"
 
-[node name="ConfirmarRestaurar" type="ConfirmationDialog" parent="."]
+[node name="ConfirmarRestaurar" type="ConfirmationDialog" parent="." unique_id=501766807]
 unique_name_in_owner = true
 title = "Restaurar copia"
 ok_button_text = "Restaurar"
 dialog_text = "¿Restaurar el catálogo desde la copia de seguridad?"
 
-[node name="ConfirmarReanudar" type="ConfirmationDialog" parent="."]
+[node name="ConfirmarReanudar" type="ConfirmationDialog" parent="." unique_id=692721469]
 unique_name_in_owner = true
 title = "Reanudar escaneo"
 ok_button_text = "Reanudar"
-cancel_button_text = "Descartar"
 dialog_text = "Hay una comprobación pendiente. ¿Reanudar el escaneo?"
+cancel_button_text = "Descartar"
 
-[node name="DialogoActualizacion" type="ConfirmationDialog" parent="."]
+[node name="DialogoActualizacion" type="ConfirmationDialog" parent="." unique_id=1520616869]
 unique_name_in_owner = true
 title = "Comprobar actualizaciones"
 ok_button_text = "Cerrar"
 cancel_button_text = "Cerrar"
 
-[node name="VentanaPreferencias" parent="." instance=ExtResource("3_preferencias")]
+[node name="VentanaPreferencias" parent="." unique_id=1814012713 instance=ExtResource("3_preferencias")]
 unique_name_in_owner = true
 
-[node name="DialogoHistorial" parent="." instance=ExtResource("4_historial")]
+[node name="DialogoHistorial" parent="." unique_id=718768431 instance=ExtResource("4_historial")]
 unique_name_in_owner = true
 
-[node name="AutoEscaneo" type="Timer" parent="."]
+[node name="AutoEscaneo" type="Timer" parent="." unique_id=477923709]
 unique_name_in_owner = true
 
-[node name="BarraEstado" type="PanelContainer" parent="ColumnaApp"]
-layout_mode = 2
-
-[node name="MargenBarra" type="MarginContainer" parent="ColumnaApp/BarraEstado"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_right = 12
-
-[node name="Box" type="HBoxContainer" parent="ColumnaApp/BarraEstado/MargenBarra"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Rotos" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
+[node name="DialogoImportar" type="FileDialog" parent="." unique_id=1154219788]
 unique_name_in_owner = true
-layout_mode = 2
-text = "Rotos: 0"
-
-[node name="Activos" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Activos: 0"
-
-[node name="Total" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Total: 0"
-
-[node name="Empuje" type="Control" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Version" type="Label" parent="ColumnaApp/BarraEstado/MargenBarra/Box"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "v0.0.1"
-
-[node name="DialogoImportar" type="FileDialog" parent="."]
-unique_name_in_owner = true
-title = "Importar catálogo JSON"
+title = "Open a File"
 file_mode = 0
 filters = PackedStringArray("*.json ; Archivo JSON")
 
-[node name="DialogoExportar" type="FileDialog" parent="."]
+[node name="DialogoExportar" type="FileDialog" parent="." unique_id=2134155708]
 unique_name_in_owner = true
 title = "Exportar catálogo JSON"
-file_mode = 4
 filters = PackedStringArray("*.json ; Archivo JSON")
 
-[node name="DialogoInforme" type="FileDialog" parent="."]
+[node name="DialogoInforme" type="FileDialog" parent="." unique_id=216140429]
 unique_name_in_owner = true
 title = "Guardar informe de disponibilidad"
-file_mode = 4
 filters = PackedStringArray("*.csv ; Archivo CSV (*.csv)", "*.html ; Archivo HTML (*.html)")
 
-[node name="DialogoDiagnostico" type="FileDialog" parent="."]
+[node name="DialogoDiagnostico" type="FileDialog" parent="." unique_id=1112811508]
 unique_name_in_owner = true
 title = "Exportar diagnóstico"
-file_mode = 4
 filters = PackedStringArray("*.zip ; Archivo ZIP")

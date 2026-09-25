@@ -246,7 +246,8 @@ func _arrancar() -> void:
 
 	var base_orden := "user://__test_orden_restore__"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(base_orden))
-	ConfigStoreScript.new(base_orden).guardar(3, 10.0, true, 0, "oscuro", "", "fecha", -1, "en", 1, 2, "srv")
+	ConfigStoreScript.new(base_orden).guardar(3, 10.0, true, 0, "oscuro", "", "fecha", -1, "en", 1, 2, "glaciar", "srv")
+	GestorDatosScript.guardar(base_orden + "/data.json", [{"nombre": "X", "url": "https://x.test", "img": "", "tags": ["glaciar"]}])
 	var main_rest := MAIN_SCENE.instantiate()
 	main_rest.DATA_RES = base_orden + "/data.json"
 	main_rest.DATA_USER = base_orden + "/enlaces.json"
@@ -258,6 +259,7 @@ func _arrancar() -> void:
 	_check(mrs._orden_columna == "fecha" and mrs._orden_direccion == -1, "otro arranque restaura el criterio desde config")
 	_check(main_rest.get_node("%FiltroEstado").get_selected_id() == 1, "otro arranque restaura el filtro de estado desde config")
 	_check(main_rest.get_node("%FiltroCategoria").get_selected_id() == 2, "otro arranque restaura el filtro de categoría desde config")
+	_check(main_rest.get_node("%FiltroEtiqueta").get_selected_id() == 1 and main_rest.get_node("%FiltroEtiqueta").get_item_text(1) == "glaciar", "otro arranque restaura el filtro de etiqueta desde config")
 	_check(main_rest.get_node("%Busqueda").text == "srv", "otro arranque restaura la búsqueda desde config")
 	_check(_urls_visibles(main_rest).is_empty() or _urls_visibles(main_rest).size() >= 0, "el segundo arranque carga sin errores")
 	_check(TranslationServer.get_locale() == "en", "arrancar con config idioma=en fija el locale en")

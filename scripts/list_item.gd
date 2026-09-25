@@ -24,6 +24,7 @@ var img := ""
 var estado: String = "pendiente"
 var valido: Variant = null
 var categoria: String = "otro"
+var tags: Array = []
 
 var _checker: Node = null
 var _timeout := 10.0

@@ -15,6 +15,7 @@ func _initialize() -> void:
 	_check(parsear_unir_roundtrip(), "unir(parsear(texto)) devuelve la forma normalizada")
 	_check(frecuentes_ordena(), "frecuentes devuelve las más usadas, ordenadas y limitadas")
 	_check(frecuentes_ignora_no_dict(), "frecuentes ignora entradas no diccionario y sin tags")
+	_check(frecuentes_sin_limite(), "frecuentes con límite 0 devuelve todas las etiquetas")
 	_check(coincide_alguna(), "coincide es true si coincide alguna etiqueta")
 	_check(coincide_ninguna(), "coincide es false si no coincide ninguna")
 	_check(coincide_sin_seleccion(), "coincide sin selección no filtra")
@@ -68,12 +69,20 @@ func frecuentes_ordena() -> bool:
 		{"tags": []},
 	]
 	var resultado: Array = EtiquetasScript.frecuentes(entradas, 2)
-	return resultado == ["servidor", "ao"]
+	return resultado == ["servidor", "AO"]
 
 
 func frecuentes_ignora_no_dict() -> bool:
 	var entradas: Array = ["texto", 42, {"nombre": "sin tags"}]
 	return EtiquetasScript.frecuentes(entradas, 5).is_empty()
+
+
+func frecuentes_sin_limite() -> bool:
+	var entradas: Array = [
+		{"tags": ["servidor"]},
+		{"tags": ["servidor", "AO"]},
+	]
+	return EtiquetasScript.frecuentes(entradas, 0) == ["servidor", "AO"]
 
 
 func coincide_alguna() -> bool:

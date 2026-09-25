@@ -28,12 +28,15 @@ static func unir(etiquetas: Array) -> String:
 
 static func frecuentes(entradas: Array, limite: int) -> Array:
 	var conteo := {}
+	var representantes := {}
 	for entrada in entradas:
 		if typeof(entrada) != TYPE_DICTIONARY:
 			continue
 		for etiqueta in parsear(entrada.get("tags", [])):
 			var clave: String = str(etiqueta).to_lower()
 			conteo[clave] = int(conteo.get(clave, 0)) + 1
+			if not representantes.has(clave):
+				representantes[clave] = etiqueta
 	var ordenadas: Array = conteo.keys()
 	ordenadas.sort_custom(func(a: String, b: String) -> bool:
 		var na := int(conteo[a])
@@ -42,7 +45,12 @@ static func frecuentes(entradas: Array, limite: int) -> Array:
 			return na > nb
 		return a < b
 	)
-	return ordenadas.slice(0, limite)
+	var con_caja: Array = []
+	for clave in ordenadas:
+		con_caja.append(representantes[clave])
+	if limite > 0:
+		return con_caja.slice(0, limite)
+	return con_caja
 
 
 static func coincide(etiquetas: Array, seleccion: Array) -> bool:
