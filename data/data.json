@@ -66,6 +66,7 @@
 		{
 			"cat": "cliente",
 			"desc": "(Cliente)",
+			"img": "res://Assets/jpg/Twister-AO (Servidor).jpg",
 			"nombre": "Twister-AO (Cliente)",
 			"tags": [],
 			"url": "http://rapidshare.com/files/317156901/Tiempos_Ao_Cliente_Completo.rar.html"
@@ -73,6 +74,7 @@
 		{
 			"cat": "codigos",
 			"desc": "(Códigos Cliente)",
+			"img": "res://Assets/jpg/Twister-AO (Servidor).jpg",
 			"nombre": "Twister-AO (Códigos Cliente)",
 			"tags": [],
 			"url": "http://rapidshare.com/files/317148654/Codigos_del_Cliente_de_Twister-Ao.rar.html"
@@ -381,6 +383,7 @@
 		{
 			"cat": "servidor",
 			"desc": "(Solo Servidor)",
+			"img": "res://Assets/jpg/Twister-AO (Servidor).jpg",
 			"nombre": "Twister-AO (Servidor)",
 			"tags": [],
 			"url": "http://rapidshare.com/files/317140651/Servidor_Twister-AO.rar.html"
@@ -395,8 +398,8 @@
 		{
 			"cat": "codigos",
 			"desc": "Codigo Servidor+Cliente",
-			"img": "res://Assets/png/img_1790298160.png",
-			"nombre": "LIBERACION TS AO 2",
+			"img": "res://Assets/png/Liberación Tierras Sagradas - v2.png",
+			"nombre": "Tierras Sagradas - v2",
 			"tags": [],
 			"url": "https://www.mediafire.com/file/rymlyko6ftw9z74/LIBERACION+TS+AO+2.rar/file"
 		}
