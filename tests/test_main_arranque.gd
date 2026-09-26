@@ -5,6 +5,7 @@ class _FakeHistorial extends RefCounted:
 		return [{"fecha": 1000000000, "valido": true, "mensaje": "OK (200)", "codigo": 200}]
 
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
+const Ayuda := preload("res://tests/ayuda.gd")
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
@@ -25,6 +26,7 @@ func _arrancar() -> void:
 	main.DATA_USER = "user://__test_main_arranque__/enlaces.json"
 	main.CONFIG_BASE = "user://__test_main_arranque__"
 	root.add_child(main)
+	main.ASSETS_BASE = "user://__test_main_arranque__/Assets"
 
 	await process_frame
 	await process_frame
@@ -376,12 +378,7 @@ func _arrancar() -> void:
 
 
 func _cerrar() -> void:
-	var ruta_temp := ProjectSettings.globalize_path("user://__test_main_arranque__")
-	for f in ["data.json", "enlaces.json", "presets_filtros.json"]:
-		if FileAccess.file_exists(ruta_temp.path_join(f)):
-			DirAccess.remove_absolute(ruta_temp.path_join(f))
-	if DirAccess.dir_exists_absolute(ruta_temp):
-		DirAccess.remove_absolute(ruta_temp)
+	Ayuda.borrar_arbol("user://__test_main_arranque__")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

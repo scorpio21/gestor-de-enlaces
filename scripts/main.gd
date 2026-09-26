@@ -5,6 +5,12 @@ const GRID_ITEM_SCENE := preload("res://scenes/GridItem.tscn")
 const TOPE_POR_HOST := 2
 var DATA_RES := "res://data/data.json"
 var DATA_USER := "user://enlaces.json"
+var ASSETS_BASE := "res://Assets":
+	set(valor):
+		ASSETS_BASE = valor
+		var ventana := get_node_or_null("%VentanaAgregar")
+		if ventana != null:
+			ventana.ASSETS_BASE = valor
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
@@ -750,7 +756,7 @@ func _ui_confirmar_borrado() -> void:
 			_entradas.remove_at(i)
 
 	item.queue_free()
-	if (imagen_borrada.begins_with("res://Assets/png/") or imagen_borrada.begins_with("res://Assets/jpg/")) and imagen_borrada != "res://Assets/png/no-disponible.png":
+	if _es_captura_base(imagen_borrada) and imagen_borrada != "%s/png/%s" % [ASSETS_BASE, GestorImagenesScript.ARCHIVOS_FIJOS[0]]:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(imagen_borrada))
 	progreso.text = tr("Enlace eliminado")
 	_ui_aplicar_filtro()
@@ -1132,7 +1138,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 	var destino := str(datos.get("img", ""))
 	var captura_reutilizada := false
 	if datos.has("img_pendiente"):
-		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]), str(datos.get("nombre", "")))
+		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]), str(datos.get("nombre", "")), ASSETS_BASE)
 		if not resultado.get("ok", false):
 			progreso.text = tr("No se pudo procesar la imagen.")
 			return
@@ -1210,8 +1216,12 @@ func _indice_entrada(url: String) -> int:
 	return -1
 
 
+func _es_captura_base(ruta: String) -> bool:
+	return ruta.begins_with("%s/png/" % ASSETS_BASE) or ruta.begins_with("%s/jpg/" % ASSETS_BASE)
+
+
 func _borrar_captura_si_huerfana(ruta: String) -> void:
-	if not (ruta.begins_with("res://Assets/png/") or ruta.begins_with("res://Assets/jpg/")):
+	if not _es_captura_base(ruta):
 		return
 	if ruta.get_file() in GestorImagenesScript.ARCHIVOS_FIJOS:
 		return
@@ -1234,7 +1244,7 @@ func _rutas_captura_referidas() -> Array:
 
 
 func _hacer_limpieza_capturas() -> Dictionary:
-	return GestorImagenesScript.limpiar_huerfanas(_rutas_captura_referidas())
+	return GestorImagenesScript.limpiar_huerfanas(_rutas_captura_referidas(), ASSETS_BASE)
 
 
 func _solicitar_limpieza_capturas() -> void:

@@ -3,6 +3,8 @@ extends SceneTree
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
 const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
+const ASSETS := "user://__test_main_orden__/Assets"
+const Ayuda := preload("res://tests/ayuda.gd")
 
 var _fallos := 0
 
@@ -19,6 +21,7 @@ func _arrancar() -> void:
 	main.DATA_USER = "user://__test_main_orden__/enlaces.json"
 	main.CONFIG_BASE = "user://__test_main_orden__"
 	root.add_child(main)
+	main.ASSETS_BASE = ASSETS
 
 	await process_frame
 	await process_frame
@@ -253,6 +256,7 @@ func _arrancar() -> void:
 	main_rest.DATA_USER = base_orden + "/enlaces.json"
 	main_rest.CONFIG_BASE = base_orden
 	root.add_child(main_rest)
+	main_rest.ASSETS_BASE = base_orden + "/Assets"
 	await process_frame
 	await process_frame
 	var mrs: Node = main_rest.get_node(".")
@@ -280,7 +284,8 @@ func _arrancar() -> void:
 
 
 func _crear_captura(nombre: String) -> String:
-	var ruta := "res://Assets/png/%s" % nombre
+	var ruta := "%s/png/%s" % [ASSETS, nombre]
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("%s/png" % ASSETS))
 	var img := Image.create_empty(4, 4, false, Image.FORMAT_RGBA8)
 	img.fill(Color.MAGENTA)
 	if img.save_png(ProjectSettings.globalize_path(ruta)) != OK:
@@ -289,17 +294,8 @@ func _crear_captura(nombre: String) -> String:
 
 
 func _cerrar() -> void:
-	var ruta_temp := ProjectSettings.globalize_path("user://__test_main_orden__")
-	for f in ["data.json", "enlaces.json"]:
-		if FileAccess.file_exists(ruta_temp.path_join(f)):
-			DirAccess.remove_absolute(ruta_temp.path_join(f))
-	if DirAccess.dir_exists_absolute(ruta_temp):
-		DirAccess.remove_absolute(ruta_temp)
-	for f in ["img_ord_b.png", "img_ord_c.png"]:
-		var ruta := "res://Assets/png/%s" % f
-		var abs := ProjectSettings.globalize_path(ruta)
-		if FileAccess.file_exists(abs):
-			DirAccess.remove_absolute(abs)
+	Ayuda.borrar_arbol("user://__test_main_orden__")
+	Ayuda.borrar_arbol("user://__test_orden_restore__")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

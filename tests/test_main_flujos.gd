@@ -1,6 +1,7 @@
 extends SceneTree
 
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
+const Ayuda := preload("res://tests/ayuda.gd")
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
 
@@ -19,6 +20,7 @@ func _arrancar() -> void:
 	main.DATA_USER = "user://__test_main_flujos__/enlaces.json"
 	main.CONFIG_BASE = "user://__test_main_flujos__"
 	root.add_child(main)
+	main.ASSETS_BASE = "user://__test_main_flujos__/Assets"
 
 	await process_frame
 	await process_frame
@@ -252,12 +254,7 @@ func _arrancar() -> void:
 
 
 func _cerrar() -> void:
-	var ruta_temp := ProjectSettings.globalize_path("user://__test_main_flujos__")
-	for f in ["data.json", "enlaces.json"]:
-		if FileAccess.file_exists(ruta_temp.path_join(f)):
-			DirAccess.remove_absolute(ruta_temp.path_join(f))
-	if DirAccess.dir_exists_absolute(ruta_temp):
-		DirAccess.remove_absolute(ruta_temp)
+	Ayuda.borrar_arbol("user://__test_main_flujos__")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

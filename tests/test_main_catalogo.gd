@@ -8,6 +8,8 @@ class _FakeStore extends RefCounted:
 
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
+const ASSETS := "user://__test_main_catalogo__/Assets"
+const Ayuda := preload("res://tests/ayuda.gd")
 
 var _fallos := 0
 var _imgs_iniciales: Array = []
@@ -25,6 +27,7 @@ func _arrancar() -> void:
 	main.DATA_USER = "user://__test_main_catalogo__/enlaces.json"
 	main.CONFIG_BASE = "user://__test_main_catalogo__"
 	root.add_child(main)
+	main.ASSETS_BASE = ASSETS
 
 	await process_frame
 	await process_frame
@@ -126,7 +129,7 @@ func _arrancar() -> void:
 	main_script._persistir = false
 	_imgs_iniciales = _listar_capturas()
 	var fuente := ProjectSettings.globalize_path("res://Assets/png/no-disponible.png")
-	var no_existe := ProjectSettings.globalize_path("res://Assets/png/__inexistente__.png")
+	var no_existe := "%s/png/__inexistente__.png" % ASSETS
 
 	# 1) cambiar captura: destino nuevo y archivo viejo borrado
 	var vieja1 := _crear_captura("img_test_old1.png")
@@ -135,7 +138,7 @@ func _arrancar() -> void:
 	ventana._imagen_ruta = fuente
 	ventana.get_node("%BotonGuardar").pressed.emit()
 	var img_nueva := str(main_script._entradas[0].get("img", ""))
-	_check(img_nueva != vieja1 and img_nueva == "res://Assets/png/A.png", "cambiar captura apunta a una captura nombrada según el enlace (#47)")
+	_check(img_nueva != vieja1 and img_nueva == "%s/png/A.png" % ASSETS, "cambiar captura apunta a una captura nombrada según el enlace (#47)")
 	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(vieja1)), "cambiar captura borra el archivo viejo")
 
 	# 2) quitar captura: img vacío y archivo viejo borrado
@@ -194,15 +197,15 @@ func _arrancar() -> void:
 	_limpiar_capturas()
 
 	# Catálogo: captura jpg huérfana se borra / se conserva (#33)
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://Assets/jpg"))
-	var jpg_borra := "res://Assets/jpg/img_test_borrable.jpg"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("%s/jpg" % ASSETS))
+	var jpg_borra := "%s/jpg/img_test_borrable.jpg" % ASSETS
 	var img_j2 := Image.create_empty(4, 4, false, Image.FORMAT_RGB8)
 	img_j2.fill(Color.BLUE)
 	img_j2.save_jpg(ProjectSettings.globalize_path(jpg_borra), 0.9)
-	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": "res://Assets/png/img_test_otra.png"}]
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": "%s/png/img_test_otra.png" % ASSETS}]
 	main_script._borrar_captura_si_huerfana(jpg_borra)
 	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(jpg_borra)), "captura jpg no referenciada se borra (#33)")
-	var jpg_ref2 := "res://Assets/jpg/img_test_referida.jpg"
+	var jpg_ref2 := "%s/jpg/img_test_referida.jpg" % ASSETS
 	img_j2.save_jpg(ProjectSettings.globalize_path(jpg_ref2), 0.9)
 	main_script._entradas[0]["img"] = jpg_ref2
 	main_script._borrar_captura_si_huerfana(jpg_ref2)
@@ -238,7 +241,8 @@ func _arrancar() -> void:
 
 
 func _crear_captura(nombre: String) -> String:
-	var ruta := "res://Assets/png/%s" % nombre
+	var ruta := "%s/png/%s" % [ASSETS, nombre]
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("%s/png" % ASSETS))
 	var img := Image.create_empty(4, 4, false, Image.FORMAT_RGBA8)
 	img.fill(Color.MAGENTA)
 	if img.save_png(ProjectSettings.globalize_path(ruta)) != OK:
@@ -247,7 +251,7 @@ func _crear_captura(nombre: String) -> String:
 
 
 func _listar_capturas() -> Array:
-	var carpeta := DirAccess.open("res://Assets/png")
+	var carpeta := DirAccess.open("%s/png" % ASSETS)
 	if carpeta == null:
 		return []
 	var lista: Array = []
@@ -259,7 +263,7 @@ func _listar_capturas() -> Array:
 
 
 func _limpiar_capturas() -> void:
-	var carpeta := DirAccess.open("res://Assets/png")
+	var carpeta := DirAccess.open("%s/png" % ASSETS)
 	if carpeta == null:
 		return
 	for f in _listar_capturas():
@@ -268,12 +272,7 @@ func _limpiar_capturas() -> void:
 
 
 func _cerrar() -> void:
-	var ruta_temp := ProjectSettings.globalize_path("user://__test_main_catalogo__")
-	for f in ["data.json", "enlaces.json"]:
-		if FileAccess.file_exists(ruta_temp.path_join(f)):
-			DirAccess.remove_absolute(ruta_temp.path_join(f))
-	if DirAccess.dir_exists_absolute(ruta_temp):
-		DirAccess.remove_absolute(ruta_temp)
+	Ayuda.borrar_arbol("user://__test_main_catalogo__")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)

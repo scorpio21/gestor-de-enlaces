@@ -9,6 +9,8 @@ const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 
+var ASSETS_BASE := "res://Assets"
+
 @onready var nombre: LineEdit = %Nombre
 @onready var descripcion: LineEdit = %Descripcion
 @onready var url: LineEdit = %Url
@@ -199,7 +201,7 @@ func _on_guardar() -> void:
 		if _modo == "editar":
 			img_final = ""
 		else:
-			var resultado := GestorImagenesScript.copiar(_imagen_ruta, n)
+			var resultado := GestorImagenesScript.copiar(_imagen_ruta, n, ASSETS_BASE)
 			if not resultado.get("ok", false):
 				error_label.text = str(resultado.get("error", "No se pudo copiar la imagen."))
 				return
