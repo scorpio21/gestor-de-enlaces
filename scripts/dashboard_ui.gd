@@ -9,10 +9,17 @@ var _formato := ""
 
 
 func _ready() -> void:
+	close_requested.connect(hide)
+	%BotonCerrar.pressed.connect(hide)
 	%BotonCsv.pressed.connect(_exportar.bind("csv"))
 	%BotonJson.pressed.connect(_exportar.bind("json"))
 	%DialogoExportar.file_selected.connect(_on_exportar_elegido)
 	%DialogoExportar.access = FileDialog.ACCESS_FILESYSTEM
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		hide()
 
 
 func abrir(entradas: Array, estados: Dictionary) -> void:

@@ -355,6 +355,20 @@ func _arrancar() -> void:
 	dash_ui._on_exportar_elegido(ruta_dash)
 	_check(FileAccess.file_exists(ruta_dash), "exportar estadísticas escribe el CSV")
 	_check(dash_ui.get_node("%Nota").text == "Estadísticas exportadas.", "exportar estadísticas informa del éxito")
+	_check(dash_ui.has_node("%BotonCerrar"), "el dashboard tiene botón de cerrar")
+	dash_ui.close_requested.emit()
+	_check(not dash_ui.visible, "la X del dashboard lo cierra")
+	dash_ui.abrir(main_script._entradas, {})
+	_check(dash_ui.visible, "el dashboard se puede volver a abrir tras cerrarlo")
+	dash_ui.get_node("%BotonCerrar").pressed.emit()
+	_check(not dash_ui.visible, "el botón Cerrar cierra el dashboard")
+	dash_ui.abrir(main_script._entradas, {})
+	dash_ui._unhandled_input(InputEventAction.new())
+	var esc := InputEventAction.new()
+	esc.action = "ui_cancel"
+	esc.pressed = true
+	dash_ui._unhandled_input(esc)
+	_check(not dash_ui.visible, "Esc cierra el dashboard")
 	dash_ui.hide()
 
 	main_script._persistir = false

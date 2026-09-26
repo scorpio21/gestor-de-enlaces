@@ -121,6 +121,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = ""
 
+[node name="BotonCerrar" type="Button" parent="Margen/Columna/Acciones"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cerrar"
+
 [node name="DialogoExportar" type="FileDialog" parent="."]
 unique_name_in_owner = true
 use_native_dialog = true
