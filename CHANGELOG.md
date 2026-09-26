@@ -8,6 +8,11 @@ Todos los cambios relevantes de GestorAO por día.
 
 - **Internacionalización ES/EN** (`#30`): selector de idioma con banderas en Preferencias, CSV de traducciones (`locale/gestor_es_en.csv`), carga de traducciones al arrancar y `tr()` en toda la UI (textos de escaneo, dialogs, menús, cabeceras de columna e historial). Scanner de cadenas de UI (`scripts/extraer_cadenas.gd`) con test de cobertura (`test_locale.gd`).
 - **Ordenación por columnas** (`#17`): cabeceras pulsables en la lista (fecha, nombre, imagen, estado) con criterio persistido en configuración y restauración al arrancar.
+- **Capturas del catálogo**: las tres entradas de Twister-AO (cliente, códigos y servidor) usan ya la imagen `Twister-AO (Servidor).jpg`, y la captura de la liberación de Tierras Sagradas pasa a llamarse como su enlace (`Liberación Tierras Sagradas - v2.png`, entrada `Tierras Sagradas - v2`) para que el recurso siga al nombre del enlace.
+
+### Cambiado
+
+- **Tarjeta de la vista de grilla** (`#43`): altura mínima de 176 a 240 px, fuente de las cinco etiquetas a 10 y sin autowrap (con `clip_text`) para que la tarjeta mantenga un tamaño fijo en la grilla en vez de crecer con la longitud del texto.
 
 ### Rendimiento
 
@@ -16,6 +21,9 @@ Todos los cambios relevantes de GestorAO por día.
 ### Mantenimiento
 
 - **Limpieza de residuos sin versionar** (`#41`): versionados el addon tercero `addons/godot_ai` (Godot AI v3.2.1, licencia MIT incluida) y el bloque `[autoload]/[editor_plugins]` de `project.godot` (el addon retira su autoload MCP de los builds exportados); `export_presets.cfg` regenerado por el editor 4.7 (la CI exporta con rutas explícitas); metadatos de Godot pendientes (16 `.uid`, 2 `.translation`, 7 `.import`). Eliminados localmente `data/data2.json` (no lo usa la app) y 2 `.import` huérfanos de `Assets/png`. Los planes ajenos sin commitear quedan en `.gitignore`.
+### Mantenimiento
+
+- **Addon `godot_ai` actualizado de v3.2.1 a v4.2.3**: se vendoriza el árbol completo de la línea 4.x (clientes codebuddy/omp/zcode, handlers de comandos, navegación, shaders y mutaciones de ficheros, locks de cliente, verificador de releases y puente de migración v3→v4). Requisito Godot 4.7+ y autoload `_mcp_game_helper` sin cambios; solo afecta al editor y el `EditorExportPlugin` sigue retirando el autoload MCP de los builds exportados. Batería 33/33.
 
 ### Corregido
 

@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Repositorio `K:\gestor-de-enlaces` (Godot 4.7.2, GDScript) — gestor de enlaces para Argentum Online: funcionalidad base + empaquetado (presets + CI + logs + diagnóstico + icono) + catálogo completo (etiquetas, filtros avanzados, grilla, dashboard, i18n, tema, capturas con nombre) **COMMITEADO y pusheado en `main`**. HEAD: `7c03fe5` (v0.1.9 + fixes ventana 1440×810 y export .exe). Batería local **33/33 OK**, `git status` limpio, **0 issues abiertos** en GitHub.
+Repositorio `K:\gestor-de-enlaces` (Godot 4.7.2, GDScript) — gestor de enlaces para Argentum Online: funcionalidad base + empaquetado (presets + CI + logs + diagnóstico + icono) + catálogo completo (etiquetas, filtros avanzados, grilla, dashboard, i18n, tema, capturas con nombre) **COMMITEADO y pusheado en `main`**. HEAD: `0da42bd` (addon godot_ai v4.2.3 + catálogo con capturas + ajustes de la tarjeta de grilla) + este commit de docs. Batería local **33/33 OK**, **0 issues abiertos** en GitHub. OJO: la batería **borra las capturas reales** de `res://Assets` (ver gotcha).
 
 ## Comandos de verificación
 
@@ -22,7 +22,7 @@ Linux/CI: `GODOT_BIN=/ruta/a/godot bash tests/run_battery.sh`. Cada suite imprim
 
 ## Estado actual
 
-- ✅ HEAD `7c03fe5` (v0.1.9 + fixes de ventana y export .exe) pusheado a `origin/main`; battery local **33/33 OK**; `git status` limpio (sin untracked ni modificados).
+- ✅ HEAD `0da42bd` + este commit de docs: **addon `godot_ai` v3.2.1 → v4.2.3** (árbol completo del addon, 153 ficheros; +clientes codebuddy/omp/zcode, +handlers command/navigation/shader/visual_shader/filesystem_mutation, +utilidades y puente de migración v3→v4; fuera `cherry_studio.gd` y `update_reload_runner.gd`), **capturas del catálogo** (imagen para las 3 entradas de Twister-AO y renombrada `img_1790298160.png` → `Liberación Tierras Sagradas - v2.png`, con la entrada `Tierras Sagradas - v2`) y **tarjeta de `GridItem`** más alta (176→240) con fuentes a 10, sin autowrap y con `clip_text`. Batería 33/33 OK, `git status` limpio.
 - ✅ **0 issues abiertos** en GitHub: toda la secuencia #25..#47 cerrada.
 - ✅ Ronda de versiones: 0.1.0 (empaquetado #26/#28/#29) → 0.1.9 (capturas con nombre #47). Últimas: etiquetas (#42), filtros avanzados + presets (#44 en 0.1.2/0.1.3), grilla (#43 0.1.4), dashboard (#45 0.1.5), dedup de capturas (#36 0.1.6), tema automático (#46 0.1.7), diálogos nativos (#38 0.1.8), caché reverse-lookup (#40), capturas con nombre (#47 0.1.9).
 - ✅ **#41 residuos cerrado** (`c2d9e70`): versionado el addon tercero `addons/godot_ai` (Godot AI v3.2.1, MIT) + bloque `[autoload]/[editor_plugins]` de `project.godot` (el addon retira su autoload MCP de los exports); `export_presets.cfg` regenerado por el editor 4.7; metadatos Godot pendientes (16 `.uid`, 2 `.translation`, 7 `.import`). Eliminados localmente `data/data2.json` (sin uso) y 2 `.import` huérfanos de `Assets/png`. Planes ajenos sin commitear en `.gitignore`.
@@ -59,9 +59,10 @@ Entregables: `scripts/cola_store.gd`, `scripts/informe_store.gd`, `scripts/tema_
 
 ## Próximos pasos
 
-1. Ningún issue abierto: la siguiente tarea es decisión del usuario (idea nueva o elevar `[Sin publicar]` de #30/#17/#40 con bump de versión).
-2. Si se abre el editor y guarda, `export_presets.cfg` se re-reescribe a su formato; comitear el cambio (AGENTS.md).
-3. `MEMORIA.md` y `README.md`/`CHANGELOG.md` se mantienen al día en cada ronda.
+1. **Arreglar el aislamiento de `tests/test_main_catalogo.gd`** (y el toque de `res://Assets` en `test_main_orden.gd`): hoy barren las capturas reales del repo. Mientras siga así, **no lanzar la batería con capturas nuevas sin versionar en `res://Assets/png|jpg`**; si desaparecen, se recuperan del `.ctex` sin pérdida (ver gotcha).
+2. Ningún issue abierto: la siguiente tarea es decisión del usuario (idea nueva o elevar `[Sin publicar]` de #30/#17/#40 con bump de versión; los commits de esta ronda quedan en `[Sin publicar]` sin bump).
+3. Si se abre el editor y guarda, `export_presets.cfg` se re-reescribe a su formato; comitear el cambio (AGENTS.md).
+4. `MEMORIA.md` y `README.md`/`CHANGELOG.md` se mantienen al día en cada ronda.
 
 ## Gotchas verificados (no repetir investigación)
 
@@ -83,4 +84,7 @@ Entregables: `scripts/cola_store.gd`, `scripts/informe_store.gd`, `scripts/tema_
 - El ancho mínimo de la fila de acciones (12 controles, filtros #44) superaba la ventana default de 1152 px (en realidad nunca hubo `viewport_width/height` en project.godot → Godot usa 1152×648): el contenido desbordaba y se cortaba por ambos lados. Arreglado con base 1440×810 (`display/window/size`) y `BarraAcciones` como `FlowContainer` — su mínimo horizontal es el del hijo MÁS ANCHO (no la suma) y hace wrap al encoger, así que nunca vuelve a cortarse.
 - Los uids de escena escritos a mano en las cabeceras `.tscn` (`uid://hpreferencias001`, `uid://bhistorial0001`, `uid://bgestoritem001/002`) NO están registrados en `uid_cache.bin`, y `uid://cxtkcrqj7ne7i`/`cup4r7bqx0age` (13 chars) desbordan int64 → uids inválidos. Consecuencias: (1) al exportar, el pack convierte las escenas a `.scn` y las resuelve por uid → `Cannot get class ''` y placeholders en `VentanaAgregar`/`VentanaPreferencias`; (2) **al guardar `Main.tscn` desde el editor, este BORRA silenciosamente los nodos instanciados cuya referencia por ruta apunta a una escena con uid fake en su cabecera** (tras el guardado del editor: `Node not found: "%VentanaAgregar"`). El patrón que sobrevive al guardado es una instancia con `uid=` explícito en la referencia O un destino SIN uid en su cabecera. Arreglo definitivo: escenas SIN uid de cabecera (patrón `Dashboard.tscn`, la única que nunca dio problemas) + referencias solo por ruta en `Main.tscn`. Verificación: `--export-pack "Windows" build/x.pck` + `godot --headless --main-pack x.pck`, y export completo + correr `gestor-de-enlaces.console.exe` (stderr vacío).
 - Motor local `Godot_v4.7.2-stable_win64(_console).exe` en `K:\Godot_v4.6.1\` (ruta peculiar; `AGENTS.md`).
+- **La batería BORRA capturas reales de `res://Assets`**: `tests/test_main_catalogo.gd` (y `test_main_orden.gd`) escribe y barre el `res://Assets/png|jpg` REAL con `main_script._entradas` reducido a una entrada de prueba, así que `_on_utilidades_id(2)` (limpiar huérfanas) y `_exit_tree()` (barrido al cerrar) borran **toda captura del catálogo que no esté en esa entrada**. Pasó con `Twister-AO (Servidor).jpg` y `Liberación Tierras Sagradas - v2.png` al correr la batería del 26/09: 33/33 OK y aun así las borró. Mitigación hasta aislar los tests: commitear las capturas nuevas ANTES de lanzar la batería.
+- **Recuperar una captura borrada desde la caché de importación**: los `.godot/imported/<nombre>-<hash>.ctex` se conservan (el limpiador solo borra el fuente) y con `compress/mode=0` el PNG vuelve **byte a byte idéntico**; el JPG se redecodifica y hay que re-guardar (misma imagen, otro peso). Script que lo hace: recorrer los `.import` de `res://Assets`, y si el `source_file` no existe, `ResourceLoader.load(path del [remap], "CompressedTexture2D", CACHE_MODE_IGNORE).get_image()` → `save_png`/`save_jpg`. Luego `--headless --import` para reimportar.
+- `--headless --import` escanea también `tests/` y escupe `Parse Error: Native class TextFile ...` + `Failed to load script "res://tests/test_preferencias.gd"` (el `preload` del `.tscn` aún no resuelve al escanear). Ruido benigno: `exit=0` y la suite pasa al ejecutarse con `--script`.
 - Conv.: tabs, sin comentarios, UI en español, preload-const en vez de class_name en código nuevo, `.gd.uid` versionados, bases `user://__test_*__` limpiadas.
