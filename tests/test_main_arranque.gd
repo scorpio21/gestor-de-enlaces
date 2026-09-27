@@ -177,7 +177,7 @@ func _arrancar() -> void:
 	_check(TemaStoreScript.color_estado(true) == Color(0.35, 0.85, 0.45, 1), "la paleta por defecto es la oscura")
 	main_script._aplicar_preferencias(3, 10.0, false, 0, "claro")
 	_check(main_script._config_store.cargar().get("tema", "") == "claro", "preferencias guardan el tema claro")
-	_check(TemaStoreScript.color_estado(true) == Color(0.1, 0.55, 0.25, 1), "aplicar claro deja la paleta clara activa")
+	_check(TemaStoreScript.color_estado(true) == Color(0.09, 0.5, 0.2, 1), "aplicar claro deja la paleta clara activa")
 	var fondo_principal: ColorRect = main.get_node("Fondo")
 	_check(fondo_principal.color == Color(0.95, 0.95, 0.95, 1), "aplicar claro pinta el fondo de la ventana principal")
 	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro")
@@ -408,6 +408,42 @@ func _arrancar() -> void:
 	dash_ui.hide()
 
 	main_script._persistir = false
+
+	# Las filas siguen al tema, tambien el indicador (#55)
+	main_script._entradas = [{"nombre": "Fila tema", "desc": "", "url": "https://fila-tema.test", "img": ""}]
+	main_script._estados = {
+		GestorCatalogoScript.clave_unica("https://fila-tema.test"): {
+			"valido": true, "mensaje": "OK (200)", "codigo": 200, "fecha": 1700000000,
+		},
+	}
+	main_script._ui_refrescar()
+	await process_frame
+	var fila: Button = main_script._contenedor_activo().get_child(0)
+	var etiqueta: Label = fila.get_node("%EstadoLabel")
+	var punto: ColorRect = fila.get_node("%Indicador")
+	_check(etiqueta.get_theme_color("font_color") == TemaStoreScript.color_clave("valido"), "la fila con estado guardado se pinta desde la paleta oscura")
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "claro")
+	await process_frame
+	fila = main_script._contenedor_activo().get_child(0)
+	etiqueta = fila.get_node("%EstadoLabel")
+	punto = fila.get_node("%Indicador")
+	_check(etiqueta.get_theme_color("font_color") == TemaStoreScript.color_clave("valido"), "al pasar a claro la etiqueta de la fila usa la paleta clara")
+	_check(punto.color == TemaStoreScript.color_clave("valido"), "al pasar a claro el indicador de la fila usa la paleta clara")
+	fila.aplicar_estado(null, "", 0)
+	_check(etiqueta.get_theme_color("font_color") == TemaStoreScript.color_clave("sin_comprobar"), "sin comprobar usa la paleta clara")
+	fila.url = "no-es-url"
+	fila.verificar()
+	_check(etiqueta.get_theme_color("font_color") == TemaStoreScript.color_clave("aviso"), "URL invalida usa la paleta clara")
+	_check(punto.color == TemaStoreScript.color_clave("aviso"), "el indicador de URL invalida usa la paleta clara")
+	fila.url = "http://127.0.0.1:9/x"
+	fila.verificar()
+	_check(etiqueta.get_theme_color("font_color") == TemaStoreScript.color_clave("comprobando"), "Comprobando usa la paleta clara")
+	_check(punto.color == TemaStoreScript.color_clave("comprobando"), "el indicador de comprobando usa la paleta clara")
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro")
+	await process_frame
+	fila = main_script._contenedor_activo().get_child(0)
+	punto = fila.get_node("%Indicador")
+	_check(punto.color == TemaStoreScript.color_clave("valido"), "al volver a oscuro el indicador vuelve a la paleta oscura")
 	_cerrar()
 
 

@@ -20,6 +20,11 @@ func _arrancar() -> void:
 	var gris := TemaStoreScript.color_estado(null)
 	_check(verde == paleta.get("valido") and rojo == paleta.get("caido") and gris == paleta.get("sin_comprobar"), "color_estado resuelve los tres estados desde la paleta")
 
+	for clave in ["valido", "caido", "sin_comprobar", "comprobando", "aviso", "acento"]:
+		_check(paleta.has(clave), "la paleta declara la clave %s" % clave)
+	_check(TemaStoreScript.color_clave("comprobando") == Color(0.85, 0.75, 0.25, 1), "color_clave resuelve comprobando")
+	_check(TemaStoreScript.color_clave("inventada") == Color(0.55, 0.55, 0.55, 1), "color_clave cae a sin_comprobar con una clave desconocida")
+
 	var root := Control.new()
 	root.add_child(_hacer_label("SUAVE", Color(0.75, 0.75, 0.75, 1)))
 	root.add_child(_hacer_label("ERROR", Color(0.95, 0.4, 0.4, 1)))
@@ -81,8 +86,57 @@ func _arrancar() -> void:
 	TemaStoreScript.aplicar("auto", root)
 	_check(root.theme.get_color("font_color", "Label") == Color(0.75, 0.75, 0.75, 1), "aplicar auto sin soporte del SO queda en oscuro")
 
+	_estados_por_clave()
+
 	root.free()
 	_cerrar()
+
+
+func _estados_por_clave() -> void:
+	var cont := Control.new()
+	var etiqueta := _hacer_label("OK", null)
+	var punto := ColorRect.new()
+	punto.color = Color(0, 0, 0, 1)
+	cont.add_child(etiqueta)
+	cont.add_child(punto)
+	get_root().add_child(cont)
+
+	TemaStoreScript.marcar(etiqueta, "valido")
+	TemaStoreScript.marcar(punto, "comprobando")
+	_check(str(etiqueta.get_meta(TemaStoreScript.META_CLAVE)) == "valido", "marcar guarda la clave en el meta del nodo")
+	_check(_color_label(etiqueta) == Color(0.35, 0.85, 0.45, 1), "marcar pinta la etiqueta con la paleta actual")
+	_check(punto.color == Color(0.85, 0.75, 0.25, 1), "marcar pinta el indicador con la paleta actual")
+
+	TemaStoreScript.aplicar("claro", cont)
+	_check(punto.color == Color(0.55, 0.42, 0.05, 1), "claro re-mapea el indicador marcado a comprobando claro")
+	_check(_color_label(etiqueta) == Color(0.09, 0.5, 0.2, 1), "claro re-mapea la etiqueta marcada a valido claro")
+	TemaStoreScript.aplicar("oscuro", cont)
+	_check(punto.color == Color(0.85, 0.75, 0.25, 1), "oscuro restaura el indicador a comprobando oscuro")
+	_check(_color_label(etiqueta) == Color(0.35, 0.85, 0.45, 1), "oscuro restaura la etiqueta a valido oscuro")
+
+	for modo in ["claro", "oscuro"]:
+		TemaStoreScript.aplicar(modo, cont)
+		var boton: StyleBox = TemaStoreScript._construir_tema().get_stylebox("normal", "Button")
+		var fondo_boton: Color = boton.bg_color
+		for clave in ["valido", "caido", "sin_comprobar", "comprobando", "aviso"]:
+			var c := TemaStoreScript.color_clave(clave)
+			_check(_contraste(c, fondo_boton) >= 3.0, "contraste de %s sobre el boton %s >= 3.0 (%.2f)" % [clave, modo, _contraste(c, fondo_boton)])
+
+	cont.free()
+
+
+func _contraste(a: Color, b: Color) -> float:
+	var la := _luminancia(a)
+	var lb := _luminancia(b)
+	return (maxf(la, lb) + 0.05) / (minf(la, lb) + 0.05)
+
+
+func _luminancia(c: Color) -> float:
+	return 0.2126 * _lineal(c.r) + 0.7152 * _lineal(c.g) + 0.0722 * _lineal(c.b)
+
+
+func _lineal(v: float) -> float:
+	return v / 12.92 if v <= 0.04045 else pow((v + 0.055) / 1.055, 2.4)
 
 
 func _hacer_label(texto: String, color: Variant) -> Label:

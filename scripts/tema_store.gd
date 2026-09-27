@@ -6,6 +6,8 @@ const TemaSistemaScript := preload("res://scripts/tema_sistema.gd")
 const TEMA_DEFAULT := "oscuro"
 const TEMAS_VALIDOS := ["claro", "oscuro"]
 
+const META_CLAVE := "tema_clave"
+
 const _PALETA_OSCURO := {
 	"fondo_claro": Color(0.95, 0.95, 0.95, 1),
 	"texto_suave": Color(0.75, 0.75, 0.75, 1),
@@ -14,6 +16,9 @@ const _PALETA_OSCURO := {
 	"valido": Color(0.35, 0.85, 0.45, 1),
 	"caido": Color(0.95, 0.35, 0.35, 1),
 	"sin_comprobar": Color(0.55, 0.55, 0.55, 1),
+	"comprobando": Color(0.85, 0.75, 0.25, 1),
+	"aviso": Color(0.95, 0.55, 0.2, 1),
+	"acento": Color(0.5, 0.7, 1.0, 1),
 }
 
 const _PALETA_CLARO := {
@@ -21,9 +26,12 @@ const _PALETA_CLARO := {
 	"texto_suave": Color(0.3, 0.3, 0.3, 1),
 	"texto_tenue": Color(0.35, 0.35, 0.35, 1),
 	"error": Color(0.8, 0.15, 0.15, 1),
-	"valido": Color(0.1, 0.55, 0.25, 1),
+	"valido": Color(0.09, 0.5, 0.2, 1),
 	"caido": Color(0.8, 0.1, 0.1, 1),
 	"sin_comprobar": Color(0.45, 0.45, 0.45, 1),
+	"comprobando": Color(0.55, 0.42, 0.05, 1),
+	"aviso": Color(0.7, 0.3, 0.03, 1),
+	"acento": Color(0.35, 0.6, 1.0, 1),
 }
 
 static var _actual := TEMA_DEFAULT
@@ -36,10 +44,27 @@ static func paleta() -> Dictionary:
 
 static func color_estado(ok: Variant) -> Color:
 	if ok == true:
-		return Color(paleta().get("valido"))
+		return color_clave("valido")
 	if ok == false:
-		return Color(paleta().get("caido"))
-	return Color(paleta().get("sin_comprobar"))
+		return color_clave("caido")
+	return color_clave("sin_comprobar")
+
+
+static func color_clave(clave: String) -> Color:
+	var p := paleta()
+	if p.has(clave):
+		return Color(p[clave])
+	return Color(p.get("sin_comprobar"))
+
+
+static func marcar(nodo: CanvasItem, clave: String) -> void:
+	if nodo == null:
+		return
+	nodo.set_meta(META_CLAVE, clave)
+	if nodo is ColorRect:
+		(nodo as ColorRect).color = color_clave(clave)
+	elif nodo is Label:
+		(nodo as Label).add_theme_color_override("font_color", color_clave(clave))
 
 
 static func normalizar(v: Variant) -> String:
@@ -56,6 +81,12 @@ static func aplicar(modo: String, root: Node) -> void:
 	if root is Control:
 		(root as Control).theme = tema
 	for nodo in _recorrer(root):
+		if nodo is Window and _tiene_fondo(nodo):
+			(nodo as Window).theme = tema
+			continue
+		if nodo is CanvasItem and nodo.has_meta(META_CLAVE):
+			marcar(nodo as CanvasItem, str(nodo.get_meta(META_CLAVE)))
+			continue
 		if nodo is ColorRect and nodo.name == "Fondo":
 			var id_nodo: int = nodo.get_instance_id()
 			if not _fondos.has(id_nodo):
@@ -66,8 +97,6 @@ static func aplicar(modo: String, root: Node) -> void:
 			var clave: String = _clave_texto(nodo)
 			if clave != "":
 				nodo.add_theme_color_override("font_color", _color_de(clave))
-		elif nodo is Window and _tiene_fondo(nodo):
-			(nodo as Window).theme = tema
 
 
 static func _tiene_fondo(nodo: Node) -> bool:

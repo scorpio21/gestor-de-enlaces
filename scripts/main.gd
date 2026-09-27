@@ -657,7 +657,7 @@ func _ui_status() -> void:
 	total_valor_label.text = str(c.get("total", 0))
 	rotos_valor_label.add_theme_color_override("font_color", TemaStoreScript.color_estado(false))
 	activos_valor_label.add_theme_color_override("font_color", TemaStoreScript.color_estado(true))
-	total_valor_label.add_theme_color_override("font_color", Color(0.4, 0.6, 1.0, 1))
+	total_valor_label.add_theme_color_override("font_color", TemaStoreScript.color_clave("acento"))
 
 
 func _ui_barra(hechos: int, total: int) -> void:
@@ -666,9 +666,7 @@ func _ui_barra(hechos: int, total: int) -> void:
 
 
 func _ui_barra_final(caidos: int) -> void:
-	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = Color(0.35, 0.85, 0.45, 1) if caidos == 0 else Color(0.95, 0.35, 0.35, 1)
-	%BarraProgreso.add_theme_stylebox_override("fill", estilo)
+	%BarraProgreso.add_theme_stylebox_override("fill", TemaStoreScript.relleno(TemaStoreScript.color_estado(caidos == 0), 0))
 
 
 func _ui_pintar_cabeceras() -> void:

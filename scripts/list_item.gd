@@ -54,7 +54,7 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "", ca
 	%NombreLabel.text = nombre
 	%DescripcionLabel.text = descripcion
 	%FechaLabel.text = tr("Sin comprobar")
-	_pintar_estado(tr("Sin comprobar"), TemaStoreScript.color_estado(null))
+	_pintar_estado(tr("Sin comprobar"), "sin_comprobar")
 	self.categoria = GestorCatalogoScript.normalizar_categoria(categoria)
 	%CategoriaLabel.text = GestorCatalogoScript.new().categoria_display(self.categoria)
 	if imagen != "" and FileAccess.file_exists(imagen):
@@ -71,13 +71,13 @@ func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva :
 	_pintar_fecha()
 	if ok == true:
 		estado = "ok"
-		_pintar_estado(formatear_mensaje(texto, codigo), TemaStoreScript.color_estado(true))
+		_pintar_estado(formatear_mensaje(texto, codigo), "valido")
 	elif ok == false:
 		estado = "caido"
-		_pintar_estado(formatear_mensaje(texto, codigo), TemaStoreScript.color_estado(false))
+		_pintar_estado(formatear_mensaje(texto, codigo), "caido")
 	else:
 		estado = "pendiente"
-		_pintar_estado(tr("Sin comprobar"), TemaStoreScript.color_estado(null))
+		_pintar_estado(tr("Sin comprobar"), "sin_comprobar")
 	_actualizar_tooltip()
 
 
@@ -183,13 +183,13 @@ func verificar() -> void:
 		valido = false
 		estado = "invalido"
 		mensaje = tr("URL inválida")
-		_pintar_estado(tr("URL inválida"), Color(0.95, 0.55, 0.2, 1))
+		_pintar_estado(tr("URL inválida"), "aviso")
 		_actualizar_tooltip()
 		verificacion_terminada.emit()
 		return
 
 	estado = "comprobando"
-	_pintar_estado(tr("Comprobando…"), Color(0.85, 0.75, 0.25, 1))
+	_pintar_estado(tr("Comprobando…"), "comprobando")
 	_checker = LinkCheckerScript.new()
 	add_child(_checker)
 	_checker.terminado.connect(_on_check_terminado)
@@ -205,15 +205,15 @@ func _on_check_terminado(ok: bool, texto: String) -> void:
 	valido = ok
 	estado = "ok" if ok else "caido"
 	mensaje = texto
-	_pintar_estado(texto, Color(0.35, 0.85, 0.45, 1) if ok else Color(0.95, 0.35, 0.35, 1))
+	_pintar_estado(texto, "valido" if ok else "caido")
 	_actualizar_tooltip()
 	verificacion_terminada.emit()
 
 
-func _pintar_estado(texto: String, color: Color) -> void:
+func _pintar_estado(texto: String, clave: String) -> void:
 	%EstadoLabel.text = texto
-	%EstadoLabel.add_theme_color_override("font_color", color)
-	%Indicador.color = color
+	TemaStoreScript.marcar(%EstadoLabel, clave)
+	TemaStoreScript.marcar(%Indicador, clave)
 
 
 func _pressed() -> void:
