@@ -7,10 +7,14 @@ keys,es,en
 %s %s,%s %s,%s %s
 %s — %s — %s,%s — %s — %s,%s — %s — %s
 (%d errores),(%d errores),(%d errors)
+7 días,7 días,7 days
+30 días,30 días,30 days
+90 días,90 días,90 days
 Activos:,Activos:,Working:
 Agregar,Agregar,Add
 Agregar enlace,Agregar enlace,Add link
 Agregar varias URLs,Agregar varias URLs,Add multiple URLs
+Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Add links or import a catalog to see its statistics here.
 Auto-escaneo,Auto-escaneo,Auto-scan
 Automático,Automático,Automatic
 Bajar,Bajar,Move down
@@ -22,11 +26,13 @@ Categoría,Categoría,Category
 Catálogo exportado (%d enlaces).,Catálogo exportado (%d enlaces).,Catalogue exported (%d links).
 Catálogo restaurado desde la copia.,Catálogo restaurado desde la copia.,Catalogue restored from backup.
 Caído,Caído,Down
+Caídos,Caídos,Down
 Caídos / no existen,Caídos / no existen,Down / missing
 Caídos: %d,Caídos: %d,Broken: %d
 Cada 1 hora,Cada 1 hora,Every hour
 Cada 15 minutos,Cada 15 minutos,Every 15 minutes
 Cada 30 minutos,Cada 30 minutos,Every 30 minutes
+Código,Código,Code
 Cualquier palabra,Cualquier palabra,Any word
 Cerrar,Cerrar,Close
 Claro,Claro,Light
@@ -52,24 +58,33 @@ Descartar,Descartar,Discard
 Descripción,Descripción,Description
 días,días,days
 Diagnóstico guardado en %s.,Diagnóstico guardado en %s.,Diagnostics saved to %s.
+Disp.,Disp.,Avail.
 Disponible: %s %% (%d comprobados),Disponible: %s %% (%d comprobados),Available: %s %% (%d checked)
+Disponibilidad,Disponibilidad,Availability
+Disponibilidad de %d enlaces comprobados,Disponibilidad de %d enlaces comprobados,Availability of %d checked links
+Disponibles,Disponibles,Available
+Doble clic en una fila para verla en la lista.,Doble clic en una fila para verla en la lista.,Double-click a row to see it in the list.
 Editar…,Editar…,Edit…
 Editar enlace,Editar enlace,Edit link
 Ej. (Cliente + códigos),Ej. (Cliente + códigos),E.g. (Client + code)
 Ej. Mi servidor AO,Ej. Mi servidor AO,E.g. My AO server
 "Ej. AO 1.6, español, servidor PVP","Ej. AO 1.6, español, servidor PVP","E.g. AO 1.6, Spanish, PvP server"
+El catálogo está vacío.,El catálogo está vacío.,The catalog is empty.
 El nombre no puede estar vacío.,El nombre no puede estar vacío.,The name cannot be empty.
 Elegir imagen,Elegir imagen,Choose image
 Elegir imagen…,Elegir imagen…,Choose image…
 Eliminar,Eliminar,Delete
 Eliminar enlace,Eliminar enlace,Delete link
+Enlace,Enlace,Link
 Enlace actualizado: %s,Enlace actualizado: %s,Link updated: %s
 Enlace agregado: %s,Enlace agregado: %s,Link added: %s
 Enlace eliminado,Enlace eliminado,Link deleted
+Enlaces que más han caído,Enlaces que más han caído,Links that have failed the most
 Error HTTP %d,Error HTTP %d,HTTP error %d
 Error TLS/HTTPS,Error TLS/HTTPS,TLS/HTTPS error
 Error de conexión,Error de conexión,Connection error
 Estado,Estado,Status
+Estadísticas del catálogo,Estadísticas del catálogo,Catalog statistics
 Estadísticas exportadas.,Estadísticas exportadas.,Statistics exported.
 Etiquetas,Etiquetas,Tags
 Estás al día (v%s),Estás al día (v%s),You are up to date (v%s)
@@ -82,6 +97,7 @@ Exportar estadísticas,Exportar estadísticas,Export statistics
 Exportar JSON,Exportar JSON,Export JSON
 Exportar…,Exportar…,Export…
 Fecha,Fecha,Date
+Filtro aplicado desde el dashboard.,Filtro aplicado desde el dashboard.,Filter applied from the dashboard.
 Filtro eliminado: %s,Filtro eliminado: %s,Filter deleted: %s
 Filtro guardado: %s,Filtro guardado: %s,Filter saved: %s
 Gestor de enlaces AO,Gestor de enlaces AO,AO Link Manager
@@ -131,8 +147,10 @@ Nombre,Nombre,Name
 Nueva versión disponible,Nueva versión disponible,New version available
 OK (%d),OK (%d),OK (%d)
 Oscuro,Oscuro,Dark
+"Ordenar por %s","Ordenar por %s","Sort by %s"
 Otro,Otro,Other
 Parche,Parche,Patch
+Pasa el ratón por una barra para ver el detalle.,Pasa el ratón por una barra para ver el detalle.,Hover a bar for details.
 Pega al menos una URL.,Pega al menos una URL.,Paste at least one URL.
 Por categoría,Por categoría,By category
 Por host (problemáticos),Por host (problemáticos),By host (troubled)
@@ -140,6 +158,7 @@ Preferencias,Preferencias,Preferences
 Preferencias…,Preferencias…,Preferences…
 Presets…,Presets…,Presets…
 Quitar imagen,Quitar imagen,Remove image
+Rango de días incluido en el gráfico,Rango de días incluido en el gráfico,Day range included in the chart
 Re-comprobando %s…,Re-comprobando %s…,Re-checking %s…
 Reanudar,Reanudar,Resume
 Reanudar escaneo,Reanudar escaneo,Resume scan
@@ -151,6 +170,7 @@ Rotos:,Rotos:,Broken:
 Salir,Salir,Quit
 Se añadieron %d enlaces.,Se añadieron %d enlaces.,%d links added.
 Servidor,Servidor,Server
+Sin comprobaciones todavía,Sin comprobaciones todavía,No checks yet
 Sin comprobar,Sin comprobar,Not checked
 Sin comprobar: %d,Sin comprobar: %d,Not checked: %d
 Sin historial,Sin historial,No history
@@ -160,12 +180,16 @@ Tema,Tema,Theme
 Timeout por enlace (segundos),Timeout por enlace (segundos),Per-link timeout (seconds)
 Todas,Todas,All
 Todas las palabras,Todas las palabras,All words
+Todo el histórico,Todo el histórico,All history
+Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,No checks yet. Press Check links to start.
 Todos,Todos,All
+Total,Total,Total
 Total:,Total:,Total:
 URL,URL,URL
 URL copiada: %s,URL copiada: %s,URL copied: %s
 URL inválida,URL inválida,Invalid URL
 Una URL por línea,Una URL por línea,One URL per line
+Última,Última,Last
 Varias,Varias,Multiple
 Ver release,Ver release,View release
 Verificaciones en paralelo,Verificaciones en paralelo,Parallel checks
@@ -175,6 +199,7 @@ Volver a comprobar,Volver a comprobar,Re-check
 Válido,Válido,Working
 Válidos,Válidos,Valid
 Válidos: %d,Válidos: %d,Valid: %d
+Veces,Veces,Times
 Ya existe: %s,Ya existe: %s,Already exists: %s
 ¿Borrar %d capturas huérfanas?,¿Borrar %d capturas huérfanas?,Delete %d orphan captures?
 ¿Eliminar «%s» para siempre?,¿Eliminar «%s» para siempre?,Delete “%s” forever?

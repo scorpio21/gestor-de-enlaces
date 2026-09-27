@@ -4,8 +4,8 @@ const PATRON_ESCENA := r'(?:^|\s|/)(?:text|title|placeholder_text|tooltip_text|d
 const PATRON_SCRIPT_UI := r'\.(?:text|title|dialog_text|ok_button_text|cancel_button_text)\s*=\s*"([^"]+)"'
 const PATRON_TR := r'\btr\("([^"]*)"'
 const PATRON_MENU := r'(?:add_item|add_icon_item)\([^"\n]*"([^"]+)"'
-const ESCENAS := ["res://scenes/Main.tscn", "res://scenes/Preferencias.tscn", "res://scenes/AgregarEnlace.tscn", "res://scenes/ListItem.tscn", "res://scenes/Historial.tscn", "res://scenes/Dashboard.tscn"]
-const SCRIPTS_UI := ["res://scripts/main.gd", "res://scripts/preferencias.gd", "res://scripts/agregar_enlace.gd", "res://scripts/list_item.gd", "res://scripts/historial.gd", "res://scripts/dashboard_ui.gd"]
+const ESCENAS := ["res://scenes/Main.tscn", "res://scenes/Preferencias.tscn", "res://scenes/AgregarEnlace.tscn", "res://scenes/ListItem.tscn", "res://scenes/Historial.tscn", "res://scenes/Dashboard.tscn", "res://scenes/TarjetaKpi.tscn", "res://scenes/FilaTabla.tscn"]
+const SCRIPTS_UI := ["res://scripts/main.gd", "res://scripts/preferencias.gd", "res://scripts/agregar_enlace.gd", "res://scripts/list_item.gd", "res://scripts/historial.gd", "res://scripts/dashboard_ui.gd", "res://scripts/grafico_dashboard.gd", "res://scripts/tarjeta_kpi.gd", "res://scripts/fila_tabla.gd"]
 const EXTRA_VISIBLES := ["Válido", "Caído", "Sin comprobar", "Otro", "Cliente", "Servidor", "Códigos fuente", "Parche"]
 
 static func ui_strings() -> Array[String]:

@@ -36,6 +36,8 @@ func _arrancar() -> void:
 	_categorias(entradas, estados)
 	_hosts(entradas, estados)
 	_serie(entradas, estados)
+	_rango(entradas, estados)
+	_top(entradas, estados)
 	_exportacion(entradas, estados)
 	if _fallos == 0:
 		print("TESTS OK")
@@ -81,19 +83,53 @@ func _serie(entradas: Array, estados: Dictionary) -> void:
 	_check(str(serie[1].get("fecha")) == "2026-09-02" and int(serie[1].get("validos")) == 2 and int(serie[1].get("caidos")) == 0, "serie_diaria cuenta válidos y caídos del día 2")
 
 
+func _rango(entradas: Array, estados: Dictionary) -> void:
+	var hoy := Time.get_unix_time_from_system()
+	var recientes: Array = []
+	var estados_recientes := {}
+	for i in range(3):
+		var clave := "sitio%d.test/pagina" % i
+		recientes.append({"nombre": "Reciente %d" % i, "url": "https://%s" % clave, "cat": "otro"})
+		estados_recientes[clave] = {"valido": i % 2 == 0, "historial": [
+			{"fecha": hoy - i * 86400, "valido": i % 2 == 0, "mensaje": "OK", "codigo": 200},
+		]}
+	var todo: Array = DashboardStoreScript.serie_diaria(recientes, estados_recientes)
+	var siete: Array = DashboardStoreScript.serie_diaria(recientes, estados_recientes, 7)
+	var uno: Array = DashboardStoreScript.serie_diaria(recientes, estados_recientes, 1)
+	_check(todo.size() == 3, "sin rango la serie diaria devuelve todo el histórico")
+	_check(siete.size() == 3, "un rango de 7 días cubre las tres comprobaciones")
+	_check(uno.size() == 1 and str(uno[0].get("fecha")) == str(todo[2].get("fecha")), "un rango de 1 día deja solo el de hoy")
+	var antiguo: Array = DashboardStoreScript.serie_diaria(entradas, estados, 7)
+	_check(antiguo.is_empty(), "un rango descarta las comprobaciones antiguas")
+
+
+func _top(entradas: Array, estados: Dictionary) -> void:
+	var top: Array = DashboardStoreScript.top_caidos(entradas, estados)
+	_check(top.size() == 2, "top_caidos solo lista los enlaces con alguna caída")
+	_check(str(top[0].get("nombre")) == "A" and int(top[0].get("veces")) == 1 and int(top[0].get("codigo")) == 404, "top_caidos ordena por veces de caída y trae el último código")
+	_check(str(top[0].get("host")) == "mediafire.com" and str(top[0].get("categoria")) == "cliente", "top_caidos trae host y categoría del enlace")
+	_check(str(top[0].get("mensaje")) == "No", "top_caidos trae el último mensaje de error")
+	var ninguno: Array = DashboardStoreScript.top_caidos([{"nombre": "X", "url": "https://x.test/a"}], {})
+	_check(ninguno.is_empty(), "sin historial no hay enlaces problemáticos")
+	_check(DashboardStoreScript.ultima_comprobacion(estados) == Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 9, "day": 2, "hour": 10}), "ultima_comprobacion devuelve la marca más reciente")
+	_check(DashboardStoreScript.ultima_comprobacion({}) == 0, "sin historial no hay última comprobación")
+
+
 func _exportacion(entradas: Array, estados: Dictionary) -> void:
 	DirAccess.make_dir_recursive_absolute(BASE)
 	var datos: Dictionary = DashboardStoreScript.agregar_datos(entradas, estados)
 	_check(datos.has("resumen") and datos.has("categorias") and datos.has("hosts") and datos.has("serie"), "agregar_datos empaqueta los cuatro bloques")
+	_check(datos.has("top") and datos.has("ultima") and int(datos.get("dias")) == 0, "agregar_datos añade los enlaces problemáticos, la última comprobación y el rango")
 	var ruta_csv := BASE + "/estadisticas.csv"
 	var csv: Dictionary = DashboardStoreScript.exportar_csv(ruta_csv, datos)
-	_check(csv.get("ok") == true and int(csv.get("total")) == 1 + 3 + 2 + 2, "exportar_csv escribe el bloque completo")
+	_check(csv.get("ok") == true and int(csv.get("total")) == 1 + 3 + 2 + 2 + 2, "exportar_csv escribe el bloque completo")
 	var contenido := FileAccess.get_file_as_string(ruta_csv)
 	_check(contenido.contains("Seccion;Clave;Comprobados;Activos;Rotos;Disponible"), "el CSV incluye la cabecera")
 	_check(contenido.contains("Resumen;Total;4;2;1;66.7"), "el CSV incluye el resumen con porcentaje")
 	_check(contenido.contains("Categoria;cliente;2;1;1;50.0"), "el CSV incluye una categoría formateada")
 	_check(contenido.contains("Host;mega.nz;1;0;1;0.0"), "el CSV incluye un host formateado")
 	_check(contenido.contains("Serie;2026-09-01;3;1;2;33.3"), "el CSV incluye la serie diaria")
+	_check(contenido.contains("Caidos;A;404;1;"), "el CSV incluye los enlaces problemáticos con su código y veces")
 	var ruta_json := BASE + "/estadisticas.json"
 	var json: Dictionary = DashboardStoreScript.exportar_json(ruta_json, datos)
 	_check(json.get("ok") == true, "exportar_json escribe el fichero")

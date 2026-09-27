@@ -4,12 +4,15 @@ const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const ColaEscaneoScript := preload("res://scripts/cola_escaneo.gd")
 
 
-static func agregar_datos(entradas: Array, estados: Dictionary) -> Dictionary:
+static func agregar_datos(entradas: Array, estados: Dictionary, dias := 0) -> Dictionary:
 	return {
 		"resumen": resumen(entradas, estados),
 		"categorias": por_categoria(entradas, estados),
 		"hosts": por_host(entradas, estados, 10),
-		"serie": serie_diaria(entradas, estados),
+		"serie": serie_diaria(entradas, estados, dias),
+		"top": top_caidos(entradas, estados),
+		"ultima": ultima_comprobacion(estados),
+		"dias": dias,
 	}
 
 
@@ -68,8 +71,9 @@ static func por_host(entradas: Array, estados: Dictionary, tope := 0) -> Array:
 	return lista
 
 
-static func serie_diaria(entradas: Array, estados: Dictionary) -> Array:
+static func serie_diaria(entradas: Array, estados: Dictionary, dias := 0) -> Array:
 	var fichas := {}
+	var desde := _clave_desde(dias)
 	for entrada in entradas:
 		if typeof(entrada) != TYPE_DICTIONARY:
 			continue
@@ -81,7 +85,7 @@ static func serie_diaria(entradas: Array, estados: Dictionary) -> Array:
 			if typeof(marca) != TYPE_DICTIONARY:
 				continue
 			var dia := _clave_dia(int(marca.get("fecha", 0)))
-			if dia.is_empty():
+			if dia.is_empty() or dia < desde:
 				continue
 			var ficha: Dictionary = fichas.get(dia, {"fecha": dia, "validos": 0, "caidos": 0})
 			if marca.get("valido") == true:
@@ -98,6 +102,60 @@ static func serie_diaria(entradas: Array, estados: Dictionary) -> Array:
 	return lista
 
 
+static func top_caidos(entradas: Array, estados: Dictionary, tope := 8) -> Array:
+	var lista: Array = []
+	for entrada in entradas:
+		if typeof(entrada) != TYPE_DICTIONARY:
+			continue
+		var estado: Dictionary = estados.get(GestorCatalogoScript.clave_unica(str(entrada.get("url", ""))), {})
+		var hist: Variant = estado.get("historial", [])
+		if typeof(hist) != TYPE_ARRAY:
+			continue
+		var veces := 0
+		var ultima := {}
+		for marca in hist:
+			if typeof(marca) != TYPE_DICTIONARY or marca.get("valido") != false:
+				continue
+			veces += 1
+			if int(marca.get("fecha", 0)) >= int(ultima.get("fecha", 0)):
+				ultima = marca
+		if veces == 0:
+			continue
+		lista.append({
+			"nombre": str(entrada.get("nombre", "")),
+			"url": str(entrada.get("url", "")),
+			"host": ColaEscaneoScript.host_de(str(entrada.get("url", ""))),
+			"categoria": GestorCatalogoScript.normalizar_categoria(entrada.get("cat", "")),
+			"veces": veces,
+			"codigo": int(ultima.get("codigo", 0)),
+			"mensaje": str(ultima.get("mensaje", "")),
+			"fecha": int(ultima.get("fecha", 0)),
+		})
+	lista.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if int(a["veces"]) == int(b["veces"]):
+			if int(a["fecha"]) == int(b["fecha"]):
+				return str(a["nombre"]) < str(b["nombre"])
+			return int(a["fecha"]) > int(b["fecha"])
+		return int(a["veces"]) > int(b["veces"])
+	)
+	if tope > 0 and lista.size() > tope:
+		lista.resize(tope)
+	return lista
+
+
+static func ultima_comprobacion(estados: Dictionary) -> int:
+	var ultima := 0
+	for clave in estados:
+		var estado: Dictionary = estados[clave]
+		var hist: Variant = estado.get("historial", [])
+		if typeof(hist) != TYPE_ARRAY:
+			continue
+		for marca in hist:
+			if typeof(marca) == TYPE_DICTIONARY:
+				ultima = maxi(ultima, int(marca.get("fecha", 0)))
+	return ultima
+
+
 static func exportar_csv(ruta: String, datos: Dictionary) -> Dictionary:
 	var lineas := PackedStringArray(["Seccion;Clave;Comprobados;Activos;Rotos;Disponible"])
 	var res: Dictionary = datos.get("resumen", {})
@@ -111,6 +169,13 @@ static func exportar_csv(ruta: String, datos: Dictionary) -> Dictionary:
 		lineas.append(_fila_grupo("Categoria", g, "categoria"))
 	for g in datos.get("hosts", []):
 		lineas.append(_fila_grupo("Host", g, "host"))
+	for t in datos.get("top", []):
+		lineas.append("Caidos;%s;%d;%d;%d" % [
+			_escape_csv(str(t.get("nombre", ""))),
+			int(t.get("codigo", 0)),
+			int(t.get("veces", 0)),
+			int(t.get("fecha", 0)),
+		])
 	for d in datos.get("serie", []):
 		var validos := int(d.get("validos", 0))
 		var caidos := int(d.get("caidos", 0))
@@ -132,7 +197,7 @@ static func exportar_json(ruta: String, datos: Dictionary) -> Dictionary:
 	if fichero == null:
 		return {"ok": false, "total": 0}
 	fichero.store_string(JSON.stringify(datos, "\t"))
-	return {"ok": true, "total": 1 + int(datos.get("categorias", []).size()) + int(datos.get("hosts", []).size()) + int(datos.get("serie", []).size())}
+	return {"ok": true, "total": 1 + int(datos.get("categorias", []).size()) + int(datos.get("hosts", []).size()) + int(datos.get("serie", []).size()) + int(datos.get("top", []).size())}
 
 
 static func _lista_ordenada(grupos: Dictionary, clave_nombre: String, por_rotos: bool) -> Array:
@@ -172,6 +237,12 @@ static func _clave_dia(unix: int) -> String:
 		return ""
 	var d := Time.get_datetime_dict_from_unix_time(unix)
 	return "%04d-%02d-%02d" % [d.year, d.month, d.day]
+
+
+static func _clave_desde(dias: int) -> String:
+	if dias <= 0:
+		return ""
+	return _clave_dia(Time.get_unix_time_from_system() - (dias - 1) * 86400)
 
 
 static func _fila_grupo(seccion: String, g: Dictionary, clave: String) -> String:

@@ -2,11 +2,11 @@
 
 ## Objetivo
 
-Repositorio `K:\gestor-de-enlaces` (Godot 4.7.2, GDScript) — gestor de enlaces para Argentum Online: funcionalidad base + empaquetado (presets + CI + logs + diagnóstico + icono) + catálogo completo (etiquetas, filtros avanzados, grilla, dashboard, i18n, tema, capturas con nombre) **COMMITEADO y pusheado en `main`**. HEAD: `0da42bd` (addon godot_ai v4.2.3 + catálogo con capturas + ajustes de la tarjeta de grilla) + este commit de docs. Batería local **33/33 OK**, **0 issues abiertos** en GitHub. OJO: la batería **borra las capturas reales** de `res://Assets` (ver gotcha).
+Repositorio `K:\gestor-de-enlaces` (Godot 4.7.2, GDScript) — gestor de enlaces para Argentum Online: funcionalidad base + empaquetado (presets + CI + logs + diagnóstico + icono) + catálogo completo (etiquetas, filtros avanzados, grilla, dashboard, i18n, tema, capturas con nombre) **COMMITEADO y pusheado en `main`**. Última ronda: rediseño del dashboard de estadísticas (`#49`) y aislamiento de los assets de los tests (`#48`). Batería local **34/34 OK**, **0 issues abiertos** en GitHub.
 
 ## Comandos de verificación
 
-Batería completa (33 suites) vía Git Bash (mismo script que el CI):
+Batería completa (34 suites) vía Git Bash (mismo script que el CI):
 
 ```bash
 & "C:\Program Files\Git\bin\bash.exe" -c 'cd /k/gestor-de-enlaces && GODOT_BIN="K:/Godot_v4.6.1/Godot_v4.7.2-stable_win64_console.exe" bash tests/run_battery.sh'
@@ -23,7 +23,9 @@ Linux/CI: `GODOT_BIN=/ruta/a/godot bash tests/run_battery.sh`. Cada suite imprim
 ## Estado actual
 
 - ✅ HEAD `0da42bd` + este commit de docs: **addon `godot_ai` v3.2.1 → v4.2.3** (árbol completo del addon, 153 ficheros; +clientes codebuddy/omp/zcode, +handlers command/navigation/shader/visual_shader/filesystem_mutation, +utilidades y puente de migración v3→v4; fuera `cherry_studio.gd` y `update_reload_runner.gd`), **capturas del catálogo** (imagen para las 3 entradas de Twister-AO y renombrada `img_1790298160.png` → `Liberación Tierras Sagradas - v2.png`, con la entrada `Tierras Sagradas - v2`) y **tarjeta de `GridItem`** más alta (176→240) con fuentes a 10, sin autowrap y con `clip_text`. Batería 33/33 OK, `git status` limpio.
-- ✅ **0 issues abiertos** en GitHub: toda la secuencia #25..#47 cerrada.
+- ✅ **0 issues abiertos** en GitHub: toda la secuencia #25..#49 cerrada (la última, `#49` rediseño del dashboard).
+- ✅ **#49 dashboard rediseñado**: `scenes/Dashboard.tscn` reconstruida (KPIs, disponibilidad, gráfico, tablas, enlaces problemáticos, estados vacíos, selector de rango), piezas nuevas `TarjetaKpi`/`FilaTabla`, `grafico_dashboard.gd` reescrito con rejilla + globo, store con `serie_diaria(dias)`/`top_caidos()`/`ultima_comprobacion()` y exportación ampliada, señales `navegar`/`comprobar_ya` hacia `main._on_dashboard_navegar`. Suite nueva `tests/test_dashboard_ui.gd`. Decisión documentada: el gráfico diario mantiene 2 series (válidos/caídos) porque el historial no tiene contador diario de "sin comprobar".
+- ✅ **#48 assets de los tests aislados**: `main.ASSETS_BASE` (parametrizable, la ventana de alta lo hereda) + guardián en `test_proyecto`; la batería ya no toca `res://Assets`.
 - ✅ Ronda de versiones: 0.1.0 (empaquetado #26/#28/#29) → 0.1.9 (capturas con nombre #47). Últimas: etiquetas (#42), filtros avanzados + presets (#44 en 0.1.2/0.1.3), grilla (#43 0.1.4), dashboard (#45 0.1.5), dedup de capturas (#36 0.1.6), tema automático (#46 0.1.7), diálogos nativos (#38 0.1.8), caché reverse-lookup (#40), capturas con nombre (#47 0.1.9).
 - ✅ **#41 residuos cerrado** (`c2d9e70`): versionado el addon tercero `addons/godot_ai` (Godot AI v3.2.1, MIT) + bloque `[autoload]/[editor_plugins]` de `project.godot` (el addon retira su autoload MCP de los exports); `export_presets.cfg` regenerado por el editor 4.7; metadatos Godot pendientes (16 `.uid`, 2 `.translation`, 7 `.import`). Eliminados localmente `data/data2.json` (sin uso) y 2 `.import` huérfanos de `Assets/png`. Planes ajenos sin commitear en `.gitignore`.
 - ⏳ Backlog: ninguno. El CHANGELOG acumula en `[Sin publicar]` #30 (i18n), #17 (ordenación) y #40 (caché) sin elevar a release todavía.
@@ -59,10 +61,9 @@ Entregables: `scripts/cola_store.gd`, `scripts/informe_store.gd`, `scripts/tema_
 
 ## Próximos pasos
 
-1. **Dashboard de estadísticas**: issue abierto para rediseñarlo (ahora mismo se ve demasiado simple).
-2. Ningún otro issue abierto: la siguiente tarea es decisión del usuario (idea nueva o elevar `[Sin publicar]` de #30/#17/#40 con bump de versión; los commits de estas rondas quedan en `[Sin publicar]` sin bump).
-3. Si se abre el editor y guarda, `export_presets.cfg` se re-reescribe a su formato; comitear el cambio (AGENTS.md).
-4. `MEMORIA.md` y `README.md`/`CHANGELOG.md` se mantienen al día en cada ronda.
+1. Ningún issue abierto: la siguiente tarea es decisión del usuario (idea nueva o elevar `[Sin publicar]` de #30/#17/#40/#48/#49 con bump de versión; los commits de estas rondas quedan en `[Sin publicar]` sin bump).
+2. Si se abre el editor y guarda, `export_presets.cfg` se re-reescribe a su formato; comitear el cambio (AGENTS.md).
+3. `MEMORIA.md` y `README.md`/`CHANGELOG.md` se mantienen al día en cada ronda.
 
 ## Gotchas verificados (no repetir investigación)
 
@@ -88,4 +89,7 @@ Entregables: `scripts/cola_store.gd`, `scripts/informe_store.gd`, `scripts/tema_
 - **La batería ya NO borra las capturas reales** (arreglado en #48): la base de assets es `main.ASSETS_BASE` (`res://Assets` por defecto, la ventana de alta la hereda por el setter) y las cuatro suites que instancian `Main` la apuntan a `user://__test_*__/Assets`; `test_proyecto` vigila que nadie vuelva a escribir `res://Assets` a pelo ni a instanciar `Main` sin aislar la base. Antes de esto, `main.gd::_exit_tree()` barría huérfanas contra el catálogo de prueba y se llevaba las capturas del catálogo en cada batería (33/33 OK y aun así). `tests/ayuda.gd::borrar_arbol()` es la limpieza de las bases `user://__test_*__` (con subcarpetas, `DirAccess.remove_absolute` no borra directorios no vacíos).
 - **Recuperar una captura borrada desde la caché de importación** (solo si ya no está en git): los `.godot/imported/<nombre>-<hash>.ctex` se conservan (el limpiador solo borra el fuente) y con `compress/mode=0` el PNG vuelve **byte a byte idéntico**; el JPG se redecodifica y hay que re-guardar (misma imagen, otro peso). Script que lo hace: recorrer los `.import` de `res://Assets`, y si el `source_file` no existe, `ResourceLoader.load(path del [remap], "CompressedTexture2D", CACHE_MODE_IGNORE).get_image()` → `save_png`/`save_jpg`. Luego `--headless --import` para reimportar. Si la captura está versionada, `git checkout -- Assets` es más simple.
 - `--headless --import` escanea también `tests/` y escupe `Parse Error: Native class TextFile ...` + `Failed to load script "res://tests/test_preferencias.gd"` (el `preload` del `.tscn` aún no resuelve al escanear). Ruido benigno: `exit=0` y la suite pasa al ejecutarse con `--script`.
+- `queue_free()` **no saca el nodo del árbol hasta el frame siguiente**: al rellenar tablas hay que `remove_child` + `queue_free` si un test consulta `get_child_count()` justo después (si no, cuenta las filas viejas y las nuevas). Reutilizar el `PanelContainer` de `FilaTabla`/`TarjetaKpi` con `add_child` **antes** de `configurar()`, porque los `@onready` solo existen cuando el nodo entra en el árbol.
+- El escáner de `test_locale` no ve `add_theme_stylebox_override` ni `get_theme_stylebox`, así que para el globo del gráfico se duplica la caja del `TooltipPanel` del tema (`tema_store` la registra con `_caja_margen`) en vez de fijar un color a pelo; `get_theme_stylebox` en `_ready()` puede devolver el estilo por defecto de Godot si el tema aún no se aplicó (main aplica `TemaStore.aplicar` DESPUÉS de que los hijos estén listos) → resolver la caja al pintar, no al construir.
+- `test_locale` exige que **toda cadena de UI tenga clave en el CSV**: los `text = "..."` de las escenas y los `.text = "..."`/`.title =`/`add_item(` de los scripts registrados en `extraer_cadenas.gd` se extraen tal cual (con `…` si el original lo usa — la consola de pwsh muestra `…` como `.`, así que los anclajes hay que sacarlos con `[IO.File]::ReadAllText` y UTF-8). Los `.text = "formato %s"` con `%` solo pasan si la línea lleva `tr(`, así que los números se componen en una variable (`var pct := "%d%%" % n`) y se asignan aparte.
 - Conv.: tabs, sin comentarios, UI en español, preload-const en vez de class_name en código nuevo, `.gd.uid` versionados, bases `user://__test_*__` limpiadas.

@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/tarjeta_kpi.gd" id="1_kpi"]
+
+[node name="TarjetaKpi" type="PanelContainer"]
+custom_minimum_size = Vector2(128, 0)
+size_flags_horizontal = 3
+script = ExtResource("1_kpi")
+
+[node name="Margen" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="Margen"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Valor" type="Label" parent="Margen/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+horizontal_alignment = 1
+
+[node name="Etiqueta" type="Label" parent="Margen/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+
+[node name="Barra" type="ProgressBar" parent="Margen/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+show_percentage = false
+max_value = 100.0

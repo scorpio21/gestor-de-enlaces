@@ -109,6 +109,8 @@ func _ready() -> void:
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
 	ventana_agregar.lote_guardado.connect(_on_lote_guardado)
 	ventana_agregar.editado.connect(_on_enlace_editado)
+	dashboard.navegar.connect(_on_dashboard_navegar)
+	dashboard.comprobar_ya.connect(_scan_iniciar)
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new(CONFIG_BASE)
 	_cola_store = ColaStoreScript.new()
@@ -122,6 +124,7 @@ func _ready() -> void:
 	_auto_abrir = cfg.get("auto_abrir", true) == true
 	_intervalo_auto = int(cfg.get("intervalo", 0))
 	TemaStoreScript.aplicar(String(cfg.get("tema", "auto")), self)
+	dashboard.aplicar_paleta()
 	if DisplayServer.is_dark_mode_supported():
 		DisplayServer.set_system_theme_change_callback(Callable(self, "_on_tema_sistema_cambio"))
 	_orden_columna = str(cfg.get("orden_columna", ""))
@@ -473,6 +476,24 @@ func _ui_aplicar_filtro() -> void:
 
 func _contenedor_activo() -> Node:
 	return grilla if _modo_vista == "grilla" else lista
+
+
+func _on_dashboard_navegar(tipo: String, valor: String) -> void:
+	if valor.is_empty():
+		return
+	filtro.select(0)
+	filtro_cat.select(0)
+	if tipo == "categoria":
+		var indice := GestorCatalogoScript.CATEGORIAS.find(valor)
+		if indice < 0:
+			return
+		busqueda.text = ""
+		filtro_cat.select(indice + 1)
+	else:
+		busqueda.text = valor
+	dashboard.hide()
+	_ui_refrescar()
+	progreso.text = tr("Filtro aplicado desde el dashboard.")
 
 
 func _ui_toggle_vista() -> void:
@@ -1301,6 +1322,7 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	_auto_abrir = auto_abrir
 	_intervalo_auto = intervalo
 	TemaStoreScript.aplicar(tema, self)
+	dashboard.aplicar_paleta()
 	TranslationServer.set_locale(idioma)
 	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma, filtro.get_selected_id(), filtro_cat.get_selected_id(), _etiqueta_seleccionada(), busqueda.text, _codigo_seleccionado(), int(filtro_dias.value), _modo_busqueda(), _modo_vista):
 		TranslationServer.set_locale(locale_anterior)
@@ -1315,6 +1337,7 @@ func _on_tema_sistema_cambio() -> void:
 	var cfg: Dictionary = _config_store.cargar()
 	if str(cfg.get("tema", "auto")) == "auto":
 		TemaStoreScript.aplicar("auto", self)
+		dashboard.aplicar_paleta()
 
 
 func _retraducir_ui() -> void:

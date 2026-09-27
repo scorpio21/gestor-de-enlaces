@@ -131,6 +131,7 @@ static func _construir_tema() -> Theme:
 	t.set_stylebox("normal", "TextEdit", _caja(fondo_input, borde, 3))
 	t.set_stylebox("focus", "TextEdit", _caja(fondo_input, foco, 3))
 	t.set_stylebox("panel", "PanelContainer", _caja(fondo_panel, Color(1, 1, 1, 0), 0))
+	t.set_stylebox("panel", "TooltipPanel", _caja_margen(fondo_ventana, borde, 4, Vector2(8, 4)))
 	t.set_stylebox("panel", "ScrollContainer", _caja(Color(1, 1, 1, 0), Color(1, 1, 1, 0), 0))
 	t.set_stylebox("panel", "MenuBar", _caja(fondo_ventana, Color(1, 1, 1, 0), 0))
 	t.set_stylebox("panel", "Window", _caja(fondo_ventana, Color(1, 1, 1, 0), 0))
@@ -144,6 +145,10 @@ static func _construir_tema() -> Theme:
 	return t
 
 
+static func relleno(color: Color, radio := 3) -> StyleBoxFlat:
+	return _caja(color, Color(1, 1, 1, 0), radio)
+
+
 static func _caja(fondo: Color, borde: Color, radio: int) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = fondo
@@ -151,6 +156,15 @@ static func _caja(fondo: Color, borde: Color, radio: int) -> StyleBoxFlat:
 		sb.set_border_width_all(1)
 		sb.border_color = borde
 	sb.set_corner_radius_all(radio)
+	return sb
+
+
+static func _caja_margen(fondo: Color, borde: Color, radio: int, margen: Vector2) -> StyleBoxFlat:
+	var sb := _caja(fondo, borde, radio)
+	sb.content_margin_left = margen.x
+	sb.content_margin_right = margen.x
+	sb.content_margin_top = margen.y
+	sb.content_margin_bottom = margen.y
 	return sb
 
 

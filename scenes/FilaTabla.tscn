@@ -1,0 +1,63 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/fila_tabla.gd" id="1_fila"]
+
+[node name="FilaTabla" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 30)
+mouse_filter = 0
+script = ExtResource("1_fila")
+
+[node name="Margen" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 5
+
+[node name="VBox" type="VBoxContainer" parent="Margen"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Fila" type="HBoxContainer" parent="Margen/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Nombre" type="Label" parent="Margen/VBox/Fila"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = ""
+clip_text = true
+
+[node name="ColA" type="Label" parent="Margen/VBox/Fila"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(46, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 2
+text = ""
+
+[node name="ColB" type="Label" parent="Margen/VBox/Fila"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(46, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 2
+text = ""
+
+[node name="ColC" type="Label" parent="Margen/VBox/Fila"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 2
+text = ""
+
+[node name="Barra" type="ProgressBar" parent="Margen/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+show_percentage = false
+max_value = 100.0

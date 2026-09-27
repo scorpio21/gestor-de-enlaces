@@ -1,13 +1,15 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/dashboard_ui.gd" id="1_dash"]
 [ext_resource type="Script" path="res://scripts/grafico_dashboard.gd" id="2_graf"]
+[ext_resource type="PackedScene" path="res://scenes/TarjetaKpi.tscn" id="3_kpi"]
 
 [node name="VentanaDashboard" type="Window"]
-title = "Dashboard de estadísticas"
+title = "Estadísticas del catálogo"
 initial_position = 2
 wrap_controls = true
-size = Vector2i(760, 560)
+size = Vector2i(1000, 720)
+min_size = Vector2i(760, 480)
 exclusive = true
 visible = false
 script = ExtResource("1_dash")
@@ -27,104 +29,420 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
 
-[node name="Columna" type="VBoxContainer" parent="Margen"]
+[node name="Desplazable" type="ScrollContainer" parent="Margen"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Columna" type="VBoxContainer" parent="Margen/Desplazable"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="Cabecera" type="HBoxContainer" parent="Margen/Desplazable/Columna"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ResumenLabel" type="Label" parent="Margen/Columna"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-text = ""
-
-[node name="PctLabel" type="Label" parent="Margen/Columna"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = ""
-
-[node name="Filas" type="HBoxContainer" parent="Margen/Columna"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 12
-
-[node name="PanelCategoria" type="VBoxContainer" parent="Margen/Columna/Filas"]
+[node name="Titulo" type="Label" parent="Margen/Desplazable/Columna/Cabecera"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 18
+text = "Estadísticas del catálogo"
+
+[node name="Rango" type="OptionButton" parent="Margen/Desplazable/Columna/Cabecera"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Rango de días incluido en el gráfico"
+
+[node name="BotonCerrar" type="Button" parent="Margen/Desplazable/Columna/Cabecera"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+text = "Cerrar"
+
+[node name="Datos" type="VBoxContainer" parent="Margen/Desplazable/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Kpis" type="HBoxContainer" parent="Margen/Desplazable/Columna/Datos"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="KpiTotal" parent="Margen/Desplazable/Columna/Datos/Kpis" instance=ExtResource("3_kpi")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="KpiDisponibles" parent="Margen/Desplazable/Columna/Datos/Kpis" instance=ExtResource("3_kpi")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="KpiCaidos" parent="Margen/Desplazable/Columna/Datos/Kpis" instance=ExtResource("3_kpi")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="KpiSinComprobar" parent="Margen/Desplazable/Columna/Datos/Kpis" instance=ExtResource("3_kpi")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="PanelDisponibilidad" type="PanelContainer" parent="Margen/Desplazable/Columna/Datos"]
+layout_mode = 2
+
+[node name="MargenDisp" type="MarginContainer" parent="Margen/Desplazable/Columna/Datos/PanelDisponibilidad"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelDisponibilidad/MargenDisp"]
+layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="TituloCategoria" type="Label" parent="Margen/Columna/Filas/PanelCategoria"]
+[node name="Fila" type="HBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelDisponibilidad/MargenDisp/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EtiquetaDisponibilidad" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelDisponibilidad/MargenDisp/VBox/Fila"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 13
+text = "Disponibilidad"
+
+[node name="PctDisponibilidad" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelDisponibilidad/MargenDisp/VBox/Fila"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+
+[node name="BarraDisponibilidad" type="ProgressBar" parent="Margen/Desplazable/Columna/Datos/PanelDisponibilidad/MargenDisp/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+show_percentage = false
+max_value = 100.0
+
+[node name="PanelGrafico" type="PanelContainer" parent="Margen/Desplazable/Columna/Datos"]
+layout_mode = 2
+
+[node name="MargenGraf" type="MarginContainer" parent="Margen/Desplazable/Columna/Datos/PanelGrafico"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CabeceraGrafico" type="HBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TituloGrafico" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox/CabeceraGrafico"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "Comprobaciones por día"
+
+[node name="AyudaGrafico" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox/CabeceraGrafico"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Pasa el ratón por una barra para ver el detalle."
+
+[node name="Leyenda" type="HBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="LeyendaOk" type="ColorRect" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox/Leyenda"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.35, 0.85, 0.45, 1)
+
+[node name="LeyendaOkTexto" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox/Leyenda"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 11
+text = "Válidos"
+
+[node name="LeyendaCaido" type="ColorRect" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox/Leyenda"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.95, 0.35, 0.35, 1)
+
+[node name="LeyendaCaidoTexto" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox/Leyenda"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 11
+text = "Caídos"
+
+[node name="Grafico" type="Control" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 170)
+layout_mode = 2
+script = ExtResource("2_graf")
+
+[node name="PanelTablas" type="HBoxContainer" parent="Margen/Desplazable/Columna/Datos"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PanelCategorias" type="PanelContainer" parent="Margen/Desplazable/Columna/Datos/PanelTablas"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MargenCat" type="MarginContainer" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelCategorias"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelCategorias/MargenCat"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TituloCategorias" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelCategorias/MargenCat/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Por categoría"
 
-[node name="ListaCategorias" type="ItemList" parent="Margen/Columna/Filas/PanelCategoria"]
+[node name="CabeceraCategorias" type="HBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelCategorias/MargenCat/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_constants/separation = 8
 
-[node name="PanelHost" type="VBoxContainer" parent="Margen/Columna/Filas"]
+[node name="Nombre" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelCategorias/MargenCat/VBox/CabeceraCategorias"]
+custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+flat = true
+text = "Nombre"
+
+[node name="V1" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelCategorias/MargenCat/VBox/CabeceraCategorias"]
+custom_minimum_size = Vector2(46, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+alignment = 2
+text = "Válidos"
+
+[node name="V2" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelCategorias/MargenCat/VBox/CabeceraCategorias"]
+custom_minimum_size = Vector2(46, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+alignment = 2
+text = "Caídos"
+
+[node name="V3" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelCategorias/MargenCat/VBox/CabeceraCategorias"]
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+alignment = 2
+text = "Disp."
+
+[node name="ListaCategorias" type="VBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelCategorias/MargenCat/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PanelHosts" type="PanelContainer" parent="Margen/Desplazable/Columna/Datos/PanelTablas"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MargenHost" type="MarginContainer" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelHosts"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelHosts/MargenHost"]
+layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="TituloHost" type="Label" parent="Margen/Columna/Filas/PanelHost"]
+[node name="TituloHosts" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelHosts/MargenHost/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Por host (problemáticos)"
 
-[node name="ListaHosts" type="ItemList" parent="Margen/Columna/Filas/PanelHost"]
+[node name="CabeceraHosts" type="HBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelHosts/MargenHost/VBox"]
 unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="PanelGrafico" type="VBoxContainer" parent="Margen/Columna"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 6
-
-[node name="TituloGrafico" type="Label" parent="Margen/Columna/PanelGrafico"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "Comprobaciones por día"
-
-[node name="Grafico" type="Control" parent="Margen/Columna/PanelGrafico"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 150)
-layout_mode = 2
-size_flags_vertical = 3
-mouse_filter = 2
-script = ExtResource("2_graf")
-
-[node name="Acciones" type="HBoxContainer" parent="Margen/Columna"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="BotonCsv" type="Button" parent="Margen/Columna/Acciones"]
+[node name="Nombre" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelHosts/MargenHost/VBox/CabeceraHosts"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+flat = true
+text = "Nombre"
+
+[node name="V1" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelHosts/MargenHost/VBox/CabeceraHosts"]
+custom_minimum_size = Vector2(46, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+alignment = 2
+text = "Válidos"
+
+[node name="V2" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelHosts/MargenHost/VBox/CabeceraHosts"]
+custom_minimum_size = Vector2(46, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+alignment = 2
+text = "Caídos"
+
+[node name="V3" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelHosts/MargenHost/VBox/CabeceraHosts"]
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+alignment = 2
+text = "Disp."
+
+[node name="ListaHosts" type="VBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelTablas/PanelHosts/MargenHost/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="AyudaNavegar" type="Label" parent="Margen/Desplazable/Columna/Datos"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Doble clic en una fila para verla en la lista."
+
+[node name="PanelTop" type="PanelContainer" parent="Margen/Desplazable/Columna/Datos"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MargenTop" type="MarginContainer" parent="Margen/Desplazable/Columna/Datos/PanelTop"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelTop/MargenTop"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TituloTop" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelTop/MargenTop/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Enlaces que más han caído"
+
+[node name="CabeceraTop" type="HBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelTop/MargenTop/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Nombre" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTop/MargenTop/VBox/CabeceraTop"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+flat = true
+text = "Enlace"
+
+[node name="T1" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTop/MargenTop/VBox/CabeceraTop"]
+custom_minimum_size = Vector2(46, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+alignment = 2
+text = "Veces"
+
+[node name="T2" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTop/MargenTop/VBox/CabeceraTop"]
+custom_minimum_size = Vector2(46, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+alignment = 2
+text = "Código"
+
+[node name="T3" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelTop/MargenTop/VBox/CabeceraTop"]
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+alignment = 2
+text = "Última"
+
+[node name="ListaTop" type="VBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelTop/MargenTop/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="AvisoSinComprobar" type="Label" parent="Margen/Desplazable/Columna"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar."
+
+[node name="EstadoVacio" type="VBoxContainer" parent="Margen/Desplazable/Columna"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TituloVacio" type="Label" parent="Margen/Desplazable/Columna/EstadoVacio"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "El catálogo está vacío."
+
+[node name="AyudaVacio" type="Label" parent="Margen/Desplazable/Columna/EstadoVacio"]
+layout_mode = 2
+theme_override_constants/separation = 8
+text = "Añade enlaces o importa un catálogo para ver aquí sus estadísticas."
+
+[node name="BotonComprobar" type="Button" parent="Margen/Desplazable/Columna/EstadoVacio"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Comprobar enlaces"
+
+[node name="Acciones" type="HBoxContainer" parent="Margen/Desplazable/Columna"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BotonCsv" type="Button" parent="Margen/Desplazable/Columna/Acciones"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Exportar CSV"
 
-[node name="BotonJson" type="Button" parent="Margen/Columna/Acciones"]
+[node name="BotonJson" type="Button" parent="Margen/Desplazable/Columna/Acciones"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Exportar JSON"
 
-[node name="Nota" type="Label" parent="Margen/Columna/Acciones"]
+[node name="Nota" type="Label" parent="Margen/Desplazable/Columna/Acciones"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = ""
-
-[node name="BotonCerrar" type="Button" parent="Margen/Columna/Acciones"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Cerrar"
 
 [node name="DialogoExportar" type="FileDialog" parent="."]
 unique_name_in_owner = true
