@@ -17,6 +17,7 @@ var fecha := 0
 const LinkCheckerScript := preload("res://scripts/link_checker.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
+const RutasScript := preload("res://scripts/rutas.gd")
 
 var url: String = ""
 var nombre := ""
@@ -57,8 +58,9 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "", ca
 	_pintar_estado(tr("Sin comprobar"), "sin_comprobar")
 	self.categoria = GestorCatalogoScript.normalizar_categoria(categoria)
 	%CategoriaLabel.text = GestorCatalogoScript.new().categoria_display(self.categoria)
-	if imagen != "" and FileAccess.file_exists(imagen):
-		var img := Image.load_from_file(imagen)
+	var ruta := RutasScript.resolver(imagen)
+	if ruta != "":
+		var img := Image.load_from_file(ruta)
 		if img != null and not img.is_empty():
 			%Imagen.texture = ImageTexture.create_from_image(img)
 

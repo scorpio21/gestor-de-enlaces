@@ -231,6 +231,17 @@ func _arrancar() -> void:
 	main_script._on_utilidades_id(2)
 	_check(FileAccess.file_exists(ProjectSettings.globalize_path(ref_huerfana)), "limpieza conserva la captura referenciada")
 
+	# Catálogo: las capturas del paquete no se tocan (#50)
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": "res://Assets/png/no-disponible.png"}]
+	_check(not main_script._es_captura_propia("res://Assets/png/no-disponible.png"), "una captura del paquete no es propia (#50)")
+	main_script._borrar_captura_si_huerfana("res://Assets/png/no-disponible.png")
+	main_script._hacer_limpieza_capturas()
+	_check(FileAccess.file_exists("res://Assets/png/no-disponible.png"), "ni el descarte ni la limpieza tocan las capturas del paquete (#50)")
+	main_script._ui_refrescar()
+	await process_frame
+	var fila_paquete: Button = main.get_node("%ListaContenedor").get_child(0)
+	_check(fila_paquete.get_node("%Imagen").texture != null, "una captura del paquete se ve en la lista (#50)")
+
 	var huerfana_exit := _crear_captura("img_test_exit.png")
 	main_script._exit_tree()
 	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(huerfana_exit)), "al cerrar la app se barre lo huérfano")

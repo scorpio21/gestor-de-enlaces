@@ -143,6 +143,7 @@ No se pudo guardar la configuración.,No se pudo guardar la configuración.,Coul
 No se pudo iniciar la conexión,No se pudo iniciar la conexión,Could not start the connection
 No se pudo procesar la imagen.,No se pudo procesar la imagen.,Could not process the image.
 No se pudo restaurar la copia.,No se pudo restaurar la copia.,Could not restore the backup.
+No se pudo escribir el catálogo base.,No se pudo escribir el catálogo base.,Could not write the base catalogue.
 Nombre,Nombre,Name
 Nueva versión disponible,Nueva versión disponible,New version available
 OK (%d),OK (%d),OK (%d)

@@ -8,8 +8,9 @@ const PLACEHOLDER := preload("res://Assets/png/no-disponible.png")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
+const RutasScript := preload("res://scripts/rutas.gd")
 
-var ASSETS_BASE := "res://Assets"
+var ASSETS_BASE := RutasScript.ASSETS_USER
 
 @onready var nombre: LineEdit = %Nombre
 @onready var descripcion: LineEdit = %Descripcion
@@ -149,8 +150,9 @@ func _alternar_etiqueta(etiqueta: String) -> void:
 func _fijar_imagen(ruta: String) -> void:
 	_imagen_ruta = ""
 	_quitar_imagen = false
-	if ruta != "" and FileAccess.file_exists(ruta):
-		var img := Image.load_from_file(ruta)
+	var resuelta := RutasScript.resolver(ruta)
+	if resuelta != "":
+		var img := Image.load_from_file(resuelta)
 		vista_previa.texture = ImageTexture.create_from_image(img) if img != null and not img.is_empty() else PLACEHOLDER
 	else:
 		vista_previa.texture = PLACEHOLDER

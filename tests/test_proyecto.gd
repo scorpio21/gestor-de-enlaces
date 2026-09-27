@@ -7,7 +7,7 @@ func _initialize() -> void:
 	_check(_version_ok(), "project.godot tiene config/version=0.1.9")
 	_check(_icon_ok(), "project.godot apunta a Assets/icon/icon.svg")
 	_check(_title_ok(), "project.godot tiene título GestorAO v0.1.9")
-	_a_assets()
+	_rutas()
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -16,25 +16,25 @@ func _initialize() -> void:
 	quit(1)
 
 
-func _a_assets() -> void:
-	var permitidas := [
-		'var ASSETS_BASE := "res://Assets"',
-		'const PLACEHOLDER := preload("res://Assets/png/no-disponible.png")',
-	]
-	for ruta in ["res://scripts/main.gd", "res://scripts/agregar_enlace.gd"]:
-		var limpio := FileAccess.get_file_as_string(ruta)
-		for decl in permitidas:
-			limpio = limpio.replace(decl, "")
-		_check(limpio.count("res://Assets") == 0, "%s no vuelve a escribir res://Assets a pelo (#48)" % ruta.get_file())
+func _rutas() -> void:
+	for ruta in ["res://scripts/main.gd", "res://scripts/agregar_enlace.gd", "res://scripts/list_item.gd", "res://scripts/gestor_imagenes.gd"]:
+		var sueltas := 0
+		for linea in FileAccess.get_file_as_string(ruta).split("\n"):
+			if "res://" in linea and "preload(\"res://" not in linea:
+				sueltas += 1
+		_check(sueltas == 0, "%s solo usa res:// dentro de preload (#50)" % ruta.get_file())
+	var rutas_txt := FileAccess.get_file_as_string("res://scripts/rutas.gd")
+	_check('const ASSETS_RES := "res://Assets"' in rutas_txt and 'const ASSETS_USER := "user://Assets"' in rutas_txt, "rutas.gd separa la base de lectura de la de escritura (#50)")
+	_check(FileAccess.get_file_as_string("res://scripts/main.gd").contains("RutasScript.es_escribible(DATA_RES)"), "main.gd no escribe el catálogo base sin comprobar (#50)")
 	var dir := DirAccess.open("res://tests")
-	var sueltas: Array = []
+	var sueltas_test: Array = []
 	if dir != null:
 		for f in dir.get_files():
 			if f.ends_with(".gd") and f.begins_with("test_"):
 				var txt := FileAccess.get_file_as_string("res://tests/%s" % f)
 				if txt.contains("MAIN_SCENE.instantiate()") and not txt.contains("ASSETS_BASE"):
-					sueltas.append(f)
-	_check(sueltas.is_empty(), "toda suite que instancia Main aísla ASSETS_BASE (#48)" + ("" if sueltas.is_empty() else ": %s" % ", ".join(sueltas)))
+					sueltas_test.append(f)
+	_check(sueltas_test.is_empty(), "toda suite que instancia Main aísla ASSETS_BASE (#48)" + ("" if sueltas_test.is_empty() else ": %s" % ", ".join(sueltas_test)))
 
 
 func _version_ok() -> bool:

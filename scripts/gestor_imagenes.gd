@@ -1,11 +1,13 @@
 extends RefCounted
 
+const RutasScript := preload("res://scripts/rutas.gd")
+
 const ARCHIVOS_FIJOS := ["no-disponible.png"]
 const CARACTERES_INVALIDOS := ["<", ">", ":", "\"", "/", "\\", "|", "?", "*"]
 const LONGITUD_MAX := 60
 
 
-static func copiar(origen: String, nombre_base := "", base := "res://Assets") -> Dictionary:
+static func copiar(origen: String, nombre_base := "", base := RutasScript.ASSETS_USER) -> Dictionary:
 	if origen.is_empty():
 		return {"ok": true, "destino": "", "error": ""}
 
@@ -119,7 +121,7 @@ static func borrar(ruta: String) -> Dictionary:
 	return {"ok": false, "error": "No se pudo borrar la captura."}
 
 
-static func limpiar_huerfanas(referidas: Array, base := "res://Assets") -> Dictionary:
+static func limpiar_huerfanas(referidas: Array, base := RutasScript.ASSETS_USER) -> Dictionary:
 	var referidas_str: Array = []
 	for r in referidas:
 		referidas_str.append(str(r))

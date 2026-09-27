@@ -3,9 +3,10 @@ extends Control
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const GRID_ITEM_SCENE := preload("res://scenes/GridItem.tscn")
 const TOPE_POR_HOST := 2
-var DATA_RES := "res://data/data.json"
+const RutasScript := preload("res://scripts/rutas.gd")
+var DATA_RES := RutasScript.CATALOGO_RES
 var DATA_USER := "user://enlaces.json"
-var ASSETS_BASE := "res://Assets":
+var ASSETS_BASE := RutasScript.ASSETS_USER:
 	set(valor):
 		ASSETS_BASE = valor
 		var ventana := get_node_or_null("%VentanaAgregar")
@@ -90,6 +91,7 @@ var _dialogo_con_aviso := false
 var _presets_store: RefCounted = null
 var _presets: Dictionary = {}
 var _boton_eliminar_preset: Button = null
+var _aviso_base := ""
 
 
 func _ready() -> void:
@@ -775,7 +777,7 @@ func _ui_confirmar_borrado() -> void:
 			_entradas.remove_at(i)
 
 	item.queue_free()
-	if _es_captura_base(imagen_borrada) and imagen_borrada != "%s/png/%s" % [ASSETS_BASE, GestorImagenesScript.ARCHIVOS_FIJOS[0]]:
+	if _es_captura_propia(imagen_borrada) and imagen_borrada != "%s/png/%s" % [ASSETS_BASE, GestorImagenesScript.ARCHIVOS_FIJOS[0]]:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(imagen_borrada))
 	progreso.text = tr("Enlace eliminado")
 	_ui_aplicar_filtro()
@@ -1050,7 +1052,13 @@ func _on_diag_elegido(ruta: String) -> void:
 	var base := "user://"
 	if _logger != null:
 		base = _logger_base()
-	var res := DiagnosticoScript.exportar(ruta, base, str(ProjectSettings.get_setting("application/config/version", "0.0.1")), _entradas.size())
+	var res := DiagnosticoScript.exportar(ruta, base, str(ProjectSettings.get_setting("application/config/version", "0.0.1")), _entradas.size(), {
+		"assets_lectura": RutasScript.ASSETS_RES,
+		"assets_escritura": ASSETS_BASE,
+		"catalogo_base": DATA_RES,
+		"enlaces": DATA_USER,
+		"config": CONFIG_BASE,
+	})
 	if not res.get("ok", false):
 		progreso.text = tr("No se pudo exportar el diagnóstico (%d errores).") % int(res.get("errores", 0))
 		return
@@ -1073,7 +1081,7 @@ func _on_enlace_guardado(datos: Dictionary) -> void:
 		return
 	_ui_refrescar()
 	_ui_status()
-	progreso.text = tr("Enlace agregado: %s") % datos.get("nombre", "")
+	progreso.text = _estado_texto(tr("Enlace agregado: %s") % datos.get("nombre", ""))
 	if datos.get("img_reutilizada", false):
 		progreso.text += " · " + tr("Captura reutilizada")
 
@@ -1122,7 +1130,7 @@ func _on_lote_guardado(urls: Array) -> void:
 		partes.append(tr("%d inválidas ignoradas.") % invalidas.size())
 	_ui_refrescar()
 	_ui_status()
-	progreso.text = " ".join(partes)
+	progreso.text = _estado_texto(" ".join(partes))
 
 
 func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
@@ -1178,7 +1186,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 		_borrar_captura_si_huerfana(img_anterior)
 	_ui_refrescar()
 	_ui_status()
-	progreso.text = tr("Enlace actualizado: %s") % str(datos.get("nombre", ""))
+	progreso.text = _estado_texto(tr("Enlace actualizado: %s") % str(datos.get("nombre", "")))
 	if captura_reutilizada:
 		progreso.text += " · " + tr("Captura reutilizada")
 
@@ -1189,8 +1197,19 @@ func _guardar_datos() -> bool:
 	if not GestorDatosScript.guardar(DATA_USER, _entradas):
 		progreso.text = tr("No se pudo guardar el enlace.")
 		return false
-	GestorDatosScript.guardar(DATA_RES, _entradas)
+	_guardar_catalogo_base(RutasScript.es_escribible(DATA_RES))
 	return true
+
+
+func _guardar_catalogo_base(escribible: bool) -> void:
+	if not escribible or not _aviso_base.is_empty():
+		return
+	if not GestorDatosScript.guardar(DATA_RES, _entradas):
+		_aviso_base = tr("No se pudo escribir el catálogo base.")
+
+
+func _estado_texto(texto: String) -> String:
+	return "%s · %s" % [texto, _aviso_base] if not _aviso_base.is_empty() else texto
 
 
 func _urls_existentes() -> Array:
@@ -1235,12 +1254,12 @@ func _indice_entrada(url: String) -> int:
 	return -1
 
 
-func _es_captura_base(ruta: String) -> bool:
-	return ruta.begins_with("%s/png/" % ASSETS_BASE) or ruta.begins_with("%s/jpg/" % ASSETS_BASE)
+func _es_captura_propia(ruta: String) -> bool:
+	return RutasScript.en_base(ruta, ASSETS_BASE)
 
 
 func _borrar_captura_si_huerfana(ruta: String) -> void:
-	if not _es_captura_base(ruta):
+	if not _es_captura_propia(ruta):
 		return
 	if ruta.get_file() in GestorImagenesScript.ARCHIVOS_FIJOS:
 		return
@@ -1256,7 +1275,7 @@ func _rutas_captura_referidas() -> Array:
 		for entrada in lista:
 			if typeof(entrada) != TYPE_DICTIONARY:
 				continue
-			var ruta := str(entrada.get("img", ""))
+			var ruta := RutasScript.resolver(str(entrada.get("img", "")), ASSETS_BASE)
 			if not ruta.is_empty():
 				rutas[ruta] = true
 	return rutas.keys()

@@ -249,6 +249,25 @@ func _arrancar() -> void:
 	main_script._on_exportar_elegido(ruta_exp)
 	_check(FileAccess.file_exists(ruta_exp) and (JSON.parse_string(FileAccess.get_file_as_string(ruta_exp)) as Array).size() == 3, "exportar escribe un JSON con el catálogo")
 
+	# Rutas de escritura (#50)
+	main_script._persistir = true
+	main_script._aviso_base = ""
+	var data_res: String = main_script.DATA_RES
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(data_res))
+	main_script._guardar_catalogo_base(false)
+	_check(not FileAccess.file_exists(data_res) and main_script._aviso_base.is_empty(), "sin permiso no se toca el catálogo base ni se avisa (#50)")
+	_check(main_script._estado_texto("Alta") == "Alta", "sin aviso de base el texto de la barra queda intacto (#50)")
+	main_script._guardar_catalogo_base(true)
+	_check(FileAccess.file_exists(data_res) and main_script._aviso_base.is_empty(), "con permiso se escribe el catálogo base (#50)")
+	main_script.DATA_RES = "res://__test_main_flujos_ausente__/data.json"
+	main_script._guardar_catalogo_base(true)
+	_check(main_script._aviso_base == "No se pudo escribir el catálogo base.", "si el catálogo base no se puede escribir se avisa (#50)")
+	_check(not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path("res://__test_main_flujos_ausente__")), "el intento fallido no crea carpetas en res:// (#50)")
+	_check(main_script._estado_texto("Alta") == "Alta · No se pudo escribir el catálogo base.", "el aviso de base se añade al texto de la barra (#50)")
+	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""}]
+	main_script._on_enlace_guardado({"nombre": "B", "desc": "", "url": "https://b.test", "img": ""})
+	_check(main.get_node("%Progreso").text == "Enlace agregado: B · No se pudo escribir el catálogo base.", "el aviso de base sale con el mensaje de alta (#50)")
+	main_script.DATA_RES = data_res
 	main_script._persistir = false
 	_cerrar()
 

@@ -17,6 +17,15 @@ func _initialize() -> void:
 	_check(_info_ok(), "info.txt incluye App, Version, OS, Entradas=7")
 	_check(_omite_inexistentes(), "ficheros inexistentes (borrados.json) se omiten sin error")
 	DirAccess.remove_absolute(BASE)
+	DirAccess.make_dir_recursive_absolute(BASE)
+	var res_rutas: Dictionary = DiagnosticoScript.exportar(ZIP, BASE, "0.1.0", 0, {
+		"assets_lectura": "res://Assets",
+		"assets_escritura": "user://Assets",
+		"catalogo_base": "res://data/data.json",
+	})
+	_check(res_rutas.get("ok", false), "exportar con rutas vuelve sin error")
+	_check(_info_con_rutas(), "info.txt lleva Editor y las bases efectivas (#50)")
+	DirAccess.remove_absolute(BASE)
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -62,6 +71,18 @@ func _omite_inexistentes() -> bool:
 	var ok := not ("borrados.json" in z.get_files())
 	z.close()
 	return ok
+
+
+func _info_con_rutas() -> bool:
+	var z := ZIPReader.new()
+	if z.open(ZIP) != OK:
+		return false
+	var txt := z.read_file("info.txt").get_string_from_utf8()
+	z.close()
+	return "Editor=" in txt and "Pck=" in txt \
+		and "assets_lectura=res://Assets" in txt \
+		and "assets_escritura=user://Assets" in txt \
+		and "catalogo_base=res://data/data.json" in txt
 
 
 func _check(condicion: bool, etiqueta: String) -> void:
