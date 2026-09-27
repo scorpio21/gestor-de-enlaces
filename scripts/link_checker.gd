@@ -5,6 +5,8 @@ signal terminado(valido: bool, mensaje: String)
 var timeout_s: float = 10.0
 var codigo := 0
 const MAX_REDIRECTS := 6
+const LIMITE_CUERPO := 65536
+const ESPERA_CUERPO := 0.4
 const MARCAS_MUERTO: PackedStringArray = [
 	"file not found",
 	"has been deleted",
@@ -63,6 +65,10 @@ var _redirects := 0
 var _pedido_enviado := false
 var _activo := false
 var _host_actual := ""
+var _cuerpo := ""
+var _leidos := 0
+var _espera := 0.0
+var _reintento_sin_rango := false
 
 
 func comprobar(url: String) -> void:
@@ -87,22 +93,43 @@ func _process(delta: float) -> void:
 
 	_cliente.poll()
 	match _cliente.get_status():
-		HTTPClient.STATUS_DISCONNECTED:
-			if _pedido_enviado:
-				_cerrar(tr("Conexión cerrada"), false)
 		HTTPClient.STATUS_CANT_RESOLVE:
 			_cerrar(tr("No existe el dominio"), false)
 		HTTPClient.STATUS_CANT_CONNECT:
 			_cerrar(tr("No se pudo conectar"), false)
-		HTTPClient.STATUS_CONNECTION_ERROR:
-			_cerrar(tr("Error de conexión"), false)
 		HTTPClient.STATUS_TLS_HANDSHAKE_ERROR:
 			_cerrar(tr("Error TLS/HTTPS"), false)
+		HTTPClient.STATUS_CONNECTION_ERROR:
+			_tras_cuerpo("Error de conexión")
+		HTTPClient.STATUS_DISCONNECTED:
+			_tras_cuerpo("Conexión cerrada")
 		HTTPClient.STATUS_CONNECTED:
 			if not _pedido_enviado:
 				_enviar_pedido()
+			else:
+				_tras_cuerpo("")
+		HTTPClient.STATUS_REQUESTING:
+			_tras_cuerpo("")
 		HTTPClient.STATUS_BODY:
 			_leer_respuesta()
+
+
+func _tras_cuerpo(sin_codigo: String) -> void:
+	if not _pedido_enviado:
+		return
+	_actualizar_codigo()
+	if codigo != 0:
+		_veredicto(true)
+		return
+	if not sin_codigo.is_empty():
+		_cerrar(tr(sin_codigo), false)
+
+
+func _actualizar_codigo() -> void:
+	if codigo == 0:
+		codigo = _cliente.get_response_code()
+	if codigo == 206:
+		codigo = 200
 
 
 func _conectar(url: String) -> void:
@@ -113,6 +140,11 @@ func _conectar(url: String) -> void:
 
 	_cliente.close()
 	_pedido_enviado = false
+	codigo = 0
+	_cuerpo = ""
+	_leidos = 0
+	_espera = 0.0
+	_reintento_sin_rango = false
 	var tls: TLSOptions = TLSOptions.client() if partes.tls else null
 	var err := _cliente.connect_to_host(partes.host, partes.port, tls)
 	if err != OK:
@@ -125,14 +157,13 @@ func _enviar_pedido() -> void:
 		_cerrar(tr("URL inválida"), false)
 		return
 
-	var err := _cliente.request(
-		HTTPClient.METHOD_GET,
-		partes.path,
-		PackedStringArray([
-			"User-Agent: Mozilla/5.0 (compatible; GestorAO/1.0)",
-			"Accept: text/html,*/*",
-		])
-	)
+	var cabeceras := PackedStringArray([
+		"User-Agent: Mozilla/5.0 (compatible; GestorAO/1.0)",
+		"Accept: text/html,*/*",
+	])
+	if not _reintento_sin_rango:
+		cabeceras.append("Range: bytes=0-%d" % (LIMITE_CUERPO - 1))
+	var err := _cliente.request(HTTPClient.METHOD_GET, partes.path, cabeceras)
 	if err != OK:
 		_cerrar(tr("No se pudo enviar la petición"), false)
 		return
@@ -140,7 +171,7 @@ func _enviar_pedido() -> void:
 
 
 func _leer_respuesta() -> void:
-	codigo = _cliente.get_response_code()
+	_actualizar_codigo()
 	if codigo in [301, 302, 303, 307, 308]:
 		var destino := _cabecera("Location")
 		if destino.is_empty() or _redirects >= MAX_REDIRECTS:
@@ -153,8 +184,44 @@ func _leer_respuesta() -> void:
 		_conectar(_url)
 		return
 
-	var fragmento := _cliente.read_response_body_chunk().get_string_from_utf8().to_lower()
-	if _parece_muerto(codigo, fragmento):
+	if codigo == 416 and not _reintento_sin_rango:
+		_transcurrido = 0.0
+		_conectar(_url)
+		_reintento_sin_rango = true
+		return
+
+	_acumular_cuerpo()
+	_veredicto()
+
+
+func _acumular_cuerpo() -> void:
+	var nuevos := 0
+	while _leidos < LIMITE_CUERPO and _cliente.get_status() == HTTPClient.STATUS_BODY:
+		var trozo := _cliente.read_response_body_chunk()
+		if trozo.is_empty():
+			break
+		var utiles := mini(trozo.size(), LIMITE_CUERPO - _leidos)
+		_leidos += utiles
+		_cuerpo += trozo.slice(0, utiles).get_string_from_utf8().to_lower()
+		nuevos += 1
+		if _parece_muerto(codigo, _cuerpo):
+			break
+	_espera = 0.0 if nuevos > 0 else _espera + get_process_delta_time()
+
+
+func _cuerpo_completo() -> bool:
+	if _leidos >= LIMITE_CUERPO:
+		return true
+	var largo := _cliente.get_response_body_length()
+	if largo >= 0 and _leidos >= largo:
+		return true
+	return _espera >= ESPERA_CUERPO
+
+
+func _veredicto(forzar := false) -> void:
+	if not forzar and codigo >= 200 and codigo < 400 and not _cuerpo_completo():
+		return
+	if _parece_muerto(codigo, _cuerpo):
 		_cerrar(tr("No existe (%d)") % codigo, false)
 		return
 
@@ -163,9 +230,6 @@ func _leer_respuesta() -> void:
 		return
 	if codigo == 401 or codigo == 403:
 		_cerrar(tr("Existe, acceso restringido (%d)") % codigo, true)
-		return
-	if codigo == 404 or codigo == 410:
-		_cerrar(tr("No existe (%d)") % codigo, false)
 		return
 
 	_cerrar(tr("Error HTTP %d") % codigo, false)
