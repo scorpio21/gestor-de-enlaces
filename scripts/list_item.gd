@@ -18,6 +18,8 @@ const LinkCheckerScript := preload("res://scripts/link_checker.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const RutasScript := preload("res://scripts/rutas.gd")
+const CacheTexturasScript := preload("res://scripts/cache_texturas.gd")
+const PLACEHOLDER := preload("res://Assets/png/no-disponible.png")
 
 var url: String = ""
 var nombre := ""
@@ -26,6 +28,7 @@ var estado: String = "pendiente"
 var valido: Variant = null
 var categoria: String = "otro"
 var tags: Array = []
+var en_escaneo := false
 
 var _checker: Node = null
 var _timeout := 10.0
@@ -51,6 +54,12 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "", ca
 	self.img = imagen
 	url = enlace
 	text = ""
+	valido = null
+	mensaje = ""
+	codigo = 0
+	fecha = 0
+	estado = "pendiente"
+	tags = []
 	_actualizar_tooltip()
 	%NombreLabel.text = nombre
 	%DescripcionLabel.text = descripcion
@@ -58,11 +67,12 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "", ca
 	_pintar_estado(tr("Sin comprobar"), "sin_comprobar")
 	self.categoria = GestorCatalogoScript.normalizar_categoria(categoria)
 	%CategoriaLabel.text = GestorCatalogoScript.new().categoria_display(self.categoria)
-	var ruta := RutasScript.resolver(imagen)
-	if ruta != "":
-		var img := Image.load_from_file(ruta)
-		if img != null and not img.is_empty():
-			%Imagen.texture = ImageTexture.create_from_image(img)
+	var textura := CacheTexturasScript.textura(RutasScript.resolver(imagen))
+	%Imagen.texture = textura if textura != null else PLACEHOLDER
+
+
+func reutilizable() -> bool:
+	return _checker == null and not en_escaneo
 
 
 func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva := 0) -> void:

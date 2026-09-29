@@ -182,10 +182,16 @@ func _arrancar() -> void:
 	main_script._ui_filtro_estado(2)
 	_check(main_script._config_store.cargar().get("filtro_estado", -1) == 2, "cambiar el filtro de estado persiste en config")
 	main.get_node("%Busqueda").text = "srv"
-	main_script._ui_busqueda(main.get_node("%Busqueda").text)
-	_check(main_script._config_store.cargar().get("busqueda", "#") == "srv", "escribir en búsqueda persiste el texto en config")
+	var busqueda_previa: String = str(main_script._config_store.cargar().get("busqueda", "#"))
+	main_script._ui_busqueda("srv")
+	_check(
+		str(main_script._config_store.cargar().get("busqueda", "#")) == busqueda_previa,
+		"escribir en la búsqueda no reescribe config.json en cada tecla (#52)"
+	)
+	main_script._ui_busqueda_guardar()
+	_check(main_script._config_store.cargar().get("busqueda", "#") == "srv", "al salir del buscador se guarda el texto (#52)")
 	main.get_node("%Busqueda").text = ""
-	main_script._ui_refrescar()
+	main_script._ui_busqueda_guardar()
 
 	# Importar/Exportar: menú y flujos (#3)
 	main_script._persistir = false
@@ -271,6 +277,52 @@ func _arrancar() -> void:
 	main_script.DATA_RES = data_res
 	main_script._persistir = false
 
+	# Pool de filas y debounce de la búsqueda (#52)
+	var lista = main.get_node("%ListaContenedor")
+	main_script._espera_busqueda.wait_time = 0.01
+	main_script._entradas = []
+	for i in range(12):
+		main_script._entradas.append({"nombre": "Fila %d" % i, "desc": "", "url": "https://fila%d.test" % i, "img": ""})
+	main_script._ui_refrescar()
+	await process_frame
+	_check(lista.get_child_count() == 12, "la lista muestra las 12 filas (#52): %d" % lista.get_child_count())
+	_check(_instancias(main_script) == 12, "solo hay 12 instancias de fila (#52): %d" % _instancias(main_script))
+	main.get_node("%Busqueda").text = "fila1"
+	main_script._ui_busqueda("fila1")
+	_check(lista.get_child_count() == 12, "la lista no se repinta en la misma tecla (#52)")
+	await main_script._espera_busqueda.timeout
+	await process_frame
+	_check(lista.get_child_count() == 3, "tras la espera la búsqueda deja 3 filas (#52): %d" % lista.get_child_count())
+	_check(main_script._filas_libres.size() == 9, "las 9 filas sobrantes quedan en el pool (#52): %d" % main_script._filas_libres.size())
+	for texto in ["fila", "fila1", "fila11", "fila1", "fila", ""]:
+		main.get_node("%Busqueda").text = texto
+		main_script._ui_busqueda(texto)
+		await main_script._espera_busqueda.timeout
+		await process_frame
+	_check(_instancias(main_script) == 12, "escribir 6 caracteres no crea filas nuevas (#52): %d" % _instancias(main_script))
+	_check(lista.get_child_count() == 12, "al vaciar la búsqueda vuelven las 12 filas (#52): %d" % lista.get_child_count())
+	var en_vuelo = lista.get_child(0)
+	en_vuelo.en_escaneo = true
+	_check(not en_vuelo.reutilizable(), "una fila en vuelo de escaneo no se recicla (#52)")
+	main.get_node("%Busqueda").text = "nada-de-esto"
+	main_script._ui_busqueda_enviada("nada-de-esto")
+	await process_frame
+	_check(lista.get_child_count() == 0, "una búsqueda sin resultados deja la lista vacía (#52)")
+	_check(main_script._filas_libres.size() == 11, "la fila en vuelo se libera en vez de ir al pool (#52): %d" % main_script._filas_libres.size())
+	main.get_node("%Busqueda").text = ""
+	main_script._ui_busqueda_enviada("")
+	await process_frame
+	_check(lista.get_child_count() == 12, "se recuperan las 12 filas (#52): %d" % lista.get_child_count())
+	main_script._ui_toggle_vista()
+	await process_frame
+	_check(main.get_node("%GridContenedor").get_child_count() == 12, "la grilla muestra las 12 filas (#52)")
+	_check(main_script._filas_libres.is_empty(), "al cambiar de vista se vacía el pool de la anterior (#52)")
+	main_script._ui_toggle_vista()
+	await process_frame
+	_check(lista.get_child_count() == 12, "al volver a la lista se restauran las 12 filas (#52): %d" % lista.get_child_count())
+	_check(_instancias(main_script) == 12, "cambiar de vista tampoco crea filas nuevas (#52): %d" % _instancias(main_script))
+	_check(main_script._ultimo_repaint_ms >= 0.0, "el diagnóstico mide el último repintado (#52): %.2f ms" % main_script._ultimo_repaint_ms)
+
 	# Volcado por lotes del escaneo (#51)
 	var store = EstadoStoreScript.new("user://__test_main_flujos__")
 	main_script._estado_store = store
@@ -301,6 +353,10 @@ func _arrancar() -> void:
 	_check(int(estados.get("e7.test", {}).get("codigo", -1)) == 200, "el estado volcado conserva el código (#51)")
 	Ayuda.borrar_arbol("user://__test_main_flujos__")
 	_cerrar()
+
+
+func _instancias(main_script) -> int:
+	return main_script._filas_libres.size() + main_script._contenedor_activo().get_child_count()
 
 
 func _cerrar() -> void:

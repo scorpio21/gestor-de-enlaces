@@ -9,6 +9,7 @@ const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 const RutasScript := preload("res://scripts/rutas.gd")
+const CacheTexturasScript := preload("res://scripts/cache_texturas.gd")
 
 var ASSETS_BASE := RutasScript.ASSETS_USER
 
@@ -150,22 +151,18 @@ func _alternar_etiqueta(etiqueta: String) -> void:
 func _fijar_imagen(ruta: String) -> void:
 	_imagen_ruta = ""
 	_quitar_imagen = false
-	var resuelta := RutasScript.resolver(ruta)
-	if resuelta != "":
-		var img := Image.load_from_file(resuelta)
-		vista_previa.texture = ImageTexture.create_from_image(img) if img != null and not img.is_empty() else PLACEHOLDER
-	else:
-		vista_previa.texture = PLACEHOLDER
+	var textura := CacheTexturasScript.textura(RutasScript.resolver(ruta))
+	vista_previa.texture = textura if textura != null else PLACEHOLDER
 
 
 func _on_imagen_picked(ruta: String) -> void:
-	var img := Image.load_from_file(ruta)
-	if img == null or img.is_empty():
+	var textura := CacheTexturasScript.textura(ruta)
+	if textura == null:
 		error_label.text = tr("No se pudo cargar la imagen.")
 		return
 	_imagen_ruta = ruta
 	_quitar_imagen = false
-	vista_previa.texture = ImageTexture.create_from_image(img)
+	vista_previa.texture = textura
 
 
 func _on_quitar_imagen() -> void:

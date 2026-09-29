@@ -8,6 +8,7 @@ func _initialize() -> void:
 	_check(_icon_ok(), "project.godot apunta a Assets/icon/icon.svg")
 	_check(_title_ok(), "project.godot tiene título GestorAO v0.1.9")
 	_rutas()
+	_cache_texturas()
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -35,6 +36,15 @@ func _rutas() -> void:
 				if txt.contains("MAIN_SCENE.instantiate()") and not txt.contains("ASSETS_BASE"):
 					sueltas_test.append(f)
 	_check(sueltas_test.is_empty(), "toda suite que instancia Main aísla ASSETS_BASE (#48)" + ("" if sueltas_test.is_empty() else ": %s" % ", ".join(sueltas_test)))
+
+
+func _cache_texturas() -> void:
+	var sueltas: Array = []
+	for ruta in ["res://scripts/list_item.gd", "res://scripts/agregar_enlace.gd"]:
+		if FileAccess.get_file_as_string(ruta).contains("Image.load_from_file"):
+			sueltas.append(ruta.get_file())
+	_check(sueltas.is_empty(), "las miniaturas se cargan solo a través de cache_texturas (#52)" + ("" if sueltas.is_empty() else ": %s" % ", ".join(sueltas)))
+	_check(FileAccess.get_file_as_string("res://scripts/list_item.gd").contains("CacheTexturasScript.textura("), "list_item.gd usa la caché de texturas (#52)")
 
 
 func _version_ok() -> bool:

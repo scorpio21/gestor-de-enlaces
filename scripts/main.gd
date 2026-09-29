@@ -3,7 +3,9 @@ extends Control
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const GRID_ITEM_SCENE := preload("res://scenes/GridItem.tscn")
 const TOPE_POR_HOST := 2
+const ESPERA_BUSQUEDA := 0.2
 const RutasScript := preload("res://scripts/rutas.gd")
+const CacheTexturasScript := preload("res://scripts/cache_texturas.gd")
 var DATA_RES := RutasScript.CATALOGO_RES
 var DATA_USER := "user://enlaces.json"
 var ASSETS_BASE := RutasScript.ASSETS_USER:
@@ -92,11 +94,23 @@ var _presets_store: RefCounted = null
 var _presets: Dictionary = {}
 var _boton_eliminar_preset: Button = null
 var _aviso_base := ""
+var _espera_busqueda: Timer = null
+var _filas_libres: Array = []
+var _filas_libres_vista := ""
+var _ultimo_repaint_ms := 0.0
+var _filas_visibles := 0
 
 
 func _ready() -> void:
 	_configurar_menus()
+	_espera_busqueda = Timer.new()
+	_espera_busqueda.one_shot = true
+	_espera_busqueda.wait_time = ESPERA_BUSQUEDA
+	_espera_busqueda.timeout.connect(_ui_busqueda_aplicar)
+	add_child(_espera_busqueda)
 	busqueda.text_changed.connect(_ui_busqueda)
+	busqueda.text_submitted.connect(_ui_busqueda_enviada)
+	busqueda.focus_exited.connect(_ui_busqueda_guardar)
 	%BotonComprobar.pressed.connect(_scan_iniciar)
 	%ConfirmarBorrado.confirmed.connect(_ui_confirmar_borrado)
 	%ConfirmarLimpieza.confirmed.connect(_confirmar_limpieza)
@@ -175,6 +189,9 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	if _config_store != null:
+		_persistir_filtros()
+	_pool_vaciar()
 	if _estado_store != null:
 		_estado_store.volcar()
 	_hacer_limpieza_capturas()
@@ -414,15 +431,23 @@ func _ui_refrescar() -> void:
 
 
 func _ui_mostrar_lista(entradas: Array) -> void:
+	var inicio := Time.get_ticks_usec()
 	_cola.clear()
 	_scan.reiniciar()
-	for hijo in _contenedor_activo().get_children():
-		hijo.queue_free()
+	if _filas_libres_vista != _modo_vista:
+		_filas_libres_vista = _modo_vista
+		_pool_vaciar()
+	var contenedor := _contenedor_activo()
+	_pool_devolver(contenedor)
+	var escena: PackedScene = GRID_ITEM_SCENE if _modo_vista == "grilla" else LIST_ITEM_SCENE
 
 	for entrada in entradas:
 		if typeof(entrada) != TYPE_DICTIONARY:
 			continue
-		var item: Button = GRID_ITEM_SCENE.instantiate() if _modo_vista == "grilla" else LIST_ITEM_SCENE.instantiate()
+		var item: Button = _pool_tomar()
+		if item == null:
+			item = escena.instantiate()
+			_conectar_fila(item)
 		item.setup(
 			str(entrada.get("nombre", "")),
 			str(entrada.get("desc", "")),
@@ -441,18 +466,51 @@ func _ui_mostrar_lista(entradas: Array) -> void:
 				int(estado.get("codigo", 0)),
 				int(estado.get("fecha", 0))
 			)
-		item.eliminar_pedido.connect(_ui_eliminar_fila.bind(item))
-		item.recomprobar_pedido.connect(_scan_recomprobar.bind(item))
-		item.copiar_pedido.connect(_ui_copiar_url.bind(item))
-		item.editar_pedido.connect(_ui_editar_fila.bind(item))
-		item.historial_pedido.connect(_ui_historial.bind(item))
-		item.subir_pedido.connect(_ui_mover_fila.bind(item, -1))
-		item.bajar_pedido.connect(_ui_mover_fila.bind(item, 1))
-		item.menu_solicitado.connect(_ui_menu_fila.bind(item))
-		_contenedor_activo().add_child(item)
+		contenedor.add_child(item)
 
 	_ui_aplicar_filtro()
-	progreso.text = tr("%d enlaces") % _contenedor_activo().get_child_count()
+	progreso.text = tr("%d enlaces") % contenedor.get_child_count()
+	_ultimo_repaint_ms = float(Time.get_ticks_usec() - inicio) / 1000.0
+	_filas_visibles = contenedor.get_child_count()
+
+
+func _conectar_fila(item: Button) -> void:
+	item.eliminar_pedido.connect(_ui_eliminar_fila.bind(item))
+	item.recomprobar_pedido.connect(_scan_recomprobar.bind(item))
+	item.copiar_pedido.connect(_ui_copiar_url.bind(item))
+	item.editar_pedido.connect(_ui_editar_fila.bind(item))
+	item.historial_pedido.connect(_ui_historial.bind(item))
+	item.subir_pedido.connect(_ui_mover_fila.bind(item, -1))
+	item.bajar_pedido.connect(_ui_mover_fila.bind(item, 1))
+	item.menu_solicitado.connect(_ui_menu_fila.bind(item))
+
+
+func _pool_devolver(contenedor: Node) -> void:
+	for hijo in contenedor.get_children():
+		if not is_instance_valid(hijo):
+			continue
+		contenedor.remove_child(hijo)
+		if not hijo.reutilizable():
+			hijo.queue_free()
+			continue
+		_filas_libres.append(hijo)
+
+
+func _fila_en_lista(item) -> bool:
+	return is_instance_valid(item) and (item.get_parent() == lista or item.get_parent() == grilla)
+
+
+func _pool_tomar() -> Button:
+	if _filas_libres.is_empty():
+		return null
+	return _filas_libres.pop_back()
+
+
+func _pool_vaciar() -> void:
+	for fila in _filas_libres:
+		if is_instance_valid(fila):
+			fila.queue_free()
+	_filas_libres.clear()
 
 
 func _ui_aplicar_filtro() -> void:
@@ -467,16 +525,18 @@ func _ui_aplicar_filtro() -> void:
 	if id_codigo > 0:
 		clave_codigo = str(id_codigo)
 	var fecha_minima := FiltrosScript.fecha_desde_dias(int(filtro_dias.value))
-	for hijo in _contenedor_activo().get_children():
+	var contenedor := _contenedor_activo()
+	for hijo in contenedor.get_children():
 		hijo.visible = FiltrosScript.fila_visible(hijo.valido, hijo.categoria, modo, cat_id, clave_cat, hijo.tags, clave_tag, hijo.codigo, clave_codigo, hijo.fecha, fecha_minima)
 
 	if _orden_columna != "":
-		var hijos: Array = _contenedor_activo().get_children()
+		var hijos: Array = contenedor.get_children()
 		hijos.sort_custom(func(a: Button, b: Button) -> bool:
 			return OrdenadorScript.comparar(a, b, _orden_columna, _orden_direccion)
 		)
-		for hijo in hijos:
-			_contenedor_activo().move_child(hijo, -1)
+		for indice in range(hijos.size()):
+			if contenedor.get_child(indice) != hijos[indice]:
+				contenedor.move_child(hijos[indice], indice)
 
 
 func _contenedor_activo() -> Node:
@@ -527,6 +587,19 @@ func _grilla_redimensionada() -> void:
 
 
 func _ui_busqueda(_texto: String) -> void:
+	_espera_busqueda.start()
+
+
+func _ui_busqueda_aplicar() -> void:
+	_ui_refrescar()
+
+
+func _ui_busqueda_guardar() -> void:
+	_persistir_filtros()
+
+
+func _ui_busqueda_enviada(_texto: String) -> void:
+	_espera_busqueda.stop()
 	_ui_refrescar()
 	_persistir_filtros()
 
@@ -765,7 +838,7 @@ func _ui_eliminar_fila(item: Button) -> void:
 func _ui_confirmar_borrado() -> void:
 	var item := _item_pendiente_borrar
 	_item_pendiente_borrar = null
-	if not is_instance_valid(item):
+	if not _fila_en_lista(item):
 		return
 
 	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
@@ -826,11 +899,14 @@ func _scan_iniciar() -> void:
 
 
 func _scan_lanzar_item(item: Button) -> void:
+	item.en_escaneo = true
 	item.verificacion_terminada.connect(_scan_item_terminado.bind(item), CONNECT_ONE_SHOT)
 	item.verificar()
 
 
 func _scan_item_terminado(item: Button) -> void:
+	if is_instance_valid(item):
+		item.en_escaneo = false
 	_scan.terminar(item)
 	_ui_barra(_scan.hechos, _scan.total)
 	progreso.text = tr("Comprobando %d/%d…") % [_scan.hechos, _scan.total]
@@ -1064,6 +1140,9 @@ func _on_diag_elegido(ruta: String) -> void:
 		"catalogo_base": DATA_RES,
 		"enlaces": DATA_USER,
 		"config": CONFIG_BASE,
+		"ui_filas": _filas_visibles,
+		"ui_repaint_ms": "%.1f" % _ultimo_repaint_ms,
+		"ui_cache_texturas": CacheTexturasScript.tamano(),
 	})
 	if not res.get("ok", false):
 		progreso.text = tr("No se pudo exportar el diagnóstico (%d errores).") % int(res.get("errores", 0))
@@ -1308,6 +1387,7 @@ func _solicitar_limpieza_capturas() -> void:
 func _confirmar_limpieza() -> void:
 	var res := _limpieza_resultado
 	_limpieza_resultado = {}
+	CacheTexturasScript.limpiar()
 	var borradas := int(res.get("borradas", 0))
 	var errores := int(res.get("errores", 0))
 	var texto := tr("Capturas huérfanas eliminadas: %d") % borradas
