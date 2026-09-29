@@ -4,6 +4,7 @@ const MAIN_SCENE := preload("res://scenes/Main.tscn")
 const Ayuda := preload("res://tests/ayuda.gd")
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
+const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 
 var _fallos := 0
 
@@ -269,6 +270,36 @@ func _arrancar() -> void:
 	_check(main.get_node("%Progreso").text == "Enlace agregado: B · No se pudo escribir el catálogo base.", "el aviso de base sale con el mensaje de alta (#50)")
 	main_script.DATA_RES = data_res
 	main_script._persistir = false
+
+	# Volcado por lotes del escaneo (#51)
+	var store = EstadoStoreScript.new("user://__test_main_flujos__")
+	main_script._estado_store = store
+	var enlaces := 50
+	main_script._entradas = []
+	for i in range(enlaces):
+		main_script._entradas.append({"nombre": "E%d" % i, "desc": "", "url": "https://e%d.test" % i, "img": ""})
+	main_script._ui_refrescar()
+	await process_frame
+	var items := main.get_node("%ListaContenedor")
+	main_script._scan.configurar([], main_script._paralelismo, main_script._scan_lanzar_item, 2)
+	main_script._scan.total = enlaces
+	main_script._scan.en_vuelo = enlaces
+	store.volcar()
+	var escrituras_iniciales: int = store.escrituras
+	for i in range(enlaces):
+		var item = items.get_child(i)
+		item.verificacion_terminada.connect(main_script._scan_item_terminado.bind(item), CONNECT_ONE_SHOT)
+		item.valido = true
+		item.mensaje = "OK (200)"
+		item.codigo = 200
+		item.fecha = int(Time.get_unix_time_from_system())
+		item.verificacion_terminada.emit()
+	var volcados: int = store.escrituras - escrituras_iniciales
+	_check(volcados <= 6, "un escaneo de %d enlaces escribe como mucho 6 veces, no una por enlace (#51): %d" % [enlaces, volcados])
+	var estados: Dictionary = EstadoStoreScript.new("user://__test_main_flujos__").cargar()["estados"]
+	_check(estados.size() == enlaces, "tras el escaneo los %d estados quedan en el fichero (#51)" % enlaces)
+	_check(int(estados.get("e7.test", {}).get("codigo", -1)) == 200, "el estado volcado conserva el código (#51)")
+	Ayuda.borrar_arbol("user://__test_main_flujos__")
 	_cerrar()
 
 

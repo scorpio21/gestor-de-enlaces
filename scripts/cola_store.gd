@@ -4,6 +4,8 @@ extends RefCounted
 var _base: String
 const _NOMBRE := "colas.json"
 
+var escrituras := 0
+
 
 func _init(base := "user://") -> void:
 	_base = base
@@ -58,11 +60,25 @@ func _leer_json(ruta: String) -> Variant:
 
 
 func _escribir_json(ruta: String, dato: Variant) -> bool:
-	var archivo := FileAccess.open(ruta, FileAccess.WRITE)
+	var texto := JSON.stringify(dato, "\t")
+	if texto.is_empty():
+		return false
+	escrituras += 1
+	var abs := ProjectSettings.globalize_path(ruta)
+	var abs_tmp := ProjectSettings.globalize_path(ruta + ".tmp")
+	var archivo := FileAccess.open(ruta + ".tmp", FileAccess.WRITE)
 	if archivo == null:
 		return false
-	archivo.store_string(JSON.stringify(dato, "\t"))
+	archivo.store_string(texto)
 	archivo.close()
+	if archivo.get_error() != OK:
+		DirAccess.remove_absolute(abs_tmp)
+		return false
+	if FileAccess.file_exists(ruta):
+		DirAccess.remove_absolute(abs)
+	if DirAccess.rename_absolute(abs_tmp, abs) != OK:
+		DirAccess.remove_absolute(abs_tmp)
+		return false
 	return true
 
 

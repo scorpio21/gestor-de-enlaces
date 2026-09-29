@@ -32,6 +32,11 @@ func _initialize() -> void:
 	_limpiar()
 	_check(borrar_estado_limpia_historial(), "borrar_estado() elimina también el historial")
 	_limpiar()
+	_check(sin_escribir_antes_de_volcar(), "guardar_estado() 500 veces no toca el disco (#51)")
+	_check(una_sola_escritura_por_volcado(), "volcar() escribe estados y borrados una sola vez (#51)")
+	_check(volcado_recupera_todo(), "tras volcar() una instancia nueva recupera los 500 estados (#51)")
+	_check(escritura_atomica_con_bak(), "el volcado deja estados.json.bak y no deja .tmp (#51)")
+	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -194,6 +199,52 @@ func borrar_estado_limpia_historial() -> bool:
 	return store.cargar()["estados"] == {}
 
 
+func _llenar_500(store: Object) -> void:
+	for i in range(500):
+		store.guardar_estado("https://ejemplo.com/%d" % i, i % 2 == 0, "OK (200)", 200)
+
+
+func sin_escribir_antes_de_volcar() -> bool:
+	var store := EstadoStore.new(BASE)
+	_llenar_500(store)
+	return store.escrituras == 0 \
+		and not FileAccess.file_exists(BASE + "/estados.json") \
+		and store.cargar()["estados"].size() == 500
+
+
+func una_sola_escritura_por_volcado() -> bool:
+	var store := EstadoStore.new(BASE)
+	_llenar_500(store)
+	if not store.volcar():
+		return false
+	return store.escrituras == 2
+
+
+func volcado_recupera_todo() -> bool:
+	var estados: Dictionary = EstadoStore.new(BASE).cargar()["estados"]
+	if estados.size() != 500:
+		return false
+	return estados.has("https://ejemplo.com/0") and estados.has("https://ejemplo.com/499") \
+		and int(estados["https://ejemplo.com/7"].get("codigo", -1)) == 200
+
+
+func escritura_atomica_con_bak() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://bak.com", false, "No existe (404)", 404)
+	if not store.volcar():
+		return false
+	var segunda := EstadoStore.new(BASE)
+	segunda.guardar_estado("https://bak2.com", true, "OK (200)", 200)
+	if not segunda.volcar():
+		return false
+	if not FileAccess.file_exists(BASE + "/estados.json.bak"):
+		return false
+	if FileAccess.file_exists(BASE + "/estados.json.tmp"):
+		return false
+	var previo: Variant = JSON.parse_string(FileAccess.get_file_as_string(BASE + "/estados.json.bak"))
+	return typeof(previo) == TYPE_DICTIONARY and previo.has("https://bak.com") and not previo.has("https://bak2.com")
+
+
 func _check(condicion: bool, etiqueta: String) -> void:
 	if condicion:
 		print("  OK: %s" % etiqueta)
@@ -205,3 +256,7 @@ func _check(condicion: bool, etiqueta: String) -> void:
 func _limpiar() -> void:
 	DirAccess.remove_absolute(BASE + "/estados.json")
 	DirAccess.remove_absolute(BASE + "/borrados.json")
+	DirAccess.remove_absolute(BASE + "/estados.json.tmp")
+	DirAccess.remove_absolute(BASE + "/estados.json.bak")
+	DirAccess.remove_absolute(BASE + "/borrados.json.tmp")
+	DirAccess.remove_absolute(BASE + "/borrados.json.bak")

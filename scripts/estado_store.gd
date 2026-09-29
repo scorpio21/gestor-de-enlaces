@@ -2,6 +2,10 @@ class_name EstadoStore
 extends RefCounted
 
 var _base: String
+var _estados: Dictionary = {}
+var _borrados: Array = []
+var _cargado := false
+var escrituras := 0
 
 
 func _init(base := "user://") -> void:
@@ -9,19 +13,21 @@ func _init(base := "user://") -> void:
 
 
 func cargar() -> Dictionary:
+	_asegurar_cargado()
 	return {
-		"estados": _leer_estados(),
-		"borrados": _leer_borrados(),
+		"estados": _estados,
+		"borrados": _borrados,
 	}
 
 
 const LIMITE_HISTORIAL := 50
+const INTERVALO_VOLCADO := 25
 
 
 func guardar_estado(url: String, valido: bool, mensaje: String, codigo := 0) -> bool:
-	var estados := _leer_estados()
+	_asegurar_cargado()
 	var ahora := int(Time.get_unix_time_from_system())
-	var previa: Dictionary = estados.get(url, {})
+	var previa: Dictionary = _estados.get(url, {})
 	var hist: Variant = previa.get("historial", [])
 	var historial: Array = hist if typeof(hist) == TYPE_ARRAY else []
 	var nuevo := {"fecha": ahora, "valido": valido, "mensaje": mensaje, "codigo": codigo}
@@ -29,19 +35,25 @@ func guardar_estado(url: String, valido: bool, mensaje: String, codigo := 0) -> 
 		historial.push_front(nuevo)
 		if historial.size() > LIMITE_HISTORIAL:
 			historial.resize(LIMITE_HISTORIAL)
-	estados[url] = {
+	_estados[url] = {
 		"valido": valido,
 		"mensaje": mensaje,
 		"codigo": codigo,
 		"fecha": ahora,
 		"historial": historial,
 	}
-	return _escribir_json(_ruta("estados.json"), estados)
+	return true
+
+
+func volcar() -> bool:
+	_asegurar_cargado()
+	return _escribir_json(_ruta("estados.json"), _estados) \
+		and _escribir_json(_ruta("borrados.json"), _borrados)
 
 
 func historial_de(url: String) -> Array:
-	var estados := _leer_estados()
-	var e: Dictionary = estados.get(url, {})
+	_asegurar_cargado()
+	var e: Dictionary = _estados.get(url, {})
 	var h: Variant = e.get("historial", [])
 	return h if typeof(h) == TYPE_ARRAY else []
 
@@ -53,40 +65,38 @@ func _estados_iguales(a: Dictionary, b: Dictionary) -> bool:
 
 
 func marcar_borrado(url: String) -> bool:
-	var borrados := _leer_borrados()
-	if not borrados.has(url):
-		borrados.append(url)
-	return _escribir_json(_ruta("borrados.json"), borrados)
+	_asegurar_cargado()
+	if not _borrados.has(url):
+		_borrados.append(url)
+	return volcar()
 
 
 func borrar_estado(url: String) -> void:
-	var estados := _leer_estados()
-	if estados.erase(url):
-		_escribir_json(_ruta("estados.json"), estados)
+	_asegurar_cargado()
+	if _estados.erase(url):
+		volcar()
 
 
 func renombrar(url_antigua: String, url_nueva: String) -> bool:
-	var estados := _leer_estados()
-	if url_antigua != url_nueva and estados.has(url_antigua):
-		estados[url_nueva] = estados[url_antigua]
-		estados.erase(url_antigua)
-	var borrados := _leer_borrados()
+	_asegurar_cargado()
+	if url_antigua != url_nueva and _estados.has(url_antigua):
+		_estados[url_nueva] = _estados[url_antigua]
+		_estados.erase(url_antigua)
 	if url_antigua != url_nueva:
-		for i in range(borrados.size() - 1, -1, -1):
-			if str(borrados[i]) == url_antigua:
-				borrados[i] = url_nueva
-	return _escribir_json(_ruta("estados.json"), estados) \
-		and _escribir_json(_ruta("borrados.json"), borrados)
+		for i in range(_borrados.size() - 1, -1, -1):
+			if str(_borrados[i]) == url_antigua:
+				_borrados[i] = url_nueva
+	return volcar()
 
 
-func _leer_estados() -> Dictionary:
-	var v: Variant = _leer_json(_ruta("estados.json"))
-	return v if typeof(v) == TYPE_DICTIONARY else {}
-
-
-func _leer_borrados() -> Array:
-	var v: Variant = _leer_json(_ruta("borrados.json"))
-	return v if typeof(v) == TYPE_ARRAY else []
+func _asegurar_cargado() -> void:
+	if _cargado:
+		return
+	_cargado = true
+	var estados: Variant = _leer_json(_ruta("estados.json"))
+	_estados = estados if typeof(estados) == TYPE_DICTIONARY else {}
+	var borrados: Variant = _leer_json(_ruta("borrados.json"))
+	_borrados = borrados if typeof(borrados) == TYPE_ARRAY else []
 
 
 func _leer_json(ruta: String) -> Variant:
@@ -102,11 +112,30 @@ func _leer_json(ruta: String) -> Variant:
 
 
 func _escribir_json(ruta: String, dato: Variant) -> bool:
-	var archivo := FileAccess.open(ruta, FileAccess.WRITE)
+	var texto := JSON.stringify(dato, "\t")
+	if texto.is_empty():
+		return false
+	escrituras += 1
+	var abs := ProjectSettings.globalize_path(ruta)
+	var abs_tmp := ProjectSettings.globalize_path(ruta + ".tmp")
+	var abs_bak := ProjectSettings.globalize_path(ruta + ".bak")
+	var archivo := FileAccess.open(ruta + ".tmp", FileAccess.WRITE)
 	if archivo == null:
 		return false
-	archivo.store_string(JSON.stringify(dato, "\t"))
+	archivo.store_string(texto)
 	archivo.close()
+	if archivo.get_error() != OK:
+		DirAccess.remove_absolute(abs_tmp)
+		return false
+	if FileAccess.file_exists(ruta):
+		if FileAccess.file_exists(ruta + ".bak"):
+			DirAccess.remove_absolute(abs_bak)
+		if DirAccess.rename_absolute(abs, abs_bak) != OK:
+			DirAccess.remove_absolute(abs_tmp)
+			return false
+	if DirAccess.rename_absolute(abs_tmp, abs) != OK:
+		DirAccess.remove_absolute(abs_tmp)
+		return false
 	return true
 
 

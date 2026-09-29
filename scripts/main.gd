@@ -175,6 +175,8 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	if _estado_store != null:
+		_estado_store.volcar()
 	_hacer_limpieza_capturas()
 
 
@@ -234,6 +236,7 @@ func _on_utilidades_id(id: int) -> void:
 	elif id == 4:
 		_comprobar_actualizaciones(true)
 	elif id == 5:
+		_estado_store.volcar()
 		dashboard.abrir(_entradas, _estado_store.cargar().get("estados", {}))
 
 
@@ -837,13 +840,15 @@ func _scan_item_terminado(item: Button) -> void:
 		_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
 		_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
 		_scan_log(item.url, "valido" if item.valido == true else "caido", item.mensaje)
+		if _scan.hechos % EstadoStoreScript.INTERVALO_VOLCADO == 0:
+			_estado_store.volcar()
 	_ui_aplicar_filtro()
 	_ui_status()
 	if _scan.queda_trabajo():
 		_scan.lanzar()
-		_scan_persistir_cola()
 		return
 
+	_estado_store.volcar()
 	%BotonComprobar.disabled = false
 	if _cola_store != null:
 		_cola_store.limpiar()
@@ -888,6 +893,7 @@ func _scan_recompra(item: Button) -> void:
 	_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
 	_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
 	_scan_log(item.url, "valido" if item.valido == true else "caido", item.mensaje)
+	_estado_store.volcar()
 	_ui_aplicar_filtro()
 	_ui_status()
 

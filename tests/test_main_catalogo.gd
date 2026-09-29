@@ -2,8 +2,12 @@ extends SceneTree
 
 class _FakeStore extends RefCounted:
 	var ultima_renombrar: Array = []
+	var volcados := 0
 	func renombrar(url_antigua: String, url_nueva: String) -> bool:
 		ultima_renombrar = [url_antigua, url_nueva]
+		return true
+	func volcar() -> bool:
+		volcados += 1
 		return true
 
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
