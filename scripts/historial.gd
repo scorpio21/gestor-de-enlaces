@@ -17,14 +17,26 @@ func abrir(entradas: Array) -> void:
 	for e in entradas:
 		if typeof(e) != TYPE_DICTIONARY:
 			continue
+		var intentos := maxi(int(e.get("intentos", 1)), 1)
+		var detalle := ListItemScript.formatear_mensaje(str(e.get("mensaje", "")), int(e.get("codigo", 0)))
+		if intentos > 1:
+			detalle += " " + tr("(%d intentos)") % intentos
 		var fila := Label.new()
 		fila.text = tr("%s — %s — %s") % [
 			ListItemScript.formatear_fecha(int(e.get("fecha", 0))),
-			tr("Válido") if e.get("valido") == true else tr("Caído"),
-			ListItemScript.formatear_mensaje(str(e.get("mensaje", "")), int(e.get("codigo", 0))),
+			_historial_estado(e),
+			detalle,
 		]
 		fila.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		lista_historial.add_child(fila)
 		filas += 1
 	aviso_vacio.visible = filas == 0
 	popup_centered()
+
+
+func _historial_estado(e: Dictionary) -> String:
+	if e.get("valido") == true:
+		return tr("Válido")
+	if e.get("valido") == false:
+		return tr("Caído")
+	return tr("Sin comprobar")

@@ -38,6 +38,10 @@ func _initialize() -> void:
 	_check(filtro_estado_invalido_normaliza(), "filtro de estado fuera de rango se clampea")
 	_check(filtro_categoria_invalida_normaliza(), "filtro de categoría fuera de rango se clampea")
 	_check(filtro_etiqueta_default_sin_fichero(), "sin fichero filtro de etiqueta vacío")
+	_check(escaneo_defaults_sin_fichero(), "sin fichero reintentos y «sin comprobar» vienen activados (#54)")
+	_check(escaneo_persistidos(), "guardar() persiste las opciones de escaneo (#54)")
+	_check(escaneo_no_bool_normaliza(), "opciones de escaneo no booleanas vuelven al default (#54)")
+	_limpiar()
 	_check(filtro_etiqueta_persistida(), "guardar() persiste el filtro de etiqueta")
 	_check(filtro_etiqueta_no_string_normaliza(), "filtro de etiqueta no-string cae a vacía")
 	_check(busqueda_no_string_normaliza(), "búsqueda no-string cae a vacía")
@@ -232,6 +236,25 @@ func filtro_categoria_invalida_normaliza() -> bool:
 
 func filtro_etiqueta_default_sin_fichero() -> bool:
 	return ConfigStore.new(BASE).cargar().get("filtro_etiqueta", "#") == ""
+
+
+func escaneo_defaults_sin_fichero() -> bool:
+	var cfg: Dictionary = ConfigStore.new(BASE).cargar()
+	return cfg.get("reintentar_transitorios", false) == true and cfg.get("red_sin_comprobar", false) == true
+
+
+func escaneo_persistidos() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es", 0, 0, "", "", "", 0, "and", "lista", false, true):
+		return false
+	var cfg: Dictionary = store.cargar()
+	return cfg.get("reintentar_transitorios", true) == false and cfg.get("red_sin_comprobar", false) == true
+
+
+func escaneo_no_bool_normaliza() -> bool:
+	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"reintentar_transitorios": "no", "red_sin_comprobar": 7}')
+	var cfg: Dictionary = ConfigStore.new(BASE).cargar()
+	return cfg.get("reintentar_transitorios", false) == true and cfg.get("red_sin_comprobar", false) == true
 
 
 func filtro_etiqueta_persistida() -> bool:

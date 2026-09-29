@@ -2,6 +2,7 @@ extends SceneTree
 
 const LIST_ITEM := preload("res://scenes/ListItem.tscn")
 const ListItemScript := preload("res://scripts/list_item.gd")
+const LinkCheckerScript := preload("res://scripts/link_checker.gd")
 const IdiomaScript := preload("res://scripts/idioma.gd")
 const PLACEHOLDER := "res://Assets/png/no-disponible.png"
 const BASE := "user://__test_list_item__"
@@ -53,6 +54,56 @@ func _arrancar() -> void:
 	await process_frame
 	_check(con_detalle.codigo == 200, "aplicar_estado() guarda el código")
 	_check(con_detalle.fecha == 1000000000, "aplicar_estado() guarda la fecha")
+
+	var con_intentos := _crear_item()
+	con_intentos.setup("Nom", "Desc", "https://ejemplo.com/i")
+	con_intentos.aplicar_estado(false, "Sin respuesta", 0, 1000000000, 3, "red")
+	root.add_child(con_intentos)
+	await process_frame
+	_check(con_intentos.intentos == 3 and con_intentos.motivo == "red", "aplicar_estado() guarda los intentos y el motivo (#54)")
+	_check(con_intentos.get_node("%EstadoLabel").text == "Sin respuesta · (3 intentos)", "la fila con reintentos muestra el número de intentos (#54)")
+
+	var sin_intentos := _crear_item()
+	sin_intentos.setup("Nom", "Desc", "https://ejemplo.com/j")
+	sin_intentos.aplicar_estado(true, "OK (200)", 200, 1000000000, 1, "ok")
+	root.add_child(sin_intentos)
+	await process_frame
+	_check(sin_intentos.get_node("%EstadoLabel").text == "OK (200)", "un enlace comprobado a la primera no muestra el sufijo (#54)")
+
+	var red := _crear_item()
+	red.setup("Nom", "Desc", "https://ejemplo.com/k")
+	red._checker = _checker_falso(3, true, "red")
+	red._on_check_terminado(false, "Sin respuesta (tiempo agotado)")
+	root.add_child(red)
+	await process_frame
+	_check(red.valido == null and red.estado == "sin_comprobar_red", "un fallo de red deja el enlace sin comprobar (#54)")
+	_check(red.get_node("%EstadoLabel").text == "Sin comprobar · (3 intentos)", "el fallo de red se pinta como sin comprobar con los intentos (#54)")
+	_check(red.intentos == 3 and red.motivo == "red", "la fila guarda los intentos y el motivo del fallo de red (#54)")
+
+	var red_caido := _crear_item()
+	red_caido.setup("Nom", "Desc", "https://ejemplo.com/l")
+	red_caido.configurar_reintentos(true, false)
+	red_caido._checker = _checker_falso(3, true, "red")
+	red_caido._on_check_terminado(false, "Sin respuesta (tiempo agotado)")
+	root.add_child(red_caido)
+	await process_frame
+	_check(red_caido.valido == false and red_caido.estado == "caido", "sin la opción de «sin comprobar» el fallo de red marca caído (#54)")
+
+	var definitivo := _crear_item()
+	definitivo.setup("Nom", "Desc", "https://ejemplo.com/m")
+	definitivo._checker = _checker_falso(1, false, "muerto")
+	definitivo._on_check_terminado(false, "No existe (404)")
+	root.add_child(definitivo)
+	await process_frame
+	_check(definitivo.valido == false and definitivo.estado == "caido", "un 404 sigue marcando caído (#54)")
+
+	var ok_item := _crear_item()
+	ok_item.setup("Nom", "Desc", "https://ejemplo.com/n")
+	ok_item._checker = _checker_falso(2, true, "red")
+	ok_item._on_check_terminado(true, "OK (200)")
+	root.add_child(ok_item)
+	await process_frame
+	_check(ok_item.valido == true and ok_item.intentos == 2, "un válido tras reintentos se guarda como válido con sus intentos (#54)")
 
 	var unix := 1000000000
 	var esperado := ListItemScript.formatear_fecha(unix)
@@ -202,6 +253,14 @@ func _crear_item() -> Control:
 	var item: Control = LIST_ITEM.instantiate()
 	item.setup("Nombre de prueba", "Descripción", "https://ejemplo.com/x")
 	return item
+
+
+func _checker_falso(intentos: int, transitorio: bool, motivo: String) -> Node:
+	var checker: Node = LinkCheckerScript.new()
+	checker.intentos = intentos
+	checker.transitorio = transitorio
+	checker.motivo = motivo
+	return checker
 
 
 func _menu_completo(item: Control) -> bool:

@@ -1,6 +1,6 @@
 extends Window
 
-signal aplicado(paralelismo: int, timeout: float, auto_abrir: bool, intervalo: int, tema: String, idioma: String)
+signal aplicado(paralelismo: int, timeout: float, auto_abrir: bool, intervalo: int, tema: String, idioma: String, reintentar_transitorios: bool, red_sin_comprobar: bool)
 
 const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
 
@@ -10,6 +10,8 @@ const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
 @onready var intervalo_auto: OptionButton = %IntervaloAuto
 @onready var tema_opcion: OptionButton = %Tema
 @onready var idioma_opcion: OptionButton = %Idioma
+@onready var reintentar_box: CheckBox = %ReintentarTransitorios
+@onready var red_sin_comprobar_box: CheckBox = %RedSinComprobar
 
 
 func _ready() -> void:
@@ -23,10 +25,12 @@ func _ready() -> void:
 	%BotonGuardar.pressed.connect(_on_guardar)
 
 
-func abrir(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "oscuro", idioma := "es") -> void:
+func abrir(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "oscuro", idioma := "es", reintentar_transitorios := true, red_sin_comprobar := true) -> void:
 	paralelismo_spin.value = paralelismo
 	timeout_spin.value = timeout
 	auto_abrir_box.button_pressed = auto_abrir
+	reintentar_box.button_pressed = reintentar_transitorios
+	red_sin_comprobar_box.button_pressed = red_sin_comprobar
 	_seleccionar_intervalo(intervalo)
 	_seleccionar_tema(tema)
 	_seleccionar_idioma(idioma)
@@ -61,6 +65,8 @@ func _on_guardar() -> void:
 		auto_abrir_box.button_pressed,
 		intervalo_auto.get_selected_id(),
 		"auto" if id_tema == 0 else ("claro" if id_tema == 2 else "oscuro"),
-		IDIOMAS[idioma_opcion.get_selected_id()][0]
+		IDIOMAS[idioma_opcion.get_selected_id()][0],
+		reintentar_box.button_pressed,
+		red_sin_comprobar_box.button_pressed
 	)
 	hide()

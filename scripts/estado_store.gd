@@ -24,13 +24,13 @@ const LIMITE_HISTORIAL := 50
 const INTERVALO_VOLCADO := 25
 
 
-func guardar_estado(url: String, valido: bool, mensaje: String, codigo := 0) -> bool:
+func guardar_estado(url: String, valido: Variant, mensaje: String, codigo := 0, intentos := 1, motivo := "") -> bool:
 	_asegurar_cargado()
 	var ahora := int(Time.get_unix_time_from_system())
 	var previa: Dictionary = _estados.get(url, {})
 	var hist: Variant = previa.get("historial", [])
 	var historial: Array = hist if typeof(hist) == TYPE_ARRAY else []
-	var nuevo := {"fecha": ahora, "valido": valido, "mensaje": mensaje, "codigo": codigo}
+	var nuevo := {"fecha": ahora, "valido": valido, "mensaje": mensaje, "codigo": codigo, "intentos": intentos, "motivo": motivo}
 	if historial.is_empty() or not _estados_iguales(historial[0], nuevo):
 		historial.push_front(nuevo)
 		if historial.size() > LIMITE_HISTORIAL:
@@ -40,6 +40,8 @@ func guardar_estado(url: String, valido: bool, mensaje: String, codigo := 0) -> 
 		"mensaje": mensaje,
 		"codigo": codigo,
 		"fecha": ahora,
+		"intentos": intentos,
+		"motivo": motivo,
 		"historial": historial,
 	}
 	return true

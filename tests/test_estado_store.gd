@@ -37,6 +37,11 @@ func _initialize() -> void:
 	_check(volcado_recupera_todo(), "tras volcar() una instancia nueva recupera los 500 estados (#51)")
 	_check(escritura_atomica_con_bak(), "el volcado deja estados.json.bak y no deja .tmp (#51)")
 	_limpiar()
+	_check(guarda_intentos_y_motivo(), "guardar_estado() guarda los intentos y el motivo (#54)")
+	_check(guarda_sin_comprobar(), "guardar_estado() guarda un fallo de red como null, no como caído (#54)")
+	_check(intentos_no_ensucian_historial(), "cambiar solo los intentos no añade entrada al historial (#54)")
+	_check(volcado_conserva_tri_estado(), "tras volcar() el fallo de red sigue siendo null (#54)")
+	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -197,6 +202,39 @@ func borrar_estado_limpia_historial() -> bool:
 	store.guardar_estado("https://hist.com", true, "OK (200)", 200)
 	store.borrar_estado("https://hist.com")
 	return store.cargar()["estados"] == {}
+
+
+func guarda_intentos_y_motivo() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://red.com/a", null, "Sin respuesta (tiempo agotado)", 0, 3, "red")
+	var e: Dictionary = store.cargar()["estados"].get("https://red.com/a", {})
+	return int(e.get("intentos", 0)) == 3 and str(e.get("motivo", "")) == "red"
+
+
+func guarda_sin_comprobar() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://red.com/b", null, "Conexión cerrada", 0, 2, "red")
+	var e: Dictionary = store.cargar()["estados"].get("https://red.com/b", {})
+	return e.has("valido") and e.get("valido") == null
+
+
+func intentos_no_ensucian_historial() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://red.com/c", null, "Sin respuesta", 0, 1, "red")
+	store.guardar_estado("https://red.com/c", null, "Sin respuesta", 0, 3, "red")
+	var e: Dictionary = store.cargar()["estados"].get("https://red.com/c", {})
+	return int(e.get("historial", []).size()) == 1 and int(e.get("intentos", 0)) == 3
+
+
+func volcado_conserva_tri_estado() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://red.com/d", null, "Sin respuesta", 0, 2, "red")
+	store.guardar_estado("https://ok.com/d", true, "OK (200)", 200, 2, "ok")
+	store.volcar()
+	var estados: Dictionary = EstadoStore.new(BASE).cargar()["estados"]
+	var caido: Dictionary = estados.get("https://red.com/d", {})
+	var ok: Dictionary = estados.get("https://ok.com/d", {})
+	return caido.has("valido") and caido.get("valido") == null and ok.get("valido") == true
 
 
 func _llenar_500(store: Object) -> void:

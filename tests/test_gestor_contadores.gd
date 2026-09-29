@@ -18,6 +18,7 @@ func _arrancar() -> void:
 	var estados := {
 		"a.com": {"valido": false, "mensaje": "No existe (404)"},
 		"b.com": {"valido": true, "mensaje": "OK (200)"},
+		"d.com": {"valido": null, "mensaje": "Sin respuesta", "intentos": 3, "motivo": "red"},
 	}
 	var entradas := [
 		{"nombre": "A", "url": "https://a.com"},
@@ -29,6 +30,10 @@ func _arrancar() -> void:
 	_check(r.get("total", -1) == 3, "total cuenta solo entradas con formato correcto")
 	_check(r.get("activos", -1) == 1, "activos = entradas con estado valido true")
 	_check(r.get("rotos", -1) == 1, "rotos = entradas con estado valido false")
+
+	var con_red := ContadoresScript.contar([{"url": "https://d.com"}], estados)
+	_check(con_red.get("activos", -1) == 0 and con_red.get("rotos", -1) == 0, "un fallo de red (valido null) no cuenta ni como activo ni como roto (#54)")
+	_check(con_red.get("total", -1) == 1, "un enlace sin comprobar sigue sumando al total (#54)")
 
 	var repetida := ContadoresScript.contar([
 		{"url": "https://a.com"},

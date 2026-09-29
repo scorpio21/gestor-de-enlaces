@@ -57,6 +57,13 @@ func _resumen(entradas: Array, estados: Dictionary) -> void:
 	var vacio: Dictionary = DashboardStoreScript.resumen([], {})
 	_check(int(vacio.get("total")) == 0 and float(vacio.get("disponible_pct")) == 0.0, "sin datos el resumen es cero")
 
+	var con_red: Dictionary = DashboardStoreScript.resumen([{"url": "https://mediafire.com/a"}], {
+		"mediafire.com/a": {"valido": null, "mensaje": "Sin respuesta", "intentos": 3, "motivo": "red"},
+	})
+	_check(int(con_red.get("rotos")) == 0, "un enlace con fallo de red no cuenta como caído en el dashboard (#54)")
+	_check(int(con_red.get("activos")) == 0, "un enlace con fallo de red tampoco cuenta como válido (#54)")
+	_check(int(con_red.get("sin_comprobar")) == 1, "un enlace con fallo de red cuenta como sin comprobar (#54)")
+
 
 func _categorias(entradas: Array, estados: Dictionary) -> void:
 	var cats: Array = DashboardStoreScript.por_categoria(entradas, estados)

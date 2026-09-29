@@ -81,6 +81,8 @@ var _paralelismo := 3
 var _timeout := 10.0
 var _auto_abrir := true
 var _intervalo_auto := 0
+var _reintentar_transitorios := true
+var _red_sin_comprobar := true
 var _estados := {}
 var _borrados: Array = []
 var _item_pendiente_borrar: Button = null
@@ -139,6 +141,8 @@ func _ready() -> void:
 	_timeout = clampf(float(cfg.get("timeout", 10.0)), 3.0, 60.0)
 	_auto_abrir = cfg.get("auto_abrir", true) == true
 	_intervalo_auto = int(cfg.get("intervalo", 0))
+	_reintentar_transitorios = cfg.get("reintentar_transitorios", true) == true
+	_red_sin_comprobar = cfg.get("red_sin_comprobar", true) == true
 	TemaStoreScript.aplicar(String(cfg.get("tema", "auto")), self)
 	dashboard.aplicar_paleta()
 	if DisplayServer.is_dark_mode_supported():
@@ -245,7 +249,7 @@ func _on_utilidades_id(id: int) -> void:
 	if id == 0:
 		ventana_agregar.abrir(_sugerir_etiquetas())
 	elif id == 1:
-		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "auto")), String(_config_store.cargar().get("idioma", "")))
+		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "auto")), String(_config_store.cargar().get("idioma", "")), _reintentar_transitorios, _red_sin_comprobar)
 	elif id == 2:
 		_solicitar_limpieza_capturas()
 	elif id == 3:
@@ -457,6 +461,7 @@ func _ui_mostrar_lista(entradas: Array) -> void:
 		)
 		item.tags = EtiquetasScript.parsear(entrada.get("tags", []))
 		item.configurar_timeout(_timeout)
+		item.configurar_reintentos(_reintentar_transitorios, _red_sin_comprobar)
 		var url_item := str(entrada.get("url", ""))
 		var estado: Dictionary = _estados.get(GestorCatalogoScript.clave_unica(url_item), {})
 		if not estado.is_empty():
@@ -464,7 +469,9 @@ func _ui_mostrar_lista(entradas: Array) -> void:
 				estado.get("valido"),
 				str(estado.get("mensaje", "")),
 				int(estado.get("codigo", 0)),
-				int(estado.get("fecha", 0))
+				int(estado.get("fecha", 0)),
+				maxi(int(estado.get("intentos", 1)), 1),
+				str(estado.get("motivo", ""))
 			)
 		contenedor.add_child(item)
 
@@ -900,6 +907,7 @@ func _scan_iniciar() -> void:
 
 func _scan_lanzar_item(item: Button) -> void:
 	item.en_escaneo = true
+	item.configurar_reintentos(_reintentar_transitorios, _red_sin_comprobar)
 	item.verificacion_terminada.connect(_scan_item_terminado.bind(item), CONNECT_ONE_SHOT)
 	item.verificar()
 
@@ -913,9 +921,16 @@ func _scan_item_terminado(item: Button) -> void:
 	var ahora := int(Time.get_unix_time_from_system())
 	if is_instance_valid(item):
 		var clave_estado := GestorCatalogoScript.clave_unica(item.url)
-		_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
-		_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
-		_scan_log(item.url, "valido" if item.valido == true else "caido", item.mensaje)
+		_estado_store.guardar_estado(clave_estado, item.valido, item.mensaje, item.codigo, item.intentos, item.motivo)
+		_estados[clave_estado] = {
+			"valido": item.valido,
+			"mensaje": item.mensaje,
+			"codigo": item.codigo,
+			"fecha": ahora,
+			"intentos": item.intentos,
+			"motivo": item.motivo,
+		}
+		_scan_log(item.url, _motivo_log(item), item.mensaje)
 		if _scan.hechos % EstadoStoreScript.INTERVALO_VOLCADO == 0:
 			_estado_store.volcar()
 	_ui_aplicar_filtro()
@@ -941,6 +956,14 @@ func _scan_log(url: String, resultado: String, detalle := "") -> void:
 		_logger.scan(url, resultado, detalle)
 
 
+func _motivo_log(item) -> String:
+	if item.valido == true:
+		return "valido"
+	if item.valido == null:
+		return "sin_comprobar"
+	return "caido"
+
+
 func _scan_persistir_cola() -> void:
 	if _cola_store == null:
 		return
@@ -957,6 +980,7 @@ func _scan_recomprobar(item: Button) -> void:
 	if item.estado == "comprobando":
 		return
 	progreso.text = tr("Re-comprobando %s…") % item.url
+	item.configurar_reintentos(_reintentar_transitorios, _red_sin_comprobar)
 	item.verificacion_terminada.connect(_scan_recompra.bind(item), CONNECT_ONE_SHOT)
 	item.verificar()
 
@@ -966,9 +990,16 @@ func _scan_recompra(item: Button) -> void:
 		return
 	var ahora := int(Time.get_unix_time_from_system())
 	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
-	_estado_store.guardar_estado(clave_estado, item.valido == true, item.mensaje, item.codigo)
-	_estados[clave_estado] = {"valido": item.valido == true, "mensaje": item.mensaje, "codigo": item.codigo, "fecha": ahora}
-	_scan_log(item.url, "valido" if item.valido == true else "caido", item.mensaje)
+	_estado_store.guardar_estado(clave_estado, item.valido, item.mensaje, item.codigo, item.intentos, item.motivo)
+	_estados[clave_estado] = {
+		"valido": item.valido,
+		"mensaje": item.mensaje,
+		"codigo": item.codigo,
+		"fecha": ahora,
+		"intentos": item.intentos,
+		"motivo": item.motivo,
+	}
+	_scan_log(item.url, _motivo_log(item), item.mensaje)
 	_estado_store.volcar()
 	_ui_aplicar_filtro()
 	_ui_status()
@@ -1106,16 +1137,19 @@ func _on_informe_elegido(ruta: String) -> void:
 		var estado_texto := "Sin comprobar"
 		var fecha := 0
 		var mensaje := ""
+		var causa := ""
 		if not estado.is_empty():
-			estado_texto = "Válido" if estado.get("valido") == true else "Caído"
+			estado_texto = InformeStoreScript.estado_texto(estado)
 			fecha = int(estado.get("fecha", 0))
 			mensaje = str(estado.get("mensaje", ""))
+			causa = InformeStoreScript.causa_texto(estado)
 		filas.append({
 			"nombre": str(entrada.get("nombre", "")),
 			"url": url,
 			"estado": estado_texto,
 			"fecha": fecha,
 			"mensaje": mensaje,
+			"causa": causa,
 		})
 	var res: Dictionary = InformeStoreScript.exportar_html(ruta, filas) if formato == "html" else InformeStoreScript.exportar_csv(ruta, filas)
 	if not res.get("ok", false):
@@ -1418,16 +1452,18 @@ func _confirmar_restaurar() -> void:
 	progreso.text = tr("Catálogo restaurado desde la copia.")
 
 
-func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "auto", idioma := "es") -> void:
+func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "auto", idioma := "es", reintentar_transitorios := true, red_sin_comprobar := true) -> void:
 	var locale_anterior := TranslationServer.get_locale()
 	_paralelismo = paralelismo
 	_timeout = timeout
 	_auto_abrir = auto_abrir
 	_intervalo_auto = intervalo
+	_reintentar_transitorios = reintentar_transitorios
+	_red_sin_comprobar = red_sin_comprobar
 	TemaStoreScript.aplicar(tema, self)
 	dashboard.aplicar_paleta()
 	TranslationServer.set_locale(idioma)
-	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma, filtro.get_selected_id(), filtro_cat.get_selected_id(), _etiqueta_seleccionada(), busqueda.text, _codigo_seleccionado(), int(filtro_dias.value), _modo_busqueda(), _modo_vista):
+	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma, filtro.get_selected_id(), filtro_cat.get_selected_id(), _etiqueta_seleccionada(), busqueda.text, _codigo_seleccionado(), int(filtro_dias.value), _modo_busqueda(), _modo_vista, reintentar_transitorios, red_sin_comprobar):
 		TranslationServer.set_locale(locale_anterior)
 		progreso.text = tr("No se pudo guardar la configuración.")
 	_retraducir_ui()

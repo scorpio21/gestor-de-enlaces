@@ -29,9 +29,13 @@ var valido: Variant = null
 var categoria: String = "otro"
 var tags: Array = []
 var en_escaneo := false
+var intentos := 1
+var motivo := ""
 
 var _checker: Node = null
 var _timeout := 10.0
+var _reintentar_transitorios := true
+var _red_sin_comprobar := true
 
 
 func _ready() -> void:
@@ -60,6 +64,8 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "", ca
 	fecha = 0
 	estado = "pendiente"
 	tags = []
+	intentos = 1
+	motivo = ""
 	_actualizar_tooltip()
 	%NombreLabel.text = nombre
 	%DescripcionLabel.text = descripcion
@@ -75,21 +81,23 @@ func reutilizable() -> bool:
 	return _checker == null and not en_escaneo
 
 
-func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva := 0) -> void:
+func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva := 0, intentos_nuevos := 1, motivo_nuevo := "") -> void:
 	valido = ok
 	mensaje = texto
 	codigo = codigo_nuevo
 	fecha = fecha_nueva
+	intentos = intentos_nuevos
+	motivo = motivo_nuevo
 	_pintar_fecha()
 	if ok == true:
 		estado = "ok"
-		_pintar_estado(formatear_mensaje(texto, codigo), "valido")
+		_pintar_estado(_texto_estado(formatear_mensaje(texto, codigo), intentos), "valido")
 	elif ok == false:
 		estado = "caido"
-		_pintar_estado(formatear_mensaje(texto, codigo), "caido")
+		_pintar_estado(_texto_estado(formatear_mensaje(texto, codigo), intentos), "caido")
 	else:
 		estado = "pendiente"
-		_pintar_estado(tr("Sin comprobar"), "sin_comprobar")
+		_pintar_estado(_texto_estado(tr("Sin comprobar"), intentos), "sin_comprobar")
 	_actualizar_tooltip()
 
 
@@ -181,6 +189,11 @@ func configurar_timeout(segundos: float) -> void:
 	_timeout = segundos
 
 
+func configurar_reintentos(reintentar: bool, red_como_sin_comprobar := true) -> void:
+	_reintentar_transitorios = reintentar
+	_red_sin_comprobar = red_como_sin_comprobar
+
+
 func fijar_estado_reorden(arriba: bool, abajo: bool) -> void:
 	var menu: PopupMenu = %MenuContexto
 	menu.set_item_disabled(menu.get_item_index(5), not arriba)
@@ -206,6 +219,7 @@ func verificar() -> void:
 	add_child(_checker)
 	_checker.terminado.connect(_on_check_terminado)
 	_checker.timeout_s = _timeout
+	_checker.reintentar_transitorios = _reintentar_transitorios
 	_checker.comprobar(url)
 
 
@@ -213,13 +227,31 @@ func _on_check_terminado(ok: bool, texto: String) -> void:
 	codigo = _checker.codigo
 	fecha = int(Time.get_unix_time_from_system())
 	_pintar_fecha()
+	var fallo_red: bool = not ok and bool(_checker.transitorio)
+	intentos = maxi(int(_checker.intentos), 1)
+	motivo = str(_checker.motivo)
 	_checker = null
-	valido = ok
-	estado = "ok" if ok else "caido"
 	mensaje = texto
-	_pintar_estado(texto, "valido" if ok else "caido")
+	if fallo_red and _red_sin_comprobar:
+		estado = "sin_comprobar_red"
+		valido = null
+		_pintar_estado(_texto_estado(tr("Sin comprobar"), intentos), "sin_comprobar")
+	elif ok:
+		valido = true
+		estado = "ok"
+		_pintar_estado(_texto_estado(texto, intentos), "valido")
+	else:
+		valido = false
+		estado = "caido"
+		_pintar_estado(_texto_estado(texto, intentos), "caido")
 	_actualizar_tooltip()
 	verificacion_terminada.emit()
+
+
+func _texto_estado(texto: String, intentos: int) -> String:
+	if intentos <= 1:
+		return texto
+	return "%s · %s" % [texto, tr("(%d intentos)") % intentos]
 
 
 func _pintar_estado(texto: String, clave: String) -> void:
