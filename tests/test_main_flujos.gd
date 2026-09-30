@@ -304,7 +304,7 @@ func _arrancar() -> void:
 	await main_script._espera_busqueda.timeout
 	await process_frame
 	_check(lista.get_child_count() == 3, "tras la espera la búsqueda deja 3 filas (#52): %d" % lista.get_child_count())
-	_check(main_script._filas_libres.size() == 9, "las 9 filas sobrantes quedan en el pool (#52): %d" % main_script._filas_libres.size())
+	_check(main_script._lista.pool_tamano() == 9, "las 9 filas sobrantes quedan en el pool (#52): %d" % main_script._lista.pool_tamano())
 	for texto in ["fila", "fila1", "fila11", "fila1", "fila", ""]:
 		main.get_node("%Busqueda").text = texto
 		main_script._ui_busqueda(texto)
@@ -319,7 +319,7 @@ func _arrancar() -> void:
 	main_script._ui_busqueda_enviada("nada-de-esto")
 	await process_frame
 	_check(lista.get_child_count() == 0, "una búsqueda sin resultados deja la lista vacía (#52)")
-	_check(main_script._filas_libres.size() == 11, "la fila en vuelo se libera en vez de ir al pool (#52): %d" % main_script._filas_libres.size())
+	_check(main_script._lista.pool_tamano() == 11, "la fila en vuelo se libera en vez de ir al pool (#52): %d" % main_script._lista.pool_tamano())
 	main.get_node("%Busqueda").text = ""
 	main_script._ui_busqueda_enviada("")
 	await process_frame
@@ -327,7 +327,7 @@ func _arrancar() -> void:
 	main_script._ui_toggle_vista()
 	await process_frame
 	_check(main.get_node("%GridContenedor").get_child_count() == 12, "la grilla muestra las 12 filas (#52)")
-	_check(main_script._filas_libres.is_empty(), "al cambiar de vista se vacía el pool de la anterior (#52)")
+	_check(main_script._lista.pool_tamano() == 0, "al cambiar de vista se vacía el pool de la anterior (#52)")
 	main_script._ui_toggle_vista()
 	await process_frame
 	_check(lista.get_child_count() == 12, "al volver a la lista se restauran las 12 filas (#52): %d" % lista.get_child_count())
@@ -368,7 +368,7 @@ func _arrancar() -> void:
 
 
 func _instancias(main_script) -> int:
-	return main_script._filas_libres.size() + main_script._contenedor_activo().get_child_count()
+	return main_script._lista.pool_tamano() + main_script._contenedor_activo().get_child_count()
 
 
 func _cerrar() -> void:

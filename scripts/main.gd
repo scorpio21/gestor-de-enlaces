@@ -32,6 +32,7 @@ const OrdenadorScript := preload("res://scripts/ordenador.gd")
 const FiltrosScript := preload("res://scripts/filtros.gd")
 const CODIGOS_FILTRO := [200, 301, 302, 403, 404, 410, 500, 503]
 const ScanControllerScript := preload("res://scripts/scan_controller.gd")
+const ListaControllerScript := preload("res://scripts/lista_controller.gd")
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 
@@ -69,6 +70,7 @@ const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 
 var _entradas: Array = []
 var _scan = ScanControllerScript.new()
+var _lista = ListaControllerScript.new()
 var _estado_store: RefCounted
 var _config_store: RefCounted
 var CONFIG_BASE := "user://"
@@ -97,8 +99,6 @@ var _presets: Dictionary = {}
 var _boton_eliminar_preset: Button = null
 var _aviso_base := ""
 var _espera_busqueda: Timer = null
-var _filas_libres: Array = []
-var _filas_libres_vista := ""
 var _ultimo_repaint_ms := 0.0
 var _filas_visibles := 0
 
@@ -206,7 +206,7 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if _config_store != null:
 		_persistir_filtros()
-	_pool_vaciar()
+	_lista.pool_vaciar()
 	if _estado_store != null:
 		_estado_store.volcar()
 	_hacer_limpieza_capturas()
@@ -448,17 +448,15 @@ func _ui_refrescar() -> void:
 func _ui_mostrar_lista(entradas: Array) -> void:
 	var inicio := Time.get_ticks_usec()
 	_scan.reiniciar()
-	if _filas_libres_vista != _modo_vista:
-		_filas_libres_vista = _modo_vista
-		_pool_vaciar()
+	_lista.cambiar_vista(_modo_vista)
 	var contenedor := _contenedor_activo()
-	_pool_devolver(contenedor)
+	_lista.pool_devolver(contenedor)
 	var escena: PackedScene = GRID_ITEM_SCENE if _modo_vista == "grilla" else LIST_ITEM_SCENE
 
 	for entrada in entradas:
 		if typeof(entrada) != TYPE_DICTIONARY:
 			continue
-		var item: Button = _pool_tomar()
+		var item: Button = _lista.pool_tomar()
 		if item == null:
 			item = escena.instantiate()
 			_conectar_fila(item)
@@ -503,58 +501,22 @@ func _conectar_fila(item: Button) -> void:
 	item.menu_solicitado.connect(_ui_menu_fila.bind(item))
 
 
-func _pool_devolver(contenedor: Node) -> void:
-	for hijo in contenedor.get_children():
-		if not is_instance_valid(hijo):
-			continue
-		contenedor.remove_child(hijo)
-		if not hijo.reutilizable():
-			hijo.queue_free()
-			continue
-		_filas_libres.append(hijo)
-
-
 func _fila_en_lista(item) -> bool:
 	return is_instance_valid(item) and (item.get_parent() == lista or item.get_parent() == grilla)
 
 
-func _pool_tomar() -> Button:
-	if _filas_libres.is_empty():
-		return null
-	return _filas_libres.pop_back()
-
-
-func _pool_vaciar() -> void:
-	for fila in _filas_libres:
-		if is_instance_valid(fila):
-			fila.queue_free()
-	_filas_libres.clear()
-
-
 func _ui_aplicar_filtro() -> void:
-	var modo := filtro.get_selected_id()
-	var cat_id := filtro_cat.get_selected_id()
-	var clave_cat := ""
-	if cat_id > 0:
-		clave_cat = GestorCatalogoScript.CATEGORIAS[cat_id - 1]
-	var clave_tag := _etiqueta_seleccionada()
-	var clave_codigo := ""
-	var id_codigo := filtro_codigo.get_selected_id()
-	if id_codigo > 0:
-		clave_codigo = str(id_codigo)
-	var fecha_minima := FiltrosScript.fecha_desde_dias(int(filtro_dias.value))
-	var contenedor := _contenedor_activo()
-	for hijo in contenedor.get_children():
-		hijo.visible = FiltrosScript.fila_visible(hijo.valido, hijo.categoria, modo, cat_id, clave_cat, hijo.tags, clave_tag, hijo.codigo, clave_codigo, hijo.fecha, fecha_minima)
-
-	if _orden_columna != "":
-		var hijos: Array = contenedor.get_children()
-		hijos.sort_custom(func(a: Button, b: Button) -> bool:
-			return OrdenadorScript.comparar(a, b, _orden_columna, _orden_direccion)
-		)
-		for indice in range(hijos.size()):
-			if contenedor.get_child(indice) != hijos[indice]:
-				contenedor.move_child(hijos[indice], indice)
+	_lista.configurar(
+		filtro.get_selected_id(),
+		filtro_cat.get_selected_id(),
+		ListaControllerScript.clave_de_categoria(filtro_cat.get_selected_id()),
+		_etiqueta_seleccionada(),
+		ListaControllerScript.clave_de_codigo(filtro_codigo.get_selected_id()),
+		int(filtro_dias.value),
+		_orden_columna,
+		_orden_direccion
+	)
+	_lista.aplicar(_contenedor_activo())
 
 
 func _contenedor_activo() -> Node:
@@ -801,11 +763,7 @@ func _ui_cabecera(columna: String) -> void:
 
 
 func _ui_filas_visibles() -> Array:
-	var visibles: Array = []
-	for hijo in _contenedor_activo().get_children():
-		if hijo.visible:
-			visibles.append(hijo)
-	return visibles
+	return _lista.filas_visibles(_contenedor_activo())
 
 
 func _ui_menu_fila(item: Button) -> void:

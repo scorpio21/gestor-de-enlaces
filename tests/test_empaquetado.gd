@@ -12,6 +12,7 @@ func _initialize() -> void:
 	_check(FileAccess.file_exists("res://tests/run_estatico.sh"), "existe tests/run_estatico.sh")
 	_check(FileAccess.file_exists("res://AGENTS.md"), "existe AGENTS.md")
 	_check(_escaneo_extraido(), "la logica del escaneo vive en scan_controller, no en main.gd (#62)")
+	_check(_lista_extraida(), "la logica de filas vive en lista_controller, no en main.gd (#62)")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -53,6 +54,16 @@ func _escaneo_extraido() -> bool:
 		return false
 	return FileAccess.file_exists("res://scripts/scan_controller.gd") \
 		and FileAccess.file_exists("res://tests/test_scan_controller.gd")
+
+
+func _lista_extraida() -> bool:
+	var main := _leer("res://scripts/main.gd")
+	if "lista_controller.gd" not in main:
+		return false
+	if "func _pool_devolver" in main or "func _pool_tomar" in main or "func _pool_vaciar" in main:
+		return false
+	return FileAccess.file_exists("res://scripts/lista_controller.gd") \
+		and FileAccess.file_exists("res://tests/test_lista_controller.gd")
 
 
 func _check(condicion: bool, etiqueta: String) -> void:
