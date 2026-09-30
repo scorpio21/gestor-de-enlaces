@@ -13,6 +13,8 @@ func _initialize() -> void:
 	_check(FileAccess.file_exists("res://AGENTS.md"), "existe AGENTS.md")
 	_check(_escaneo_extraido(), "la logica del escaneo vive en scan_controller, no en main.gd (#62)")
 	_check(_lista_extraida(), "la logica de filas vive en lista_controller, no en main.gd (#62)")
+	_check(_config_extraida(), "el guardado de la config vive en config_controller, no en main.gd (#62)")
+	_check(_main_no_secha(), "main.gd se ha ido encogiendo con cada entrega de #62")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -64,6 +66,23 @@ func _lista_extraida() -> bool:
 		return false
 	return FileAccess.file_exists("res://scripts/lista_controller.gd") \
 		and FileAccess.file_exists("res://tests/test_lista_controller.gd")
+
+
+func _config_extraida() -> bool:
+	var main := _leer("res://scripts/main.gd")
+	if "config_controller.gd" not in main:
+		return false
+	if "func _persistir_orden" in main or "func _persistir_filtros" in main:
+		return false
+	if main.count("_config_store.guardar(") > 0:
+		return false
+	return FileAccess.file_exists("res://scripts/config_controller.gd") \
+		and FileAccess.file_exists("res://tests/test_config_controller.gd")
+
+
+func _main_no_secha() -> bool:
+	var main := _leer("res://scripts/main.gd")
+	return main.split("\n").size() <= 1600
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

@@ -33,6 +33,7 @@ const FiltrosScript := preload("res://scripts/filtros.gd")
 const CODIGOS_FILTRO := [200, 301, 302, 403, 404, 410, 500, 503]
 const ScanControllerScript := preload("res://scripts/scan_controller.gd")
 const ListaControllerScript := preload("res://scripts/lista_controller.gd")
+const ConfigControllerScript := preload("res://scripts/config_controller.gd")
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 
@@ -71,6 +72,7 @@ const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 var _entradas: Array = []
 var _scan = ScanControllerScript.new()
 var _lista = ListaControllerScript.new()
+var _config_ctrl = ConfigControllerScript.new()
 var _estado_store: RefCounted
 var _config_store: RefCounted
 var CONFIG_BASE := "user://"
@@ -205,7 +207,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	if _config_store != null:
-		_persistir_filtros()
+		_persistir_config()
 	_lista.pool_vaciar()
 	if _estado_store != null:
 		_estado_store.volcar()
@@ -545,7 +547,7 @@ func _ui_toggle_vista() -> void:
 	_modo_vista = "lista" if _modo_vista == "grilla" else "grilla"
 	_aplicar_vista()
 	_ui_refrescar()
-	_persistir_filtros()
+	_persistir_config()
 
 
 func _aplicar_vista() -> void:
@@ -575,43 +577,43 @@ func _ui_busqueda_aplicar() -> void:
 
 
 func _ui_busqueda_guardar() -> void:
-	_persistir_filtros()
+	_persistir_config()
 
 
 func _ui_busqueda_enviada(_texto: String) -> void:
 	_espera_busqueda.stop()
 	_ui_refrescar()
-	_persistir_filtros()
+	_persistir_config()
 
 
 func _ui_filtro_estado(_indice: int) -> void:
 	_ui_aplicar_filtro()
-	_persistir_filtros()
+	_persistir_config()
 
 
 func _ui_filtro_categoria(_indice: int) -> void:
 	_ui_aplicar_filtro()
-	_persistir_filtros()
+	_persistir_config()
 
 
 func _ui_filtro_etiqueta(_indice: int) -> void:
 	_ui_aplicar_filtro()
-	_persistir_filtros()
+	_persistir_config()
 
 
 func _ui_filtro_codigo(_indice: int) -> void:
 	_ui_aplicar_filtro()
-	_persistir_filtros()
+	_persistir_config()
 
 
 func _ui_filtro_dias(_valor: float) -> void:
 	_ui_aplicar_filtro()
-	_persistir_filtros()
+	_persistir_config()
 
 
 func _ui_filtro_modo(_indice: int) -> void:
 	_ui_refrescar()
-	_persistir_filtros()
+	_persistir_config()
 
 
 func _ui_preset_seleccionado(indice: int) -> void:
@@ -634,7 +636,7 @@ func _aplicar_preset(nombre: String) -> void:
 	filtro_dias.value = int(cfg.get("filtro_dias", 0))
 	busqueda.text = str(cfg.get("busqueda", ""))
 	_ui_refrescar()
-	_persistir_filtros()
+	_persistir_config()
 	preset_filtros.select(0)
 
 
@@ -754,7 +756,7 @@ func _ui_cabecera(columna: String) -> void:
 		_orden_columna = ""
 	_ui_pintar_cabeceras()
 	_ui_aplicar_filtro()
-	if not _persistir_orden():
+	if not _persistir_config():
 		_orden_columna = prev_col
 		_orden_direccion = prev_dir
 		_ui_pintar_cabeceras()
@@ -1401,7 +1403,20 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	TemaStoreScript.aplicar(tema, self)
 	dashboard.aplicar_paleta()
 	TranslationServer.set_locale(idioma)
-	if not _config_store.guardar(paralelismo, timeout, auto_abrir, intervalo, tema, "", "", 1, idioma, filtro.get_selected_id(), filtro_cat.get_selected_id(), _etiqueta_seleccionada(), busqueda.text, _codigo_seleccionado(), int(filtro_dias.value), _modo_busqueda(), _modo_vista, reintentar_transitorios, red_sin_comprobar, aceptar_certificados):
+	var cambios := _config_desde_ui()
+	cambios["paralelismo"] = paralelismo
+	cambios["timeout"] = timeout
+	cambios["auto_abrir"] = auto_abrir
+	cambios["intervalo"] = intervalo
+	cambios["tema"] = tema
+	cambios["ultima_version_vista"] = ""
+	cambios["orden_columna"] = ""
+	cambios["orden_direccion"] = 1
+	cambios["idioma"] = idioma
+	cambios["reintentar_transitorios"] = reintentar_transitorios
+	cambios["red_sin_comprobar"] = red_sin_comprobar
+	cambios["aceptar_certificados"] = aceptar_certificados
+	if not _config_ctrl.guardar(_config_store, cambios):
 		TranslationServer.set_locale(locale_anterior)
 		progreso.text = tr("No se pudo guardar la configuración.")
 	_retraducir_ui()
@@ -1428,50 +1443,23 @@ func _retraducir_ui() -> void:
 	boton_vista.text = tr("Vista lista") if _modo_vista == "grilla" else tr("Vista grilla")
 
 
-func _persistir_orden() -> bool:
-	var cfg: Dictionary = _config_store.cargar()
-	return _config_store.guardar(
-		int(cfg.get("paralelismo", 3)),
-		float(cfg.get("timeout", 10.0)),
-		bool(cfg.get("auto_abrir", true)),
-		int(cfg.get("intervalo", 0)),
-		str(cfg.get("tema", "auto")),
-		str(cfg.get("ultima_version_vista", "")),
-		_orden_columna,
-		_orden_direccion,
-		str(cfg.get("idioma", "")),
-		filtro.get_selected_id(),
-		filtro_cat.get_selected_id(),
-		_etiqueta_seleccionada(),
-		busqueda.text,
-		_codigo_seleccionado(),
-		int(filtro_dias.value),
-		_modo_busqueda(),
-		_modo_vista,
-	)
+func _config_desde_ui() -> Dictionary:
+	return {
+		"orden_columna": _orden_columna,
+		"orden_direccion": _orden_direccion,
+		"filtro_estado": filtro.get_selected_id(),
+		"filtro_categoria": filtro_cat.get_selected_id(),
+		"filtro_etiqueta": _etiqueta_seleccionada(),
+		"busqueda": busqueda.text,
+		"filtro_codigo": _codigo_seleccionado(),
+		"filtro_dias": int(filtro_dias.value),
+		"busqueda_modo": _modo_busqueda(),
+		"vista": _modo_vista,
+	}
 
 
-func _persistir_filtros() -> bool:
-	var cfg: Dictionary = _config_store.cargar()
-	return _config_store.guardar(
-		int(cfg.get("paralelismo", 3)),
-		float(cfg.get("timeout", 10.0)),
-		bool(cfg.get("auto_abrir", true)),
-		int(cfg.get("intervalo", 0)),
-		str(cfg.get("tema", "auto")),
-		str(cfg.get("ultima_version_vista", "")),
-		_orden_columna,
-		_orden_direccion,
-		str(cfg.get("idioma", "")),
-		filtro.get_selected_id(),
-		filtro_cat.get_selected_id(),
-		_etiqueta_seleccionada(),
-		busqueda.text,
-		_codigo_seleccionado(),
-		int(filtro_dias.value),
-		_modo_busqueda(),
-		_modo_vista,
-	)
+func _persistir_config() -> bool:
+	return _config_ctrl.guardar(_config_store, _config_desde_ui())
 
 
 func _lanzar_comprobacion_auto() -> void:
@@ -1543,26 +1531,11 @@ func _on_actualizacion_cerrar() -> void:
 
 
 func _persistir_version_vista() -> void:
-	var cfg: Dictionary = _config_store.cargar()
-	_config_store.guardar(
-		int(cfg.get("paralelismo", 3)),
-		float(cfg.get("timeout", 10.0)),
-		bool(cfg.get("auto_abrir", true)),
-		int(cfg.get("intervalo", 0)),
-		str(cfg.get("tema", "auto")),
-		_dialogo_version,
-		_orden_columna,
-		_orden_direccion,
-		str(cfg.get("idioma", "")),
-		filtro.get_selected_id(),
-		filtro_cat.get_selected_id(),
-		_etiqueta_seleccionada(),
-		busqueda.text,
-		_codigo_seleccionado(),
-		int(filtro_dias.value),
-		_modo_busqueda(),
-		_modo_vista,
-	)
+	_config_ctrl.guardar(_config_store, {
+		"ultima_version_vista": _dialogo_version,
+		"orden_columna": _orden_columna,
+		"orden_direccion": _orden_direccion,
+	})
 
 
 func _limpiar_aviso() -> void:

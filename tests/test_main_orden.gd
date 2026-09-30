@@ -247,6 +247,19 @@ func _arrancar() -> void:
 	main_script._ui_cabecera("fecha")
 	_check(main_script._config_store.cargar().get("orden_columna", "#") == "", "desactivar la columna persiste sin criterio")
 
+	# #62: persistir el orden no debe borrar las preferencias de escaneo
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro", "es", false, false, true)
+	_check(main_script._config_store.cargar().get("aceptar_certificados") == true, "aplicar preferencias guarda aceptar_certificados")
+	main_script._ui_cabecera("nombre")
+	_check(main_script._config_store.cargar().get("aceptar_certificados") == true, "ordenar ya no borra aceptar_certificados (#62)")
+	_check(main_script._config_store.cargar().get("reintentar_transitorios") == false, "ordenar ya no repone reintentar_transitorios a true (#62)")
+	_check(main_script._config_store.cargar().get("red_sin_comprobar") == false, "ordenar ya no repone red_sin_comprobar a true (#62)")
+	main_script._ui_cabecera("nombre")
+	main_script._ui_cabecera("nombre")
+	main_script._persistir_version_vista()
+	_check(main_script._config_store.cargar().get("aceptar_certificados") == true, "persistir la version vista ya no borra aceptar_certificados (#62)")
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro", "es", true, true, false)
+
 	var base_orden := "user://__test_orden_restore__"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(base_orden))
 	ConfigStoreScript.new(base_orden).guardar(3, 10.0, true, 0, "oscuro", "", "fecha", -1, "en", 1, 2, "glaciar", "srv")
