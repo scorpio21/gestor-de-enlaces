@@ -33,6 +33,7 @@ const VISTA_DEFAULT := "lista"
 const VISTAS_VALIDAS := ["lista", "grilla"]
 const REINTENTAR_DEFAULT := true
 const RED_SIN_COMPROBAR_DEFAULT := true
+const ACEPTAR_CERTIFICADOS_DEFAULT := false
 
 var _base: String
 
@@ -64,6 +65,7 @@ func cargar() -> Dictionary:
 			"vista": VISTA_DEFAULT,
 			"reintentar_transitorios": REINTENTAR_DEFAULT,
 			"red_sin_comprobar": RED_SIN_COMPROBAR_DEFAULT,
+			"aceptar_certificados": ACEPTAR_CERTIFICADOS_DEFAULT,
 		}
 	return {
 		"paralelismo": _paralelismo_ok(v.get("paralelismo", PARALELO_DEFAULT)),
@@ -85,10 +87,11 @@ func cargar() -> Dictionary:
 		"vista": _vista_ok(v.get("vista", VISTA_DEFAULT)),
 		"reintentar_transitorios": _bool_ok(v.get("reintentar_transitorios", REINTENTAR_DEFAULT), REINTENTAR_DEFAULT),
 		"red_sin_comprobar": _bool_ok(v.get("red_sin_comprobar", RED_SIN_COMPROBAR_DEFAULT), RED_SIN_COMPROBAR_DEFAULT),
+		"aceptar_certificados": _bool_ok(v.get("aceptar_certificados", ACEPTAR_CERTIFICADOS_DEFAULT), ACEPTAR_CERTIFICADOS_DEFAULT),
 	}
 
 
-func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT, filtro_estado := FILTRO_ESTADO_DEFAULT, filtro_categoria := FILTRO_CATEGORIA_DEFAULT, filtro_etiqueta := FILTRO_ETIQUETA_DEFAULT, busqueda := BUSQUEDA_DEFAULT, filtro_codigo := FILTRO_CODIGO_DEFAULT, filtro_dias := FILTRO_DIAS_DEFAULT, busqueda_modo := BUSQUEDA_MODO_DEFAULT, vista := VISTA_DEFAULT, reintentar_transitorios := REINTENTAR_DEFAULT, red_sin_comprobar := RED_SIN_COMPROBAR_DEFAULT) -> bool:
+func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT, intervalo := INTERVALO_DEFAULT, tema := TEMA_DEFAULT, ultima_version_vista := ULTIMA_VERSION_DEFAULT, orden_columna := ORDEN_COLUMNA_DEFAULT, orden_direccion := ORDEN_DIRECCION_DEFAULT, idioma := IDIOMA_DEFAULT, filtro_estado := FILTRO_ESTADO_DEFAULT, filtro_categoria := FILTRO_CATEGORIA_DEFAULT, filtro_etiqueta := FILTRO_ETIQUETA_DEFAULT, busqueda := BUSQUEDA_DEFAULT, filtro_codigo := FILTRO_CODIGO_DEFAULT, filtro_dias := FILTRO_DIAS_DEFAULT, busqueda_modo := BUSQUEDA_MODO_DEFAULT, vista := VISTA_DEFAULT, reintentar_transitorios := REINTENTAR_DEFAULT, red_sin_comprobar := RED_SIN_COMPROBAR_DEFAULT, aceptar_certificados := ACEPTAR_CERTIFICADOS_DEFAULT) -> bool:
 	if not idioma in IDIOMAS_VALIDOS:
 		return false
 	var dato := {
@@ -111,6 +114,7 @@ func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT,
 		"vista": _vista_ok(vista),
 		"reintentar_transitorios": _bool_ok(reintentar_transitorios, REINTENTAR_DEFAULT),
 		"red_sin_comprobar": _bool_ok(red_sin_comprobar, RED_SIN_COMPROBAR_DEFAULT),
+		"aceptar_certificados": _bool_ok(aceptar_certificados, ACEPTAR_CERTIFICADOS_DEFAULT),
 	}
 	return _escribir_json(_ruta("config.json"), dato)
 

@@ -64,6 +64,13 @@ func _resumen(entradas: Array, estados: Dictionary) -> void:
 	_check(int(con_red.get("activos")) == 0, "un enlace con fallo de red tampoco cuenta como válido (#54)")
 	_check(int(con_red.get("sin_comprobar")) == 1, "un enlace con fallo de red cuenta como sin comprobar (#54)")
 
+	var con_tls: Dictionary = DashboardStoreScript.resumen([{"url": "https://antiguo.hosting/a"}], {
+		"antiguo.hosting/a": {"valido": true, "mensaje": "OK (200)", "intentos": 1, "motivo": "tls"},
+	})
+	_check(int(con_tls.get("activos")) == 1, "un certificado aceptado por preferencia cuenta como disponible (#56)")
+	_check(int(con_tls.get("rotos")) == 0 and int(con_tls.get("sin_comprobar")) == 0, "un certificado aceptado no infla los caidos ni los sin comprobar (#56)")
+	_check(is_equal_approx(float(con_tls.get("disponible_pct")), 100.0), "un certificado aceptado mantiene el 100 % de disponibilidad (#56)")
+
 
 func _categorias(entradas: Array, estados: Dictionary) -> void:
 	var cats: Array = DashboardStoreScript.por_categoria(entradas, estados)

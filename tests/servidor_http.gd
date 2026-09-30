@@ -3,17 +3,23 @@ extends RefCounted
 var puerto := 0
 var peticiones: PackedStringArray = PackedStringArray()
 var enviados := 0
+var tls := false
 
 var _srv := TCPServer.new()
-var _peer: StreamPeerTCP = null
+var _peer: StreamPeer = null
+var _tcp: StreamPeerTCP = null
 var _recibido := ""
 var _guion: Array = []
 var _servidos := 0
+var _conexiones := 0
 var _espera := 0
 var _ritmo := 1
 var _ritmo_cont := 0
 var _pendientes: Array = []
 var _actual := -1
+var _cert: X509Certificate = null
+var _clave: CryptoKey = null
+var _opciones: TLSOptions = null
 
 
 func arrancar() -> bool:
@@ -21,6 +27,18 @@ func arrancar() -> bool:
 		return false
 	puerto = _srv.get_local_port()
 	return puerto > 0
+
+
+func arrancar_tls(ruta_cert: String, ruta_clave: String) -> bool:
+	var cert := X509Certificate.new()
+	if cert.load(ruta_cert) != OK:
+		return false
+	var clave := CryptoKey.new()
+	if clave.load(ruta_clave) != OK:
+		return false
+	_opciones = TLSOptions.server(clave, cert)
+	tls = true
+	return arrancar()
 
 
 func parar() -> void:
@@ -31,6 +49,7 @@ func parar() -> void:
 func preparar(guion: Array) -> void:
 	_guion = guion.duplicate()
 	_servidos = 0
+	_conexiones = 0
 	_actual = -1
 	_espera = 0
 	_ritmo = 1
@@ -47,27 +66,37 @@ func servir() -> int:
 
 
 func soltar() -> void:
-	if _peer != null:
-		_peer.disconnect_from_host()
-		_peer = null
+	if _tcp != null:
+		_tcp.disconnect_from_host()
+	_tcp = null
+	_peer = null
 
 
 func paso() -> void:
 	if _peer != null:
 		_peer.poll()
-		if _peer.get_status() != StreamPeerTCP.STATUS_CONNECTED:
+		if not _vivo():
 			soltar()
 	if _peer == null:
 		var c: Variant = _srv.take_connection()
 		if c != null:
-			_peer = c as StreamPeerTCP
+			_tcp = c as StreamPeerTCP
+			if tls:
+				var seguro := StreamPeerTLS.new()
+				seguro.accept_stream(_tcp, _opciones)
+				_peer = seguro
+			else:
+				_peer = _tcp
 			_recibido = ""
 			_actual = -1
 			_espera = 0
 			_pendientes = []
-			if _servidos < _guion.size() and bool(_guion[_servidos].get("corte", false)):
+			_conexiones += 1
+			if _corte_pendiente():
 				_servidos += 1
 				soltar()
+		return
+	if tls and _peer.get_status() != StreamPeerTLS.STATUS_CONNECTED:
 		return
 	_pumpar()
 	if _actual < 0:
@@ -103,6 +132,24 @@ func paso() -> void:
 		return
 	if bool(_guion[_actual].get("cerrar", false)):
 		soltar()
+
+
+func _corte_pendiente() -> bool:
+	if _servidos >= _guion.size():
+		return false
+	var paso: Dictionary = _guion[_servidos]
+	if not bool(paso.get("corte", false)):
+		return false
+	if not paso.has("intento"):
+		return true
+	return _conexiones - 1 == int(paso["intento"])
+
+
+func _vivo() -> bool:
+	if _peer == null or _tcp == null:
+		return false
+	var s: int = _tcp.get_status()
+	return s == StreamPeerTCP.STATUS_CONNECTING or s == StreamPeerTCP.STATUS_CONNECTED
 
 
 func _pumpar() -> void:

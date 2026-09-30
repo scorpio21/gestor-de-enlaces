@@ -8,6 +8,7 @@ var intentos := 1
 var transitorio := false
 var motivo := MOTIVO_OK
 var reintentar_transitorios := true
+var aceptar_certificados := false
 const MAX_RETRY_AFTER := 10.0
 const ESPERA_REINTENTOS: PackedFloat32Array = [1.0, 4.0]
 const CODIGOS_TRANSITORIOS := [429, 500, 502, 503, 504]
@@ -87,6 +88,8 @@ var _reintento_sin_rango := false
 var _reintentos := 0
 var _espera_reintento := -1.0
 var _url_inicial := ""
+var _tls_relajado := false
+var _certificado_rechazado := false
 
 
 func comprobar(url: String) -> void:
@@ -99,6 +102,8 @@ func comprobar(url: String) -> void:
 	_activo = true
 	_reintentos = 0
 	_espera_reintento = -1.0
+	_tls_relajado = false
+	_certificado_rechazado = false
 	intentos = 1
 	transitorio = false
 	motivo = MOTIVO_OK
@@ -142,7 +147,7 @@ func _process(delta: float) -> void:
 		HTTPClient.STATUS_CANT_CONNECT:
 			_cerrar(tr("No se pudo conectar"), false, MOTIVO_RED)
 		HTTPClient.STATUS_TLS_HANDSHAKE_ERROR:
-			_cerrar(tr("Error TLS/HTTPS"), false, MOTIVO_TLS)
+			_reintentar_sin_validar()
 		HTTPClient.STATUS_CONNECTION_ERROR:
 			_tras_cuerpo("Error de conexión", MOTIVO_RED)
 		HTTPClient.STATUS_DISCONNECTED:
@@ -201,10 +206,29 @@ func _conectar(url: String) -> void:
 	_espera = 0.0
 	_reintento_sin_rango = false
 	motivo = MOTIVO_OK
-	var tls: TLSOptions = TLSOptions.client() if partes.tls else null
+	var tls: TLSOptions = _opciones_tls() if partes.tls else null
 	var err := _cliente.connect_to_host(partes.host, partes.port, tls)
 	if err != OK:
 		_cerrar(tr("No se pudo iniciar la conexión"), false, MOTIVO_RED)
+
+
+func _reintentar_sin_validar() -> void:
+	if aceptar_certificados and not _tls_relajado and bool(_parsear_url(_url).get("tls", false)):
+		_tls_relajado = true
+		_certificado_rechazado = true
+		_transcurrido = 0.0
+		_cliente = HTTPClient.new()
+		_conectar(_url)
+		return
+	_cerrar(_mensaje_tls(), false, MOTIVO_TLS)
+
+
+func _opciones_tls() -> TLSOptions:
+	return TLSOptions.client_unsafe(null) if _tls_relajado else TLSOptions.client()
+
+
+func _mensaje_tls() -> String:
+	return tr("Sin conexión segura") if _tls_relajado else tr("Certificado no válido (rechazado)")
 
 
 func _enviar_pedido() -> void:
@@ -282,13 +306,17 @@ func _veredicto(forzar := false) -> void:
 		return
 
 	if codigo >= 200 and codigo < 400:
-		_cerrar(tr("OK (%d)") % codigo, true, MOTIVO_OK)
+		_cerrar(tr("OK (%d)") % codigo, true, _motivo_exito())
 		return
 	if codigo == 401 or codigo == 403:
-		_cerrar(tr("Existe, acceso restringido (%d)") % codigo, true, MOTIVO_OK)
+		_cerrar(tr("Existe, acceso restringido (%d)") % codigo, true, _motivo_exito())
 		return
 
 	_cerrar(tr("Error HTTP %d") % codigo, false, MOTIVO_HTTP)
+
+
+func _motivo_exito() -> String:
+	return MOTIVO_TLS if _certificado_rechazado else MOTIVO_OK
 
 
 func _parece_muerto(codigo: int, html: String) -> bool:

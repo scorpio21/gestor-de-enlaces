@@ -36,6 +36,7 @@ var _checker: Node = null
 var _timeout := 10.0
 var _reintentar_transitorios := true
 var _red_sin_comprobar := true
+var _aceptar_certificados := false
 
 
 func _ready() -> void:
@@ -90,8 +91,8 @@ func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva :
 	motivo = motivo_nuevo
 	_pintar_fecha()
 	if ok == true:
-		estado = "ok"
-		_pintar_estado(_texto_estado(formatear_mensaje(texto, codigo), intentos), "valido")
+		estado = "ok_tls" if _es_aviso_tls() else "ok"
+		_pintar_estado(_texto_estado(_texto_ok(formatear_mensaje(texto, codigo)), intentos), _clave_ok())
 	elif ok == false:
 		estado = "caido"
 		_pintar_estado(_texto_estado(formatear_mensaje(texto, codigo), intentos), "caido")
@@ -182,6 +183,8 @@ func _actualizar_tooltip() -> void:
 	if fecha > 0:
 		lineas.append(tr("Comprobado: %s") % formatear_fecha(fecha))
 	lineas.append(formatear_mensaje(mensaje, codigo))
+	if _es_aviso_tls():
+		lineas.append(tr("Certificado no válido (aceptado por preferencia)"))
 	tooltip_text = "\n".join(lineas)
 
 
@@ -192,6 +195,10 @@ func configurar_timeout(segundos: float) -> void:
 func configurar_reintentos(reintentar: bool, red_como_sin_comprobar := true) -> void:
 	_reintentar_transitorios = reintentar
 	_red_sin_comprobar = red_como_sin_comprobar
+
+
+func configurar_certificados(aceptar: bool) -> void:
+	_aceptar_certificados = aceptar
 
 
 func fijar_estado_reorden(arriba: bool, abajo: bool) -> void:
@@ -220,6 +227,7 @@ func verificar() -> void:
 	_checker.terminado.connect(_on_check_terminado)
 	_checker.timeout_s = _timeout
 	_checker.reintentar_transitorios = _reintentar_transitorios
+	_checker.aceptar_certificados = _aceptar_certificados
 	_checker.comprobar(url)
 
 
@@ -238,8 +246,8 @@ func _on_check_terminado(ok: bool, texto: String) -> void:
 		_pintar_estado(_texto_estado(tr("Sin comprobar"), intentos), "sin_comprobar")
 	elif ok:
 		valido = true
-		estado = "ok"
-		_pintar_estado(_texto_estado(texto, intentos), "valido")
+		estado = "ok_tls" if _es_aviso_tls() else "ok"
+		_pintar_estado(_texto_estado(_texto_ok(texto), intentos), _clave_ok())
 	else:
 		valido = false
 		estado = "caido"
@@ -252,6 +260,18 @@ func _texto_estado(texto: String, intentos: int) -> String:
 	if intentos <= 1:
 		return texto
 	return "%s · %s" % [texto, tr("(%d intentos)") % intentos]
+
+
+func _es_aviso_tls() -> bool:
+	return valido == true and motivo == "tls"
+
+
+func _texto_ok(texto: String) -> String:
+	return tr("Certificado no válido (aceptado)") if _es_aviso_tls() else texto
+
+
+func _clave_ok() -> String:
+	return "aviso" if _es_aviso_tls() else "valido"
 
 
 func _pintar_estado(texto: String, clave: String) -> void:

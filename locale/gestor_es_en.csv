@@ -11,6 +11,7 @@ keys,es,en
 7 días,7 días,7 days
 30 días,30 días,30 days
 90 días,90 días,90 days
+Aceptar los certificados TLS no válidos,Aceptar los certificados TLS no válidos,Accept invalid TLS certificates
 Activos:,Activos:,Working:
 Agregar,Agregar,Add
 Agregar enlace,Agregar enlace,Add link
@@ -36,6 +37,9 @@ Cada 30 minutos,Cada 30 minutos,Every 30 minutes
 Código,Código,Code
 Cualquier palabra,Cualquier palabra,Any word
 Cerrar,Cerrar,Close
+Certificado no válido (aceptado),Certificado no válido (aceptado),Invalid certificate (accepted)
+"Certificado no válido (aceptado por preferencia)","Certificado no válido (aceptado por preferencia)","Invalid certificate (accepted by preference)"
+Certificado no válido (rechazado),Certificado no válido (rechazado),Invalid certificate (rejected)
 Claro,Claro,Light
 Cliente,Cliente,Client
 Comprobado: %s,Comprobado: %s,Checked: %s
@@ -179,7 +183,9 @@ Sin comprobaciones todavía,Sin comprobaciones todavía,No checks yet
 Sin comprobar,Sin comprobar,Not checked
 Sin comprobar: %d,Sin comprobar: %d,Not checked: %d
 Sin historial,Sin historial,No history
+Sin conexión segura,Sin conexión segura,No secure connection
 Sin respuesta (tiempo agotado),Sin respuesta (tiempo agotado),No response (timed out)
+"Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído».","Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído».","Only for catalogs with old hosts: the link becomes «valid with a warning» instead of «down»."
 Subir,Subir,Move up
 Tema,Tema,Theme
 Timeout por enlace (segundos),Timeout por enlace (segundos),Per-link timeout (seconds)

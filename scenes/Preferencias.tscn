@@ -125,6 +125,12 @@ layout_mode = 2
 button_pressed = true
 text = "Marcar los fallos de red como «sin comprobar» en vez de «caído»"
 
+[node name="AceptarCertificados" type="CheckBox" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído»."
+text = "Aceptar los certificados TLS no válidos"
+
 [node name="Error" type="Label" parent="Margen/Columna"]
 unique_name_in_owner = true
 layout_mode = 2

@@ -65,14 +65,29 @@ La escena principal es `res://scenes/Main.tscn`.
 1. **Abrir la aplicación** — se carga el catálogo base (`data/data.json`), los enlaces de usuario (`user://enlaces.json`) y el estado del último escaneo (`user://estados.json`).
 2. **Comprobar enlaces** — pulsa **Comprobar** para verificar todos los enlaces visibles (o los que el filtro deje ver). Los resultados se muestran en cada fila y quedan guardados:
    - 🟢 **Válido** — el archivo responde `200`-`3xx`.
-   - 🔴 **Caído / no existe** — `404`/`410`, conexión fallida, dominio inexistente o marcador de archivo eliminado.
-   - 🟡 **Sin comprobar** — pendiente de verificación.
+   - 🟡 **Válido con aviso** — el enlace responde, pero el certificado TLS no es válido y se ha aceptado por preferencia.
+   - 🔴 **Caído / no existe** — `404`/`410`, conexión fallida, dominio inexistente, certificado rechazado o marcador de archivo eliminado.
+   - 🟡 **Sin comprobar** — pendiente de verificación, o un fallo del entorno (red, corte de conexión, `503` agotado) que no se ha podido confirmar como caída.
 3. **Filtrar** — usa el desplegable para ver solo válidos, caídos o sin comprobar.
 4. **Buscar** — escribe en el campo de búsqueda para filtrar por nombre/descripción.
 5. **Añadir** — menú *Utilidades → Agregar* (o atajo directo). La URL debe empezar por `http://` o `https://`; opcionalmente elige una **imagen/captura local** (png/jpg/webp) que se copia a `Assets/png|jpg` guardada con el nombre del enlace y se muestra como miniatura al guardar.
 6. **Abrir enlace** — clic sobre la fila del enlace.
 7. **Re-verificar un caído** — botón *Volver a comprobar* en la fila.
 8. **Eliminar un caído** — botón *Eliminar* (con confirmación); se registra la URL como eliminada y se borra su captura de `Assets/png/`.
+
+### Preferencias → Escaneo
+
+Tres opciones que solo afectan a **cómo se comprueba**, no a **qué se comprueba**:
+
+| Opción | Por defecto | Qué hace |
+| --- | --- | --- |
+| Reintentar los fallos transitorios (2 veces) | activada | Un fallo del entorno (red, corte de conexión, `429`, `503`) se reintenta con esperas crecientes antes de darlo por caído. |
+| Marcar los fallos de red como «sin comprobar» | activada | Si aun así no se puede confirmar, el enlace queda como **sin comprobar** en vez de **caído**, para no ofrecer "Eliminar" por un fallo ajeno. |
+| Aceptar los certificados TLS no válidos | **desactivada** | Un certificado caducado, autofirmado o de otro dominio deja de marcar el enlace como caído. |
+
+Sobre la tercera: es una **opción de compatibilidad**, no algo que deba activarse por costumbre. Sin validación del certificado, cualquiera que se interponga en la conexión puede sustituir el archivo o redirigir la descarga. Actívala solo si tu catálogo tiene hostings antiguos con certificados caducados y aceptas ese riesgo a cambio de que el archivo no desaparezca del catálogo.
+
+La comprobación es siempre en dos pasos: primero se valida el certificado como siempre. Solo si **el handshake falla de verdad** se repite la conexión sin validar, de modo que la revisión se mantiene intacta para los enlaces con buen certificado. Si esa segunda conexión funciona, el enlace se marca como **válido con aviso** (sigue contando como disponible y no aparece entre los problemáticos); si tampoco funciona, se informa de que **no hay conexión segura** y el enlace no se da por bueno. Con la opción desactivada, un certificado no válido sigue marcando el enlace como **caído**.
 
 ---
 

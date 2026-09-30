@@ -5,7 +5,7 @@ const CAUSAS := [
 	["ok", "Correcto"],
 	["red", "Sin respuesta (red)"],
 	["dns", "Dominio no resuelto"],
-	["tls", "TLS inválido"],
+	["tls", "Certificado no válido (rechazado)"],
 	["http", "Error HTTP"],
 	["muerto", "Página inexistente"],
 	["url", "URL inválida"],
@@ -23,7 +23,7 @@ static func estado_texto(estado: Dictionary) -> String:
 
 static func causa_texto(estado: Dictionary) -> String:
 	if estado.get("valido") == true:
-		return "Correcto"
+		return "Certificado no válido (aceptado)" if str(estado.get("motivo", "")) == "tls" else "Correcto"
 	if estado.get("valido") == null:
 		return "Sin comprobar"
 	var motivo := str(estado.get("motivo", ""))

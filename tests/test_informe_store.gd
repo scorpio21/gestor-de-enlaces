@@ -61,6 +61,8 @@ func _ayudas() -> void:
 	_check(InformeStoreScript.estado_texto({}) == "Sin comprobar", "estado_texto sin datos es sin comprobar")
 
 	_check(InformeStoreScript.causa_texto({"valido": true}) == "Correcto", "causa_texto de un válido es Correcto")
+	_check(InformeStoreScript.causa_texto({"valido": true, "motivo": "tls"}) == "Certificado no válido (aceptado)", "causa_texto avisa del certificado aceptado (#56)")
+	_check(InformeStoreScript.causa_texto({"valido": false, "motivo": "tls"}) == "Certificado no válido (rechazado)", "causa_texto avisa del certificado rechazado (#56)")
 	_check(InformeStoreScript.causa_texto({"valido": null, "motivo": "red"}) == "Sin comprobar", "causa_texto prioriza el estado sin comprobar (#54)")
 	_check(InformeStoreScript.causa_texto({"valido": false, "motivo": "red"}) == "Sin respuesta (red)", "causa_texto traduce el motivo de red")
 	_check(InformeStoreScript.causa_texto({"valido": false, "motivo": "http", "codigo": 503}) == "Error HTTP 503", "causa_texto añade el código HTTP (#54)")

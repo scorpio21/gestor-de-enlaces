@@ -22,9 +22,12 @@ func _initialize() -> void:
 		"assets_lectura": "res://Assets",
 		"assets_escritura": "user://Assets",
 		"catalogo_base": "res://data/data.json",
+		"tls_aceptar_certificados": "true",
+		"tls_aviso": 3,
 	})
 	_check(res_rutas.get("ok", false), "exportar con rutas vuelve sin error")
 	_check(_info_con_rutas(), "info.txt lleva Editor y las bases efectivas (#50)")
+	_check(_info_con_tls(), "info.txt lleva la preferencia y los avisos de certificado TLS (#56)")
 	DirAccess.remove_absolute(BASE)
 	if _fallos == 0:
 		print("TESTS OK")
@@ -83,6 +86,15 @@ func _info_con_rutas() -> bool:
 		and "assets_lectura=res://Assets" in txt \
 		and "assets_escritura=user://Assets" in txt \
 		and "catalogo_base=res://data/data.json" in txt
+
+
+func _info_con_tls() -> bool:
+	var z := ZIPReader.new()
+	if z.open(ZIP) != OK:
+		return false
+	var txt := z.read_file("info.txt").get_string_from_utf8()
+	z.close()
+	return "tls_aceptar_certificados=true" in txt and "tls_aviso=3" in txt
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

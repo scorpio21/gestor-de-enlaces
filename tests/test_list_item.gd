@@ -4,6 +4,7 @@ const LIST_ITEM := preload("res://scenes/ListItem.tscn")
 const ListItemScript := preload("res://scripts/list_item.gd")
 const LinkCheckerScript := preload("res://scripts/link_checker.gd")
 const IdiomaScript := preload("res://scripts/idioma.gd")
+const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const PLACEHOLDER := "res://Assets/png/no-disponible.png"
 const BASE := "user://__test_list_item__"
 
@@ -104,6 +105,40 @@ func _arrancar() -> void:
 	root.add_child(ok_item)
 	await process_frame
 	_check(ok_item.valido == true and ok_item.intentos == 2, "un válido tras reintentos se guarda como válido con sus intentos (#54)")
+
+	var ok_tls := _crear_item()
+	ok_tls.setup("Nom", "Desc", "https://ejemplo.com/o")
+	ok_tls.aplicar_estado(true, "OK (200)", 200, 1000000000, 1, "tls")
+	root.add_child(ok_tls)
+	await process_frame
+	_check(ok_tls.valido == true and ok_tls.estado == "ok_tls", "un certificado aceptado deja el enlace valido (#56)")
+	_check(ok_tls.get_node("%EstadoLabel").text == "Certificado no válido (aceptado)", "un certificado aceptado se avisa en la fila (#56)")
+	_check(ok_tls.get_node("%EstadoLabel").get_theme_color("font_color") == TemaStoreScript.color_clave("aviso"), "un certificado aceptado se pinta con la paleta de aviso (#56)")
+	_check(ok_tls.tooltip_text.ends_with("\nCertificado no válido (aceptado por preferencia)"), "el aviso de certificado aparece en el tooltip (#56)")
+
+	var caido_tls := _crear_item()
+	caido_tls.setup("Nom", "Desc", "https://ejemplo.com/q")
+	caido_tls.aplicar_estado(false, "Certificado no válido (rechazado)", 0, 1000000000, 1, "tls")
+	root.add_child(caido_tls)
+	await process_frame
+	_check(caido_tls.valido == false and caido_tls.estado == "caido", "un certificado rechazado deja el enlace caido (#56)")
+	_check(not caido_tls.tooltip_text.ends_with("aceptado por preferencia"), "un certificado rechazado no avisa de que se acepto (#56)")
+
+	var ok_checker_tls := _crear_item()
+	ok_checker_tls.setup("Nom", "Desc", "https://ejemplo.com/r")
+	ok_checker_tls._checker = _checker_falso(1, false, "tls")
+	ok_checker_tls._on_check_terminado(true, "OK (200)")
+	root.add_child(ok_checker_tls)
+	await process_frame
+	_check(ok_checker_tls.valido == true and ok_checker_tls.estado == "ok_tls", "el checker con motivo tls pinta la fila con aviso (#56)")
+	_check(ok_checker_tls.get_node("%EstadoLabel").text == "Certificado no válido (aceptado)", "el aviso tambien sale al comprobar en vivo (#56)")
+
+	var http_tls_motivo := _crear_item()
+	http_tls_motivo.setup("Nom", "Desc", "http://ejemplo.com/s")
+	http_tls_motivo.aplicar_estado(true, "OK (200)", 200, 1000000000, 1, "tls")
+	root.add_child(http_tls_motivo)
+	await process_frame
+	_check(http_tls_motivo.estado == "ok_tls", "un motivo tls siempre avisa, aunque el checker lo de en un enlace http (#56)")
 
 	var unix := 1000000000
 	var esperado := ListItemScript.formatear_fecha(unix)

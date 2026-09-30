@@ -15,7 +15,7 @@ func _arrancar() -> void:
 	root.add_child(ventana)
 	await process_frame
 
-	ventana.aplicado.connect(func(p: int, t: float, a: bool, i: int, tm: String, id: String, rt: bool, rs: bool) -> void: _aplicado = [p, t, a, i, tm, id, rt, rs])
+	ventana.aplicado.connect(func(p: int, t: float, a: bool, i: int, tm: String, id: String, rt: bool, rs: bool, ac: bool) -> void: _aplicado = [p, t, a, i, tm, id, rt, rs, ac])
 	ventana.abrir(5, 20.0, false, 15, "oscuro")
 	await process_frame
 	_check(is_equal_approx(ventana.get_node("%Paralelismo").value, 5.0), "abrir precarga el paralelismo")
@@ -26,17 +26,19 @@ func _arrancar() -> void:
 	_check(ventana.get_node("%Idioma").get_selected_id() == 0, "abrir precarga el idioma es")
 	_check(ventana.get_node("%ReintentarTransitorios").button_pressed == true \
 		and ventana.get_node("%RedSinComprobar").button_pressed == true, "abrir deja los reintentos y el «sin comprobar» activados por defecto (#54)")
+	_check(ventana.get_node("%AceptarCertificados").button_pressed == false, "abrir deja los certificados TLS no aceptados por defecto (#56)")
 	_check(ventana.size.y >= ventana.get_node("Margen/Columna").get_combined_minimum_size().y, \
 		"la ventana ajusta su alto al contenido (no desborda ni solapa)")
 
 	ventana.get_node("%BotonCancelar").pressed.emit()
 	_check(_aplicado == null and not ventana.visible, "cancelar no emite aplicado y oculta")
 
-	ventana.abrir(5, 20.0, true, 30, "claro", "en", false, false)
+	ventana.abrir(5, 20.0, true, 30, "claro", "en", false, false, true)
 	await process_frame
 	_check(ventana.get_node("%Idioma").get_selected_id() == 1, "abrir precarga el idioma en")
 	_check(ventana.get_node("%ReintentarTransitorios").button_pressed == false \
 		and ventana.get_node("%RedSinComprobar").button_pressed == false, "abrir precarga las opciones de escaneo (#54)")
+	_check(ventana.get_node("%AceptarCertificados").button_pressed == true, "abrir precarga la aceptación de certificados (#56)")
 	ventana.get_node("%Paralelismo").value = 7
 	ventana.get_node("%Timeout").value = 15.0
 	ventana.get_node("%AutoAbrir").button_pressed = true
@@ -48,6 +50,7 @@ func _arrancar() -> void:
 	_check(_aplicado != null and _aplicado[4] == "claro", "guardar emite el tema elegido")
 	_check(_aplicado != null and _aplicado[5] == "en", "guardar emite el idioma elegido")
 	_check(_aplicado != null and _aplicado[6] == true and _aplicado[7] == false, "guardar emite las opciones de escaneo (#54)")
+	_check(_aplicado != null and _aplicado[8] == true, "guardar emite la aceptación de certificados TLS (#56)")
 
 	ventana.free()
 	_cerrar()
