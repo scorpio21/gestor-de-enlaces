@@ -6,7 +6,10 @@ var _fallos := 0
 func _initialize() -> void:
 	_check(_export_presets_ok(), "export_presets.cfg declara Windows, Linux/X11 y macOS")
 	_check(_ci_ok(), ".github/workflows/ci.yml tiene battery y upload-artifact")
+	_check(_ci_protegida(), "la CI limita el tiempo del job y ejecuta el paso estatico (#61)")
 	_check(FileAccess.file_exists("res://tests/run_battery.sh"), "existe tests/run_battery.sh")
+	_check(_bateria_con_timeout(), "run_battery.sh da timeout por suite (#61)")
+	_check(FileAccess.file_exists("res://tests/run_estatico.sh"), "existe tests/run_estatico.sh")
 	_check(FileAccess.file_exists("res://AGENTS.md"), "existe AGENTS.md")
 	if _fallos == 0:
 		print("TESTS OK")
@@ -31,6 +34,16 @@ func _export_presets_ok() -> bool:
 func _ci_ok() -> bool:
 	var txt := _leer("res://.github/workflows/ci.yml")
 	return "run_battery.sh" in txt and "upload-artifact" in txt
+
+
+func _ci_protegida() -> bool:
+	var txt := _leer("res://.github/workflows/ci.yml")
+	return "timeout-minutes:" in txt and "run_estatico.sh" in txt
+
+
+func _bateria_con_timeout() -> bool:
+	var txt := _leer("res://tests/run_battery.sh")
+	return "TIMEOUT_SUITE" in txt and "--headless" in txt
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

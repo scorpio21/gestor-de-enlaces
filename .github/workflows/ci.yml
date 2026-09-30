@@ -9,6 +9,11 @@ on:
 jobs:
   test-export:
     runs-on: ubuntu-latest
+    # Red de seguridad del job. Cada suite lleva timeout propio y el paso
+    # estatico va antes, asi que en teoria no se llega aqui; si algo se queda
+    # colgado en un export, preferimos un rojo en 20 min a un job de 6 horas
+    # sin diagnostico (#61).
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -38,6 +43,15 @@ jobs:
       - name: Import project assets
         run: |
           "$HOME/godot-bin/godot" --headless --path . --import
+
+      # El import anterior escupe ruido benigno (Parse Error: Native class
+      # TextFile y un Failed to load de test_preferencias.gd, porque el preload
+      # del .tscn aun no resuelve al escanear) y aun asi sale con codigo 0, asi
+      # que no sirve para detectar errores. --check-only si distingue (#61).
+      - name: Static check of GDScript files
+        run: |
+          export GODOT_BIN="$HOME/godot-bin/godot"
+          bash tests/run_estatico.sh
 
       - name: Run headless battery
         run: |

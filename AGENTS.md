@@ -12,10 +12,18 @@ Pwsh (Windows):
 & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_<area>.gd
 ```
 
-Suites completas (Linux/CI):
+Suites completas (Windows, con Git Bash):
 
 ```bash
-GODOT_BIN=/ruta/a/godot bash tests/run_battery.sh
+& "C:\Program Files\Git\bin\bash.exe" -c 'cd /k/gestor-de-enlaces && GODOT_BIN="K:/Godot_v4.6.1/Godot_v4.7.2-stable_win64_console.exe" bash tests/run_battery.sh'
+```
+
+Cada suite lleva timeout propio (`TIMEOUT_SUITE`, 180 s por defecto): una suite con un `Parse Error` nunca llega a `quit()` y, sin ese corte, se cuelga para siempre en vez de fallar. Para una sola suite: `PATRON=tests/test_agregar_enlace.gd`.
+
+Comprobación estática de parseo, antes de la batería (un segundo por fichero, sin cargar escenas):
+
+```bash
+GODOT_BIN=/ruta/a/godot bash tests/run_estatico.sh
 ```
 
 ## Regenerar export_presets.cfg
