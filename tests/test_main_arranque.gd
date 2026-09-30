@@ -126,9 +126,11 @@ func _arrancar() -> void:
 
 	# Disponibilidad: auto-escaneo desactivado en headless/intervalo 0 (#8)
 	main_script._intervalo_auto = 0
+	main_script._scan.intervalo_auto = 0
 	main_script._scan_rearmar_auto()
 	_check(main.get_node("%AutoEscaneo").is_stopped(), "intervalo 0 deja el Timer detenido")
 	main_script._intervalo_auto = 15
+	main_script._scan.intervalo_auto = 15
 	main_script._scan_rearmar_auto()
 	_check(main.get_node("%AutoEscaneo").is_stopped(), "en headless el intervalo no arranca el Timer")
 

@@ -11,6 +11,7 @@ func _initialize() -> void:
 	_check(_bateria_con_timeout(), "run_battery.sh da timeout por suite (#61)")
 	_check(FileAccess.file_exists("res://tests/run_estatico.sh"), "existe tests/run_estatico.sh")
 	_check(FileAccess.file_exists("res://AGENTS.md"), "existe AGENTS.md")
+	_check(_escaneo_extraido(), "la logica del escaneo vive en scan_controller, no en main.gd (#62)")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -44,6 +45,14 @@ func _ci_protegida() -> bool:
 func _bateria_con_timeout() -> bool:
 	var txt := _leer("res://tests/run_battery.sh")
 	return "TIMEOUT_SUITE" in txt and "--headless" in txt
+
+
+func _escaneo_extraido() -> bool:
+	var main := _leer("res://scripts/main.gd")
+	if "scan_controller.gd" not in main or "func _scan_persistir_cola" in main or "func _scan_rearmar_pendientes" in main:
+		return false
+	return FileAccess.file_exists("res://scripts/scan_controller.gd") \
+		and FileAccess.file_exists("res://tests/test_scan_controller.gd")
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

@@ -31,7 +31,7 @@ const ActualizadorScript := preload("res://scripts/actualizador.gd")
 const OrdenadorScript := preload("res://scripts/ordenador.gd")
 const FiltrosScript := preload("res://scripts/filtros.gd")
 const CODIGOS_FILTRO := [200, 301, 302, 403, 404, 410, 500, 503]
-const ColaEscaneoScript := preload("res://scripts/cola_escaneo.gd")
+const ScanControllerScript := preload("res://scripts/scan_controller.gd")
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 
@@ -68,8 +68,7 @@ const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 @onready var timer_auto: Timer = %AutoEscaneo
 
 var _entradas: Array = []
-var _cola: Array[Button] = []
-var _scan = ColaEscaneoScript.new()
+var _scan = ScanControllerScript.new()
 var _estado_store: RefCounted
 var _config_store: RefCounted
 var CONFIG_BASE := "user://"
@@ -133,6 +132,12 @@ func _ready() -> void:
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new(CONFIG_BASE)
 	_cola_store = ColaStoreScript.new()
+	_scan = ScanControllerScript.new(_cola_store)
+	_scan.configure(_scan_lanzar_item)
+	_scan.tope_por_host = TOPE_POR_HOST
+	_scan.progreso.connect(_scan_progreso)
+	_scan.item_actualizado.connect(_scan_item_actualizado)
+	_scan.terminado.connect(_scan_terminado)
 	_presets_store = PresetsStoreScript.new(CONFIG_BASE)
 	_presets = _presets_store.cargar()
 	var cfg: Dictionary = _config_store.cargar()
@@ -145,6 +150,10 @@ func _ready() -> void:
 	_reintentar_transitorios = cfg.get("reintentar_transitorios", true) == true
 	_red_sin_comprobar = cfg.get("red_sin_comprobar", true) == true
 	_aceptar_certificados = cfg.get("aceptar_certificados", false) == true
+	_scan.paralelismo = _paralelismo
+	_scan.intervalo_auto = _intervalo_auto
+	_scan.auto_abrir = _auto_abrir
+	_scan.es_headless = _es_headless()
 	TemaStoreScript.aplicar(String(cfg.get("tema", "auto")), self)
 	dashboard.aplicar_paleta()
 	if DisplayServer.is_dark_mode_supported():
@@ -438,7 +447,6 @@ func _ui_refrescar() -> void:
 
 func _ui_mostrar_lista(entradas: Array) -> void:
 	var inicio := Time.get_ticks_usec()
-	_cola.clear()
 	_scan.reiniciar()
 	if _filas_libres_vista != _modo_vista:
 		_filas_libres_vista = _modo_vista
@@ -888,13 +896,13 @@ func _ui_editar_fila(item: Button) -> void:
 
 
 func _scan_iniciar() -> void:
-	_cola.clear()
+	var visibles: Array = []
 	for hijo in lista.get_children():
 		if hijo.visible:
-			_cola.append(hijo)
+			visibles.append(hijo)
 
-	_scan.configurar(_cola, _paralelismo, _scan_lanzar_item, TOPE_POR_HOST)
-	if _scan.total == 0:
+	var total := _scan.preparar(visibles, lista.get_children())
+	if total == 0:
 		%BarraProgreso.visible = false
 		progreso.text = tr("Nada que comprobar")
 		return
@@ -902,9 +910,8 @@ func _scan_iniciar() -> void:
 	%BotonComprobar.disabled = true
 	%BarraProgreso.visible = true
 	%BarraProgreso.remove_theme_stylebox_override("fill")
-	_ui_barra(0, _scan.total)
-	progreso.text = tr("Comprobando 0/%d…") % _scan.total
-	_scan_persistir_cola()
+	_ui_barra(0, total)
+	progreso.text = tr("Comprobando 0/%d…") % total
 	_scan.lanzar()
 
 
@@ -919,11 +926,17 @@ func _scan_lanzar_item(item: Button) -> void:
 func _scan_item_terminado(item: Button) -> void:
 	if is_instance_valid(item):
 		item.en_escaneo = false
-	_scan.terminar(item)
-	_ui_barra(_scan.hechos, _scan.total)
-	progreso.text = tr("Comprobando %d/%d…") % [_scan.hechos, _scan.total]
-	var ahora := int(Time.get_unix_time_from_system())
+	_scan.item_terminado(item)
+
+
+func _scan_progreso(hechos: int, total: int) -> void:
+	_ui_barra(hechos, total)
+	progreso.text = tr("Comprobando %d/%d…") % [hechos, total]
+
+
+func _scan_item_actualizado(item) -> void:
 	if is_instance_valid(item):
+		var ahora := int(Time.get_unix_time_from_system())
 		var clave_estado := GestorCatalogoScript.clave_unica(item.url)
 		_estado_store.guardar_estado(clave_estado, item.valido, item.mensaje, item.codigo, item.intentos, item.motivo)
 		_estados[clave_estado] = {
@@ -935,24 +948,17 @@ func _scan_item_terminado(item: Button) -> void:
 			"motivo": item.motivo,
 		}
 		_scan_log(item.url, _motivo_log(item), item.mensaje)
-		if _scan.hechos % EstadoStoreScript.INTERVALO_VOLCADO == 0:
+		if _scan.hechos() % EstadoStoreScript.INTERVALO_VOLCADO == 0:
 			_estado_store.volcar()
 	_ui_aplicar_filtro()
 	_ui_status()
-	if _scan.queda_trabajo():
-		_scan.lanzar()
-		return
 
+
+func _scan_terminado(total: int, caidos: int) -> void:
 	_estado_store.volcar()
 	%BotonComprobar.disabled = false
-	if _cola_store != null:
-		_cola_store.limpiar()
-	var caidos := 0
-	for hijo in lista.get_children():
-		if is_instance_valid(hijo) and hijo.valido == false:
-			caidos += 1
 	_ui_barra_final(caidos)
-	progreso.text = tr("Listo: %d caídos de %d") % [caidos, _scan.total]
+	progreso.text = tr("Listo: %d caídos de %d") % [caidos, total]
 
 
 func _scan_log(url: String, resultado: String, detalle := "") -> void:
@@ -966,16 +972,6 @@ func _motivo_log(item) -> String:
 	if item.valido == null:
 		return "sin_comprobar"
 	return "caido_tls" if item.motivo == "tls" else "caido"
-
-
-func _scan_persistir_cola() -> void:
-	if _cola_store == null:
-		return
-	var urls: Array = []
-	for item in _cola:
-		if is_instance_valid(item):
-			urls.append(item.url)
-	_cola_store.guardar(urls)
 
 
 func _scan_recomprobar(item: Button) -> void:
@@ -993,81 +989,49 @@ func _scan_recomprobar(item: Button) -> void:
 func _scan_recompra(item: Button) -> void:
 	if not is_instance_valid(item):
 		return
-	var ahora := int(Time.get_unix_time_from_system())
-	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
-	_estado_store.guardar_estado(clave_estado, item.valido, item.mensaje, item.codigo, item.intentos, item.motivo)
-	_estados[clave_estado] = {
-		"valido": item.valido,
-		"mensaje": item.mensaje,
-		"codigo": item.codigo,
-		"fecha": ahora,
-		"intentos": item.intentos,
-		"motivo": item.motivo,
-	}
-	_scan_log(item.url, _motivo_log(item), item.mensaje)
+	_scan_item_actualizado(item)
 	_estado_store.volcar()
-	_ui_aplicar_filtro()
-	_ui_status()
 
 
 func _scan_revisar_pendientes() -> void:
-	if _cola_store == null:
-		return
-	var pendientes: Array = _cola_store.cargar().get("urls", [])
+	var pendientes := _scan.pendientes()
 	if pendientes.is_empty():
 		return
-	var set_catalogo := {}
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY:
-			set_catalogo[GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))] = true
-	var validas: Array = []
-	for url in pendientes:
-		if set_catalogo.has(GestorCatalogoScript.clave_unica(str(url))):
-			validas.append(str(url))
+	var validas := _scan.pendientes_validas(_entradas)
 	if validas.is_empty():
-		_cola_store.limpiar()
+		_scan.limpiar_cola()
 		return
 	%ConfirmarReanudar.dialog_text = tr("¿Reanudar escaneo de %d enlaces?") % validas.size()
 	%ConfirmarReanudar.popup_centered()
 
 
 func _scan_reanudar() -> void:
-	if _cola_store == null:
-		return
-	var pendientes: Array = _cola_store.cargar().get("urls", [])
+	var pendientes := _scan.pendientes()
 	if pendientes.is_empty():
 		return
-	_scan_rearmar_pendientes(pendientes)
-	_scan.configurar(_cola, _paralelismo, _scan_lanzar_item, TOPE_POR_HOST)
-	if _scan.total == 0:
-		_cola_store.limpiar()
+	var total := _scan.rearmar_pendientes(pendientes)
+	if total == 0:
+		_scan.limpiar_cola()
 		%BotonComprobar.disabled = false
 		return
 	%BotonComprobar.disabled = true
 	%BarraProgreso.visible = true
 	%BarraProgreso.remove_theme_stylebox_override("fill")
-	_ui_barra(0, _scan.total)
-	progreso.text = tr("Comprobando 0/%d…") % _scan.total
+	_ui_barra(0, total)
+	progreso.text = tr("Comprobando 0/%d…") % total
 	_scan.lanzar()
 
 
-func _scan_rearmar_pendientes(pendientes: Array) -> void:
-	_cola.clear()
-	for hijo in lista.get_children():
-		if is_instance_valid(hijo) and pendientes.has(hijo.url):
-			_cola.append(hijo)
-
-
 func _scan_descartar_pendientes() -> void:
-	if _cola_store != null:
-		_cola_store.limpiar()
+	_scan.limpiar_cola()
 
 
 func _scan_rearmar_auto() -> void:
-	if _es_headless() or _intervalo_auto <= 0:
+	var espera := _scan.auto_espera()
+	if espera <= 0.0:
 		timer_auto.stop()
 		return
-	timer_auto.wait_time = float(_intervalo_auto * 60)
+	timer_auto.wait_time = espera
 	timer_auto.start()
 
 
@@ -1075,17 +1039,13 @@ func _scan_iniciar_auto() -> void:
 	if _es_headless() or not _auto_abrir:
 		return
 	await get_tree().create_timer(0.5).timeout
-	if _scan_auto_posible():
+	if _scan.auto_posible():
 		_scan_iniciar()
 	_scan_rearmar_auto()
 
 
-func _scan_auto_posible() -> bool:
-	return not _es_headless() and _cola.is_empty() and _scan.en_vuelo == 0
-
-
 func _scan_auto_timer() -> void:
-	if _scan_auto_posible():
+	if _scan.auto_posible():
 		_scan_iniciar()
 
 
@@ -1477,6 +1437,9 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	_reintentar_transitorios = reintentar_transitorios
 	_red_sin_comprobar = red_sin_comprobar
 	_aceptar_certificados = aceptar_certificados
+	_scan.paralelismo = _paralelismo
+	_scan.intervalo_auto = _intervalo_auto
+	_scan.auto_abrir = _auto_abrir
 	TemaStoreScript.aplicar(tema, self)
 	dashboard.aplicar_paleta()
 	TranslationServer.set_locale(idioma)
@@ -1485,7 +1448,7 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 		progreso.text = tr("No se pudo guardar la configuración.")
 	_retraducir_ui()
 	_scan_rearmar_auto()
-	if _auto_abrir and _scan_auto_posible():
+	if _scan.auto_abrir and _scan.auto_posible():
 		_scan_iniciar()
 
 

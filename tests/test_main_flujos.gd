@@ -5,8 +5,19 @@ const Ayuda := preload("res://tests/ayuda.gd")
 const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
+const ScanControllerScript := preload("res://scripts/scan_controller.gd")
 
 var _fallos := 0
+
+
+func _scan_controller_nuevo(store, main_script) -> RefCounted:
+	var ctrl = ScanControllerScript.new(store)
+	ctrl.configure(Callable(main_script, "_scan_lanzar_item"))
+	ctrl.tope_por_host = main_script.TOPE_POR_HOST
+	ctrl.progreso.connect(Callable(main_script, "_scan_progreso"))
+	ctrl.item_actualizado.connect(Callable(main_script, "_scan_item_actualizado"))
+	ctrl.terminado.connect(Callable(main_script, "_scan_terminado"))
+	return ctrl
 
 
 func _initialize() -> void:
@@ -66,25 +77,22 @@ func _arrancar() -> void:
 	_check(not main.get_node("%BarraProgreso").visible, "sin enlaces visibles la barra se oculta")
 	_check(main.get_node("%Progreso").text == "Nada que comprobar", "sin enlaces visibles se muestra el aviso")
 
-	# Cola persistida (#13)
-	main_script._cola_store = (load("res://scripts/cola_store.gd") as GDScript).new("user://__test_main__")
+	# Cola persistida y reanudación (#13) — la lógica vive ya en ScanController (#62)
+	var store_cola = (load("res://scripts/cola_store.gd") as GDScript).new("user://__test_main__")
+	main_script._cola_store = store_cola
+	main_script._scan = _scan_controller_nuevo(store_cola, main_script)
+
 	var item_a: Button = LIST_ITEM_SCENE.instantiate()
 	item_a.url = "https://a.test"
-	main_script._cola.append(item_a)
 	var item_c: Button = LIST_ITEM_SCENE.instantiate()
 	item_c.url = "https://c.test"
-	main_script._cola.append(item_c)
-	var item_b: Button = LIST_ITEM_SCENE.instantiate()
-	item_b.url = "https://b.test"
-	main_script._scan_persistir_cola()
-	var cola_guardada: Array = main_script._cola_store.cargar().get("urls", [])
+	main_script._scan.preparar([item_a, item_c])
+	var cola_guardada: Array = store_cola.cargar().get("urls", [])
 	_check(cola_guardada.size() == 2 and "https://a.test" in cola_guardada and "https://c.test" in cola_guardada, "persistir cola guarda las urls de los items")
 	item_a.free()
 	item_c.free()
-	main_script._cola.clear()
-	main_script._cola_store.limpiar()
+	store_cola.limpiar()
 
-	# Reanudación (#13)
 	main_script._entradas = [
 		{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""},
 		{"nombre": "B", "desc": "", "url": "https://b.test", "img": ""},
@@ -92,14 +100,17 @@ func _arrancar() -> void:
 	main_script._ui_refrescar()
 	await process_frame
 	_check(main.has_node("%ConfirmarReanudar"), "el diálogo ConfirmarReanudar existe en Main.tscn")
-	main_script._cola.clear()
-	main_script._scan_rearmar_pendientes(["https://b.test"])
-	_check(main_script._cola.size() == 1 and main_script._cola[0].url == "https://b.test", "reanudar reconstruye la cola con solo las urls pendientes")
-	main_script._cola.clear()
+	var filas: Node = main.get_node("%ListaContenedor")
+	main_script._scan.preparar([], filas.get_children())
+	main_script._scan.rearmar_pendientes(["https://b.test"])
+	var cola_reanudada: Array = main_script._scan.cola()
+	_check(cola_reanudada.size() == 1 and cola_reanudada[0].url == "https://b.test", "reanudar reconstruye la cola con solo las urls pendientes")
 
-	main_script._cola_store.guardar(["https://nope.test"])
+	store_cola.guardar(["https://nope.test"])
+	main_script._entradas = []
+	main_script._scan.preparar([], filas.get_children())
 	main_script._scan_reanudar()
-	_check(main_script._cola.is_empty() and (main_script._cola_store.cargar().get("urls", []) as Array).is_empty(), "reanudar con urls inexistentes descarta y limpia")
+	_check((main_script._scan.cola() as Array).is_empty() and (store_cola.cargar().get("urls", []) as Array).is_empty(), "reanudar con urls inexistentes descarta y limpia")
 	DirAccess.remove_absolute("user://__test_main__")
 
 	# Catálogo: categorías (persistencia y normalización)
@@ -333,9 +344,10 @@ func _arrancar() -> void:
 	main_script._ui_refrescar()
 	await process_frame
 	var items := main.get_node("%ListaContenedor")
-	main_script._scan.configurar([], main_script._paralelismo, main_script._scan_lanzar_item, 2)
-	main_script._scan.total = enlaces
-	main_script._scan.en_vuelo = enlaces
+	main_script._scan.preparar([], items.get_children())
+	main_script._scan.escaneo().total = enlaces
+	main_script._scan.escaneo().en_vuelo = enlaces
+	main_script._scan.escaneo().hechos = 0
 	store.volcar()
 	var escrituras_iniciales: int = store.escrituras
 	for i in range(enlaces):
