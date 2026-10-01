@@ -29,6 +29,24 @@ func configurar(texto_nombre: String, a: String, b: String, c: String, color: Co
 		barra.add_theme_stylebox_override("fill", TemaStoreScript.relleno(color))
 
 
+func configurar_columnas(texto_nombre: String, columnas: Array, color: Color, color_columna := 0, anchos := [], alineaciones := []) -> void:
+	nombre.text = texto_nombre
+	nombre.tooltip_text = texto_nombre
+	var etiquetas: Array = [col_a, col_b, col_c]
+	for i in range(mini(columnas.size(), etiquetas.size())):
+		var etiqueta: Label = etiquetas[i]
+		etiqueta.text = str(columnas[i])
+		if i < anchos.size() and float(anchos[i]) > 0.0:
+			etiqueta.custom_minimum_size.x = float(anchos[i])
+		if i < alineaciones.size():
+			etiqueta.horizontal_alignment = int(alineaciones[i])
+		if i == color_columna:
+			etiqueta.add_theme_color_override("font_color", color)
+		else:
+			etiqueta.remove_theme_color_override("font_color")
+	barra.visible = false
+
+
 func pulsable(activo: bool) -> void:
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if activo else Control.CURSOR_ARROW
 

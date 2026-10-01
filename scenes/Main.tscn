@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/Preferencias.tscn" id="3_preferencias"]
 [ext_resource type="PackedScene" path="res://scenes/Historial.tscn" id="4_historial"]
 [ext_resource type="PackedScene" path="res://scenes/Dashboard.tscn" id="5_dashboard"]
+[ext_resource type="PackedScene" path="res://scenes/Cambios.tscn" id="10_cambios"]
 
 [node name="Main" type="Control" unique_id=1904280085]
 layout_mode = 3
@@ -302,6 +303,9 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 
 [node name="DialogoHistorial" parent="." unique_id=718768431 instance=ExtResource("4_historial")]
+unique_name_in_owner = true
+
+[node name="DialogoCambios" parent="." instance=ExtResource("10_cambios")]
 unique_name_in_owner = true
 
 [node name="AutoEscaneo" type="Timer" parent="." unique_id=477923709]

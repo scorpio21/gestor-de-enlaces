@@ -217,3 +217,26 @@ Ya existe: %s,Ya existe: %s,Already exists: %s
 ¿Eliminar «%s» para siempre?,¿Eliminar «%s» para siempre?,Delete “%s” forever?
 ¿Reanudar escaneo de %d enlaces?,¿Reanudar escaneo de %d enlaces?,Resume scanning %d links?
 ¿Restaurar el catálogo desde la copia de seguridad?,¿Restaurar el catálogo desde la copia de seguridad?,Restore the catalogue from the backup?
+"Abrir el dashboard",Abrir el dashboard,Open the dashboard
+Cambio,Change,Change
+Cambios desde la última vez,Cambios desde la última vez,Changes since last time
+Cambios exportados.,Cambios exportados.,Changes exported.
+cambió,cambió,changed
+"El historial de cambios llega hasta %s.",El historial de cambios llega hasta %s.,The change history goes back to %s.
+Detalle,Detalle,Detail
+Exportar cambios,Exportar cambios,Export changes
+Filtrar en la lista,Filtrar en la lista,Filter in the list
+"Ha cambiado desde la última vez y ahora está caído.",Ha cambiado desde la última vez y ahora está caído.,It changed since last time and is now down.
+"Ha cambiado desde la última vez y ahora está válido.",Ha cambiado desde la última vez y ahora está válido.,It changed since last time and is now up.
+"Ha cambiado desde la última vez.",Ha cambiado desde la última vez.,It changed since last time.
+Sin cambios,Sin cambios,No changes
+"%d nuevos caídos",%d nuevos caídos,%d newly down
+"%d nuevo caído",%d nuevo caído,%d newly down
+%d recuperados,%d recuperados,%d recovered
+"%d recuperado",%d recuperado,%d recovered
+%d reubicados,%d reubicados,%d moved
+"%d reubicado",%d reubicado,%d moved
+"%s → %s",%s → %s,%s → %s
+Sin cambios desde la última vez,Sin cambios desde la última vez,No changes since last time
+Viendo cambios…,Viendo cambios…,Viewing changes…
+No se pudo guardar el historial de cambios.,No se pudo guardar el historial de cambios.,Could not save the change history.

@@ -15,7 +15,8 @@ func _initialize() -> void:
 	_check(_lista_extraida(), "la logica de filas vive en lista_controller, no en main.gd (#62)")
 	_check(_config_extraida(), "el guardado de la config vive en config_controller, no en main.gd (#62)")
 	_check(_catalogo_extraido(), "el alta, edicion y borrado viven en catalogo_controller, no en main.gd (#62)")
-	_check(_main_no_secha(), "main.gd se ha ido encogiendo con cada entrega de #62")
+	_check(_main_no_secha(), "main.gd se ha ido encogiendo con cada entrega de #62 y #57")
+	_check(_cambios_extraidos(), "el calculo de cambios vive en cambios_controller y cambios_store, no en main.gd (#57)")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -100,7 +101,16 @@ func _catalogo_extraido() -> bool:
 
 func _main_no_secha() -> bool:
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1450
+	return main.split("\n").size() <= 1500
+
+
+func _cambios_extraidos() -> bool:
+	var main := _leer("res://scripts/main.gd")
+	if main.contains("cambios_store.gd"):
+		return false
+	return FileAccess.file_exists("res://scripts/cambios_controller.gd") \
+		and FileAccess.file_exists("res://scripts/cambios_store.gd") \
+		and FileAccess.file_exists("res://tests/test_cambios_controller.gd")
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

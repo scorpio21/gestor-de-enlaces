@@ -1,0 +1,123 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cambios.gd" id="1_cambios"]
+
+[node name="VentanaCambios" type="Window"]
+title = "Cambios desde la última vez"
+initial_position = 2
+size = Vector2i(720, 460)
+resizable = true
+exclusive = true
+visible = false
+script = ExtResource("1_cambios")
+
+[node name="Fondo" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.12, 0.12, 0.12, 1)
+
+[node name="Margen" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Columna" type="VBoxContainer" parent="Margen"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Resumen" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+
+[node name="Cobertura" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+
+[node name="Cabecera" type="HBoxContainer" parent="Margen/Columna"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Enlace" type="Label" parent="Margen/Columna/Cabecera"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "Enlace"
+
+[node name="Fecha" type="Label" parent="Margen/Columna/Cabecera"]
+custom_minimum_size = Vector2(116, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 2
+text = "Fecha"
+
+[node name="Cambio" type="Label" parent="Margen/Columna/Cabecera"]
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Cambio"
+
+[node name="Detalle" type="Label" parent="Margen/Columna/Cabecera"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "Detalle"
+
+[node name="AvisoVacio" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Sin cambios"
+
+[node name="Scroll" type="ScrollContainer" parent="Margen/Columna"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ListaCambios" type="VBoxContainer" parent="Margen/Columna/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Acciones" type="HBoxContainer" parent="Margen/Columna"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BotonFiltrar" type="Button" parent="Margen/Columna/Acciones"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Filtrar en la lista"
+
+[node name="BotonDashboard" type="Button" parent="Margen/Columna/Acciones"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Abrir el dashboard"
+
+[node name="BotonCsv" type="Button" parent="Margen/Columna/Acciones"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Exportar CSV"
+
+[node name="Nota" type="Label" parent="Margen/Columna/Acciones"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+
+[node name="DialogoExportar" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Exportar cambios"
+file_mode = 4
+access = 2

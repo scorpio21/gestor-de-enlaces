@@ -37,6 +37,7 @@ const ConfigControllerScript := preload("res://scripts/config_controller.gd")
 const CatalogoControllerScript := preload("res://scripts/catalogo_controller.gd")
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 const PresetsStoreScript := preload("res://scripts/presets_store.gd")
+const CambiosControllerScript := preload("res://scripts/cambios_controller.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var grilla: GridContainer = %GridContenedor
@@ -68,6 +69,7 @@ const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 @onready var cab_fecha: Button = %CabFecha
 @onready var cab_imagen: Button = %CabImagen
 @onready var dialogo_historial: Window = %DialogoHistorial
+@onready var dialogo_cambios: Window = %DialogoCambios
 @onready var timer_auto: Timer = %AutoEscaneo
 
 var _entradas: Array = []
@@ -105,6 +107,8 @@ var _aviso_base := ""
 var _espera_busqueda: Timer = null
 var _ultimo_repaint_ms := 0.0
 var _filas_visibles := 0
+var _cambios = CambiosControllerScript.new()
+var _estado_previo := {}
 
 
 func _ready() -> void:
@@ -133,6 +137,8 @@ func _ready() -> void:
 	ventana_agregar.editado.connect(_on_enlace_editado)
 	dashboard.navegar.connect(_on_dashboard_navegar)
 	dashboard.comprobar_ya.connect(_scan_iniciar)
+	dialogo_cambios.filtrar_pedido.connect(_cambios_filtrar_lista)
+	dialogo_cambios.dashboard_pedido.connect(_cambios_abrir_dashboard)
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new(CONFIG_BASE)
 	_cola_store = ColaStoreScript.new()
@@ -214,6 +220,8 @@ func _exit_tree() -> void:
 	if _estado_store != null:
 		_estado_store.volcar()
 	_hacer_limpieza_capturas()
+	if not _cambios.vistos():
+		_cambios.guardar_pendientes(_cambios.pendientes_al_salir())
 
 
 func _es_headless() -> bool:
@@ -241,6 +249,7 @@ func _configurar_menus() -> void:
 	menu_util.add_item(tr("Exportar diagnóstico…"), 3)
 	menu_util.add_item(tr("Comprobar actualizaciones…"), 4)
 	menu_util.add_item(tr("Dashboard de estadísticas…"), 5)
+	menu_util.add_item(tr("Viendo cambios…"), 6)
 	if menu_util.id_pressed.is_connected(_on_utilidades_id):
 		menu_util.id_pressed.disconnect(_on_utilidades_id)
 	menu_util.id_pressed.connect(_on_utilidades_id)
@@ -274,6 +283,8 @@ func _on_utilidades_id(id: int) -> void:
 	elif id == 5:
 		_estado_store.volcar()
 		dashboard.abrir(_entradas, _estado_store.cargar().get("estados", {}))
+	elif id == 6:
+		_cambios_ver()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -486,6 +497,8 @@ func _ui_mostrar_lista(entradas: Array) -> void:
 				maxi(int(estado.get("intentos", 1)), 1),
 				str(estado.get("motivo", ""))
 			)
+		if item.has_method("marcar_cambio"):
+			item.marcar_cambio(_cambios.marca_de(GestorCatalogoScript.clave_unica(url_item)))
 		contenedor.add_child(item)
 
 	_ui_aplicar_filtro()
@@ -905,6 +918,8 @@ func _scan_item_actualizado(item) -> void:
 			"motivo": item.motivo,
 		}
 		_scan_log(item.url, _motivo_log(item), item.mensaje)
+		if item.has_method("marcar_cambio"):
+			item.marcar_cambio("")
 		if _scan.hechos() % EstadoStoreScript.INTERVALO_VOLCADO == 0:
 			_estado_store.volcar()
 	_ui_aplicar_filtro()
@@ -916,6 +931,40 @@ func _scan_terminado(total: int, caidos: int) -> void:
 	%BotonComprobar.disabled = false
 	_ui_barra_final(caidos)
 	progreso.text = tr("Listo: %d caídos de %d") % [caidos, total]
+	_cambios_al_terminar()
+
+
+func _cambios_al_terminar() -> void:
+	var cambios := _cambios.nuevo_delta(_estado_previo, _estados)
+	_estado_previo = _estados.duplicate(true)
+	_cambios_mostrar(cambios)
+
+
+func _cambios_al_abrir() -> void:
+	_estado_previo = _estados.duplicate(true)
+	_cambios_mostrar(_cambios.leer_pendientes())
+
+
+func _cambios_ver() -> void:
+	_cambios_mostrar(_cambios.leer_pendientes())
+
+
+func _cambios_mostrar(cambios: Array) -> void:
+	if _es_headless() or cambios.is_empty():
+		return
+	dialogo_cambios.abrir(cambios, _cambios.nombres_de(_entradas), _cambios.cobertura_de(_estados))
+	_cambios.marcar_vistos()
+
+
+func _cambios_filtrar_lista() -> void:
+	filtro.select(2)
+	_ui_aplicar_filtro()
+	_persistir_config()
+
+
+func _cambios_abrir_dashboard() -> void:
+	_estado_store.volcar()
+	dashboard.abrir(_entradas, _estado_store.cargar().get("estados", {}))
 
 
 func _scan_log(url: String, resultado: String, detalle := "") -> void:
@@ -996,6 +1045,9 @@ func _scan_iniciar_auto() -> void:
 	if _es_headless() or not _auto_abrir:
 		return
 	await get_tree().create_timer(0.5).timeout
+	await _cambios_al_abrir()
+	if dialogo_cambios.visible:
+		await dialogo_cambios.visibility_changed
 	if _scan.auto_posible():
 		_scan_iniciar()
 	_scan_rearmar_auto()

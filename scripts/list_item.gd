@@ -280,6 +280,24 @@ func _pintar_estado(texto: String, clave: String) -> void:
 	TemaStoreScript.marcar(%Indicador, clave)
 
 
+func marcar_cambio(clave: String) -> void:
+	if clave.is_empty():
+		%MarcaCambio.text = ""
+		%MarcaCambio.tooltip_text = ""
+		return
+	%MarcaCambio.text = tr("cambió")
+	%MarcaCambio.tooltip_text = _ayuda_cambio(clave)
+	TemaStoreScript.marcar(%MarcaCambio, clave)
+
+
+static func _ayuda_cambio(clave: String) -> String:
+	if clave == "caido":
+		return TranslationServer.translate("Ha cambiado desde la última vez y ahora está caído.")
+	if clave == "valido":
+		return TranslationServer.translate("Ha cambiado desde la última vez y ahora está válido.")
+	return TranslationServer.translate("Ha cambiado desde la última vez.")
+
+
 func _pressed() -> void:
 	if url.is_empty():
 		return
