@@ -14,6 +14,7 @@ func _initialize() -> void:
 	_check(_escaneo_extraido(), "la logica del escaneo vive en scan_controller, no en main.gd (#62)")
 	_check(_lista_extraida(), "la logica de filas vive en lista_controller, no en main.gd (#62)")
 	_check(_config_extraida(), "el guardado de la config vive en config_controller, no en main.gd (#62)")
+	_check(_catalogo_extraido(), "el alta, edicion y borrado viven en catalogo_controller, no en main.gd (#62)")
 	_check(_main_no_secha(), "main.gd se ha ido encogiendo con cada entrega de #62")
 	if _fallos == 0:
 		print("TESTS OK")
@@ -80,9 +81,26 @@ func _config_extraida() -> bool:
 		and FileAccess.file_exists("res://tests/test_config_controller.gd")
 
 
+func _catalogo_extraido() -> bool:
+	var main := _leer("res://scripts/main.gd")
+	if "catalogo_controller.gd" not in main or "_catalogo." not in main:
+		return false
+	var fuera_de_main := [
+		"for u in nuevas:",
+		'datos["tags"] = EtiquetasScript.parsear',
+		"for i in range(entradas.size() - 1, -1, -1):",
+		"var canónicas",
+	]
+	for marca in fuera_de_main:
+		if marca in main:
+			return false
+	return FileAccess.file_exists("res://scripts/catalogo_controller.gd") \
+		and FileAccess.file_exists("res://tests/test_catalogo_controller.gd")
+
+
 func _main_no_secha() -> bool:
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1600
+	return main.split("\n").size() <= 1450
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

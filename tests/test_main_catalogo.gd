@@ -3,11 +3,19 @@ extends SceneTree
 class _FakeStore extends RefCounted:
 	var ultima_renombrar: Array = []
 	var volcados := 0
+	var borrados: Array = []
+	var estados_borrados: Array = []
 	func renombrar(url_antigua: String, url_nueva: String) -> bool:
 		ultima_renombrar = [url_antigua, url_nueva]
 		return true
 	func volcar() -> bool:
 		volcados += 1
+		return true
+	func marcar_borrado(clave: String) -> bool:
+		borrados.append(clave)
+		return true
+	func borrar_estado(clave: String) -> bool:
+		estados_borrados.append(clave)
 		return true
 
 const MAIN_SCENE := preload("res://scenes/Main.tscn")
@@ -245,6 +253,26 @@ func _arrancar() -> void:
 	await process_frame
 	var fila_paquete: Button = main.get_node("%ListaContenedor").get_child(0)
 	_check(fila_paquete.get_node("%Imagen").texture != null, "una captura del paquete se ve en la lista (#50)")
+
+	# #62: al eliminar una entrada, su captura solo se borra si ya no la usa nadie
+	var compartida := _crear_captura("img_test_compartida.png")
+	main_script._entradas = [
+		{"nombre": "A", "desc": "", "url": "https://a.test", "img": compartida},
+		{"nombre": "B", "desc": "", "url": "https://b.test", "img": compartida},
+	]
+	main_script._ui_refrescar()
+	await process_frame
+	var fila: Button = main_script._ui_filas_visibles()[0]
+	main_script._ui_eliminar_fila(fila)
+	main_script._ui_confirmar_borrado()
+	_check(main_script._entradas.size() == 1 and str(main_script._entradas[0].get("url")) == "https://b.test", "eliminar quita solo la fila elegida")
+	_check(FileAccess.file_exists(ProjectSettings.globalize_path(compartida)), "eliminar no borra una captura que sigue en uso (#62)")
+	_check(main.get_node("%Progreso").text == "Enlace eliminado", "eliminar informa en la barra")
+	await process_frame
+	main_script._ui_eliminar_fila(main_script._ui_filas_visibles()[0])
+	main_script._ui_confirmar_borrado()
+	_check(main_script._entradas.is_empty(), "eliminar la ultima entrada vacia el catalogo")
+	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(compartida)), "eliminar la ultima referencia si borra la captura (#62)")
 
 	var huerfana_exit := _crear_captura("img_test_exit.png")
 	main_script._exit_tree()

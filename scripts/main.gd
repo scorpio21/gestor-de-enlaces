@@ -34,6 +34,7 @@ const CODIGOS_FILTRO := [200, 301, 302, 403, 404, 410, 500, 503]
 const ScanControllerScript := preload("res://scripts/scan_controller.gd")
 const ListaControllerScript := preload("res://scripts/lista_controller.gd")
 const ConfigControllerScript := preload("res://scripts/config_controller.gd")
+const CatalogoControllerScript := preload("res://scripts/catalogo_controller.gd")
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 
@@ -73,6 +74,7 @@ var _entradas: Array = []
 var _scan = ScanControllerScript.new()
 var _lista = ListaControllerScript.new()
 var _config_ctrl = ConfigControllerScript.new()
+var _catalogo = CatalogoControllerScript.new()
 var _estado_store: RefCounted
 var _config_store: RefCounted
 var CONFIG_BASE := "user://"
@@ -824,15 +826,10 @@ func _ui_confirmar_borrado() -> void:
 	_estado_store.borrar_estado(clave_estado)
 	_estados.erase(clave_estado)
 
-	var imagen_borrada := ""
-	for i in range(_entradas.size() - 1, -1, -1):
-		if typeof(_entradas[i]) == TYPE_DICTIONARY and str(_entradas[i].get("url", "")) == item.url:
-			imagen_borrada = str(_entradas[i].get("img", ""))
-			_entradas.remove_at(i)
+	var res: Dictionary = _catalogo.eliminar(_entradas, item.url)
 
 	item.queue_free()
-	if _es_captura_propia(imagen_borrada) and imagen_borrada != "%s/png/%s" % [ASSETS_BASE, GestorImagenesScript.ARCHIVOS_FIJOS[0]]:
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(imagen_borrada))
+	_borrar_captura_si_huerfana(str(res.get("img", "")))
 	progreso.text = tr("Enlace eliminado")
 	_ui_aplicar_filtro()
 	_ui_status()
@@ -1113,127 +1110,58 @@ func _on_diag_elegido(ruta: String) -> void:
 
 
 func _on_enlace_guardado(datos: Dictionary) -> void:
-	var url_nueva := GestorCatalogoScript.normalizar_url(str(datos.get("url", "")))
-	var existente := _url_existente(url_nueva)
-	if not existente.is_empty():
-		progreso.text = tr("Ya existe: %s") % existente
+	var res: Dictionary = _catalogo.agregar(_entradas, datos)
+	if not res.get("ok", false):
+		progreso.text = str(res.get("mensaje", ""))
 		return
-	datos["url"] = url_nueva
-	datos["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", "otro"))
-	datos["tags"] = EtiquetasScript.parsear(datos.get("tags", []))
-	_entradas.append(datos)
 	if not _guardar_datos():
 		_entradas.pop_back()
 		return
 	_ui_refrescar()
 	_ui_status()
-	progreso.text = _estado_texto(tr("Enlace agregado: %s") % datos.get("nombre", ""))
-	if datos.get("img_reutilizada", false):
+	progreso.text = _estado_texto(str(res.get("mensaje", "")))
+	if res.get("reutilizada", false):
 		progreso.text += " · " + tr("Captura reutilizada")
 
 
 func _on_lote_guardado(urls: Array) -> void:
-	var canonicas: Array = []
-	for linea in urls:
-		var u: String = GestorCatalogoScript.normalizar_url(linea.strip_edges() if typeof(linea) == TYPE_STRING else "")
-		if not u.is_empty():
-			canonicas.append(u)
-	var validas: Array = []
-	var invalidas: Array = []
-	for u in canonicas:
-		if u.begins_with("http://") or u.begins_with("https://"):
-			validas.append(u)
-		else:
-			invalidas.append(u)
-	var res := GestorCatalogoScript.separar(validas, _urls_existentes())
-	var nuevas: Array = res.get("nuevas", [])
-	var repetidas: Array = res.get("repetidas", [])
-	if nuevas.is_empty():
-		var partes_vacias: Array = ["No se añadió ningún enlace."]
-		if not repetidas.is_empty():
-			partes_vacias.append(tr("%d repetidas ignoradas.") % repetidas.size())
-		if not invalidas.is_empty():
-			partes_vacias.append(tr("%d inválidas ignoradas.") % invalidas.size())
-		progreso.text = " ".join(partes_vacias)
+	var res: Dictionary = _catalogo.agregar_lote(_entradas, urls)
+	if not res.get("ok", false):
+		progreso.text = str(res.get("mensaje", ""))
 		return
-	for u in nuevas:
-		_entradas.append({
-			"nombre": GestorCatalogoScript.dominio(u),
-			"desc": "",
-			"url": u,
-			"img": "",
-			"cat": "otro",
-		})
+	var nuevas := int(res.get("nuevas", 0))
 	if not _guardar_datos():
-		for i in range(nuevas.size()):
+		for i in range(nuevas):
 			_entradas.pop_back()
 		progreso.text = tr("No se pudo guardar el lote.")
 		return
-	var partes: Array = [tr("Se añadieron %d enlaces.") % nuevas.size()]
-	if not repetidas.is_empty():
-		partes.append(tr("%d repetidas ignoradas.") % repetidas.size())
-	if not invalidas.is_empty():
-		partes.append(tr("%d inválidas ignoradas.") % invalidas.size())
 	_ui_refrescar()
 	_ui_status()
-	progreso.text = _estado_texto(" ".join(partes))
+	progreso.text = _estado_texto(str(res.get("mensaje", "")))
 
 
 func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
-	var url_nueva := GestorCatalogoScript.normalizar_url(str(datos.get("url", "")))
-	var indice := -1
-	for i in range(_entradas.size()):
-		if typeof(_entradas[i]) == TYPE_DICTIONARY and str(_entradas[i].get("url", "")) == url_original:
-			indice = i
-			break
-	if indice == -1:
-		progreso.text = tr("No se encontró el enlace.")
+	var res: Dictionary = _catalogo.editar(_entradas, _estados, _borrados, datos, url_original, ASSETS_BASE)
+	if not res.get("ok", false):
+		progreso.text = str(res.get("mensaje", ""))
+		if res.has("reabrir"):
+			ventana_agregar.abrir_edicion(res["reabrir"], url_original, _sugerir_etiquetas())
 		return
-	var entrada: Dictionary = _entradas[indice]
-	var img_anterior := str(entrada.get("img", ""))
-	if url_nueva != url_original and not _cambios_url_validos(url_original, url_nueva):
-		progreso.text = tr("Ya existe: %s") % url_nueva
-		var datos_reabrir := datos.duplicate(true)
-		datos_reabrir["img"] = img_anterior
-		datos_reabrir.erase("img_pendiente")
-		ventana_agregar.abrir_edicion(datos_reabrir, url_original, _sugerir_etiquetas())
-		return
-	if url_nueva != url_original:
-		var clave_original := GestorCatalogoScript.clave_unica(url_original)
-		var clave_nueva := GestorCatalogoScript.clave_unica(url_nueva)
-		_estado_store.renombrar(clave_original, clave_nueva)
-		if _estados.has(clave_original):
-			_estados[clave_nueva] = _estados[clave_original]
-			_estados.erase(clave_original)
-		for i_b in range(_borrados.size()):
-			if str(_borrados[i_b]) == clave_original:
-				_borrados[i_b] = clave_nueva
-	var destino := str(datos.get("img", ""))
-	var captura_reutilizada := false
-	if datos.has("img_pendiente"):
-		var resultado := GestorImagenesScript.copiar(str(datos["img_pendiente"]), str(datos.get("nombre", "")), ASSETS_BASE)
-		if not resultado.get("ok", false):
-			progreso.text = tr("No se pudo procesar la imagen.")
-			return
-		destino = str(resultado.get("destino", ""))
-		captura_reutilizada = bool(resultado.get("reutilizada", false))
-	entrada["nombre"] = str(datos.get("nombre", ""))
-	entrada["desc"] = str(datos.get("desc", ""))
-	entrada["url"] = url_nueva
-	entrada["img"] = destino
-	entrada["cat"] = GestorCatalogoScript.normalizar_categoria(datos.get("cat", entrada.get("cat", "otro")))
-	entrada["tags"] = EtiquetasScript.parsear(datos.get("tags", entrada.get("tags", [])))
 	if not _guardar_datos():
 		_cargar_datos()
 		_ui_refrescar()
 		progreso.text = tr("No se pudo guardar el enlace.")
 		return
-	if destino != img_anterior:
+	var renombrar: Array = res.get("renombrar", [])
+	if renombrar.size() == 2:
+		_estado_store.renombrar(str(renombrar[0]), str(renombrar[1]))
+	var img_anterior := str(res.get("img_anterior", ""))
+	if str(res.get("img", "")) != img_anterior:
 		_borrar_captura_si_huerfana(img_anterior)
 	_ui_refrescar()
 	_ui_status()
-	progreso.text = _estado_texto(tr("Enlace actualizado: %s") % str(datos.get("nombre", "")))
-	if captura_reutilizada:
+	progreso.text = _estado_texto(str(res.get("mensaje", "")))
+	if res.get("reutilizada", false):
 		progreso.text += " · " + tr("Captura reutilizada")
 
 
@@ -1259,60 +1187,31 @@ func _estado_texto(texto: String) -> String:
 
 
 func _urls_existentes() -> Array:
-	var urls: Array = []
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY:
-			urls.append(str(entrada.get("url", "")))
-	return urls
+	return _catalogo.urls_existentes(_entradas)
 
 
 func _url_existente(url: String) -> String:
-	var clave := GestorCatalogoScript.clave_unica(url)
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY:
-			var c := GestorCatalogoScript.clave_unica(str(entrada.get("url", "")))
-			if not c.is_empty() and c == clave:
-				return str(entrada.get("url", ""))
-	return ""
+	return _catalogo.url_existente(_entradas, url)
 
 
 func _buscar_entrada(url_entrada: String) -> Dictionary:
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("url", "")) == url_entrada:
-			return entrada
-	return {}
+	return _catalogo.buscar_entrada(_entradas, url_entrada)
 
 
 func _cambios_url_validos(url_original: String, url_nueva: String) -> bool:
-	var existentes: Array = []
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("url", "")) != url_original:
-			existentes.append(str(entrada.get("url", "")))
-	var res := GestorCatalogoScript.separar([url_nueva], existentes)
-	return (res.get("repetidas", []) as Array).is_empty()
+	return _catalogo.cambios_url_validos(_entradas, url_original, url_nueva)
 
 
 func _indice_entrada(url: String) -> int:
-	for i in _entradas.size():
-		var entrada: Dictionary = _entradas[i]
-		if GestorCatalogoScript.clave_unica(str(entrada.get("url", ""))) == GestorCatalogoScript.clave_unica(url):
-			return i
-	return -1
+	return _catalogo.indice_entrada(_entradas, url)
 
 
 func _es_captura_propia(ruta: String) -> bool:
-	return RutasScript.en_base(ruta, ASSETS_BASE)
+	return _catalogo.es_captura_propia(ruta, ASSETS_BASE)
 
 
 func _borrar_captura_si_huerfana(ruta: String) -> void:
-	if not _es_captura_propia(ruta):
-		return
-	if ruta.get_file() in GestorImagenesScript.ARCHIVOS_FIJOS:
-		return
-	for entrada in _entradas:
-		if typeof(entrada) == TYPE_DICTIONARY and str(entrada.get("img", "")) == ruta:
-			return
-	GestorImagenesScript.borrar(ruta)
+	_catalogo.borrar_captura_si_huerfana(_entradas, ruta, ASSETS_BASE)
 
 
 func _tls_aviso() -> int:
