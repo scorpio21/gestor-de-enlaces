@@ -7,6 +7,9 @@ const TEMA_DEFAULT := "oscuro"
 const TEMAS_VALIDOS := ["claro", "oscuro"]
 
 const META_CLAVE := "tema_clave"
+const META_SELECCION := "seleccionado"
+
+const _ESTADOS_BOTON := ["normal", "hover", "pressed", "focus"]
 
 const _PALETA_OSCURO := {
 	"fondo_claro": Color(0.95, 0.95, 0.95, 1),
@@ -67,6 +70,25 @@ static func marcar(nodo: CanvasItem, clave: String) -> void:
 		(nodo as Label).add_theme_color_override("font_color", color_clave(clave))
 
 
+static func marcar_seleccion(nodo: Button, activo: bool) -> void:
+	if nodo == null:
+		return
+	nodo.set_meta(META_SELECCION, activo)
+	if not activo:
+		for estado in _ESTADOS_BOTON:
+			nodo.remove_theme_stylebox_override(estado)
+		return
+	var acento := color_clave("acento")
+	for estado in _ESTADOS_BOTON:
+		var base := nodo.get_theme_stylebox(estado)
+		var caja := StyleBoxFlat.new()
+		if base is StyleBoxFlat:
+			caja = (base as StyleBoxFlat).duplicate()
+		caja.border_color = acento
+		caja.set_border_width_all(2)
+		nodo.add_theme_stylebox_override(estado, caja)
+
+
 static func normalizar(v: Variant) -> String:
 	var modo := str(v)
 	return modo if TEMAS_VALIDOS.has(modo) else TEMA_DEFAULT
@@ -86,6 +108,9 @@ static func aplicar(modo: String, root: Node) -> void:
 			continue
 		if nodo is CanvasItem and nodo.has_meta(META_CLAVE):
 			marcar(nodo as CanvasItem, str(nodo.get_meta(META_CLAVE)))
+			continue
+		if nodo is Button and nodo.has_meta(META_SELECCION):
+			marcar_seleccion(nodo as Button, bool(nodo.get_meta(META_SELECCION)))
 			continue
 		if nodo is ColorRect and nodo.name == "Fondo":
 			var id_nodo: int = nodo.get_instance_id()

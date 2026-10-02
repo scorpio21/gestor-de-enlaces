@@ -6,7 +6,7 @@ const PATRON_TR := r'\btr\("([^"]*)"'
 const PATRON_TR_STATIC := r'TranslationServer\.translate\("([^"]*)"'
 const PATRON_MENU := r'(?:add_item|add_icon_item)\([^"\n]*"([^"]+)"'
 const ESCENAS := ["res://scenes/Main.tscn", "res://scenes/Preferencias.tscn", "res://scenes/AgregarEnlace.tscn", "res://scenes/ListItem.tscn", "res://scenes/Historial.tscn", "res://scenes/Dashboard.tscn", "res://scenes/TarjetaKpi.tscn", "res://scenes/FilaTabla.tscn", "res://scenes/Cambios.tscn"]
-const SCRIPTS_UI := ["res://scripts/main.gd", "res://scripts/preferencias.gd", "res://scripts/agregar_enlace.gd", "res://scripts/list_item.gd", "res://scripts/historial.gd", "res://scripts/dashboard_ui.gd", "res://scripts/grafico_dashboard.gd", "res://scripts/tarjeta_kpi.gd", "res://scripts/fila_tabla.gd", "res://scripts/catalogo_controller.gd", "res://scripts/cambios.gd"]
+const SCRIPTS_UI := ["res://scripts/main.gd", "res://scripts/preferencias.gd", "res://scripts/agregar_enlace.gd", "res://scripts/list_item.gd", "res://scripts/historial.gd", "res://scripts/dashboard_ui.gd", "res://scripts/grafico_dashboard.gd", "res://scripts/tarjeta_kpi.gd", "res://scripts/fila_tabla.gd", "res://scripts/catalogo_controller.gd", "res://scripts/cambios.gd", "res://scripts/seleccion_controller.gd", "res://scripts/informe_controller.gd"]
 const EXTRA_VISIBLES := ["Válido", "Caído", "Sin comprobar", "Otro", "Cliente", "Servidor", "Códigos fuente", "Parche"]
 
 static func ui_strings() -> Array[String]:

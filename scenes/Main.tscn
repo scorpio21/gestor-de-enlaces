@@ -140,6 +140,47 @@ custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 show_percentage = false
 
+[node name="BarraSeleccion" type="FlowContainer" parent="ColumnaApp/Margen/Columna"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SelContador" type="Label" parent="ColumnaApp/Margen/Columna/BarraSeleccion"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0 seleccionados"
+
+[node name="BotonSelTodos" type="Button" parent="ColumnaApp/Margen/Columna/BarraSeleccion"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Seleccionar lo que veo"
+
+[node name="BotonSelComprobar" type="Button" parent="ColumnaApp/Margen/Columna/BarraSeleccion"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Comprobar seleccionados"
+
+[node name="BotonSelCopiar" type="Button" parent="ColumnaApp/Margen/Columna/BarraSeleccion"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Copiar URLs"
+
+[node name="BotonSelExportar" type="Button" parent="ColumnaApp/Margen/Columna/BarraSeleccion"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Exportar selección"
+
+[node name="BotonSelEliminar" type="Button" parent="ColumnaApp/Margen/Columna/BarraSeleccion"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Eliminar seleccionados"
+
+[node name="BotonSelLimpiar" type="Button" parent="ColumnaApp/Margen/Columna/BarraSeleccion"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Quitar selección"
+
 [node name="FilaCabeceras" type="HBoxContainer" parent="ColumnaApp/Margen/Columna"]
 unique_name_in_owner = true
 layout_mode = 2

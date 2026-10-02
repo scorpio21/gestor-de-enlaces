@@ -240,3 +240,16 @@ Sin cambios,Sin cambios,No changes
 Sin cambios desde la última vez,Sin cambios desde la última vez,No changes since last time
 Viendo cambios…,Viendo cambios…,Viewing changes…
 No se pudo guardar el historial de cambios.,No se pudo guardar el historial de cambios.,Could not save the change history.
+1 seleccionado,1 seleccionado,1 selected
+%d seleccionados,%d seleccionados,%d selected
+%d URLs copiadas,%d URLs copiadas,%d URLs copied
+%d enlaces eliminados,%d enlaces eliminados,%d links deleted
+¿Eliminar %d enlaces para siempre?,¿Eliminar %d enlaces para siempre?,Delete %d links for good?
+0 seleccionados,0 seleccionados,0 selected
+Seleccionar lo que veo,Seleccionar lo que veo,Select what I see
+Comprobar seleccionados,Comprobar seleccionados,Check selected
+Copiar URLs,Copiar URLs,Copy URLs
+Exportar selección,Exportar selección,Export selection
+Eliminar seleccionados,Eliminar seleccionados,Delete selected
+Quitar selección,Quitar selección,Clear selection
+"Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Selected: Ctrl+C copies, Ctrl+Enter checks, Shift+Delete deletes."

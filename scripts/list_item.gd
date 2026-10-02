@@ -9,6 +9,7 @@ signal historial_pedido
 signal subir_pedido
 signal bajar_pedido
 signal menu_solicitado
+signal seleccion_pedido(url: String, alternar: bool, rango: bool)
 
 var mensaje: String = ""
 var codigo := 0
@@ -31,12 +32,14 @@ var tags: Array = []
 var en_escaneo := false
 var intentos := 1
 var motivo := ""
+var seleccionado := false
 
 var _checker: Node = null
 var _timeout := 10.0
 var _reintentar_transitorios := true
 var _red_sin_comprobar := true
 var _aceptar_certificados := false
+var _abrir_al_presionar := true
 
 
 func _ready() -> void:
@@ -67,6 +70,7 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "", ca
 	tags = []
 	intentos = 1
 	motivo = ""
+	seleccionar(false)
 	_actualizar_tooltip()
 	%NombreLabel.text = nombre
 	%DescripcionLabel.text = descripcion
@@ -174,9 +178,19 @@ static func _es_dinamica(clave: String, valor: String) -> bool:
 	return clave.count("%d") == 1 and clave.count("%") == 1 and valor.count("%d") == 1 and valor.count("%") == 1
 
 
+func seleccionar(activo: bool) -> void:
+	if seleccionado == activo:
+		return
+	seleccionado = activo
+	_actualizar_tooltip()
+	TemaStoreScript.marcar_seleccion(self, activo)
+
+
 func _actualizar_tooltip() -> void:
 	if valido == null:
 		tooltip_text = url + "\n" + tr("Sin comprobar")
+		if seleccionado:
+			tooltip_text += "\n" + tr("Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.")
 		return
 	var lineas := PackedStringArray([url])
 	lineas.append(tr("Código: %s") % ("—" if codigo == 0 else str(codigo)))
@@ -185,6 +199,8 @@ func _actualizar_tooltip() -> void:
 	lineas.append(formatear_mensaje(mensaje, codigo))
 	if _es_aviso_tls():
 		lineas.append(tr("Certificado no válido (aceptado por preferencia)"))
+	if seleccionado:
+		lineas.append(tr("Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina."))
 	tooltip_text = "\n".join(lineas)
 
 
@@ -281,13 +297,16 @@ func _pintar_estado(texto: String, clave: String) -> void:
 
 
 func marcar_cambio(clave: String) -> void:
-	if clave.is_empty():
-		%MarcaCambio.text = ""
-		%MarcaCambio.tooltip_text = ""
+	var marca := get_node_or_null("%MarcaCambio")
+	if marca == null:
 		return
-	%MarcaCambio.text = tr("cambió")
-	%MarcaCambio.tooltip_text = _ayuda_cambio(clave)
-	TemaStoreScript.marcar(%MarcaCambio, clave)
+	if clave.is_empty():
+		marca.text = ""
+		marca.tooltip_text = ""
+		return
+	marca.text = tr("cambió")
+	marca.tooltip_text = _ayuda_cambio(clave)
+	TemaStoreScript.marcar(marca, clave)
 
 
 static func _ayuda_cambio(clave: String) -> String:
@@ -299,7 +318,7 @@ static func _ayuda_cambio(clave: String) -> String:
 
 
 func _pressed() -> void:
-	if url.is_empty():
+	if url.is_empty() or not _abrir_al_presionar:
 		return
 	OS.shell_open(url)
 
@@ -308,6 +327,14 @@ func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		menu_solicitado.emit()
 		%MenuContexto.popup(Rect2i(Vector2i(DisplayServer.mouse_get_position()), Vector2i.ZERO))
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		var boton := event as InputEventMouseButton
+		var acumular := boton.ctrl_pressed or boton.meta_pressed or boton.shift_pressed
+		_abrir_al_presionar = not acumular
+		seleccion_pedido.emit(url, boton.ctrl_pressed or boton.meta_pressed, boton.shift_pressed)
+		if acumular:
+			accept_event()
 
 
 func _on_menu(id: int) -> void:

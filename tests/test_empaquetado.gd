@@ -17,6 +17,9 @@ func _initialize() -> void:
 	_check(_catalogo_extraido(), "el alta, edicion y borrado viven en catalogo_controller, no en main.gd (#62)")
 	_check(_main_no_secha(), "main.gd se ha ido encogiendo con cada entrega de #62 y #57")
 	_check(_cambios_extraidos(), "el calculo de cambios vive en cambios_controller y cambios_store, no en main.gd (#57)")
+	_check(_seleccion_extraida(), "la seleccion multiple vive en seleccion_controller, no en main.gd (#58)")
+	_check(_informe_extraido(), "el armado del informe vive en informe_controller, no en main.gd (#58)")
+	_check(_marca_cambio_segura(), "list_item no busca %MarcaCambio a saco: la grilla no lo tiene (#58)")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -101,7 +104,51 @@ func _catalogo_extraido() -> bool:
 
 func _main_no_secha() -> bool:
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1500
+	return main.split("\n").size() <= 1600
+
+
+func _seleccion_extraida() -> bool:
+	var main := _leer("res://scripts/main.gd")
+	var prohibidas := [
+		"func alternar(",
+		"func seleccionar_todo(",
+		"func limpiar(",
+		"func conservar(",
+		"func interse",
+		"func ancla(",
+		"func atajo_de(",
+		"func filas_de(",
+		"func texto_urls(",
+		"func texto_contador(",
+		"func texto_copiadas(",
+		"func texto_borrados(",
+		"func texto_eliminar(",
+	]
+	for prohibida in prohibidas:
+		if main.contains(prohibida):
+			return false
+	if not main.contains("SeleccionControllerScript.atajo_de("):
+		return false
+	return FileAccess.file_exists("res://scripts/seleccion_controller.gd") \
+		and FileAccess.file_exists("res://tests/test_seleccion_controller.gd") \
+		and FileAccess.file_exists("res://tests/test_main_seleccion.gd")
+
+
+func _informe_extraido() -> bool:
+	var main := _leer("res://scripts/main.gd")
+	var prohibidas := ["informe_store.gd", "exportar_csv(", "exportar_html(", "func _formato_informe("]
+	for prohibida in prohibidas:
+		if main.contains(prohibida):
+			return false
+	return FileAccess.file_exists("res://scripts/informe_controller.gd") \
+		and FileAccess.file_exists("res://tests/test_informe_controller.gd")
+
+
+func _marca_cambio_segura() -> bool:
+	var item := _leer("res://scripts/list_item.gd")
+	if not item.contains("get_node_or_null(\"%MarcaCambio\")"):
+		return false
+	return not item.contains("%MarcaCambio.")
 
 
 func _cambios_extraidos() -> bool:

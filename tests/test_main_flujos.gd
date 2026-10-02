@@ -6,6 +6,7 @@ const LIST_ITEM_SCENE := preload("res://scenes/ListItem.tscn")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 const ScanControllerScript := preload("res://scripts/scan_controller.gd")
+const InformeControllerScript := preload("res://scripts/informe_controller.gd")
 
 var _fallos := 0
 
@@ -230,9 +231,9 @@ func _arrancar() -> void:
 	main_script._on_file_id(5)
 	_check(main.get_node("%DialogoInforme").visible, "Archivo > Informe de disponibilidad… abre el diálogo de guardado")
 	main.get_node("%DialogoInforme").hide()
-	_check(main_script._formato_informe("informe.html") == "html", "_formato_informe deduce html por extensión")
-	_check(main_script._formato_informe("informe.csv") == "csv", "_formato_informe deduce csv por extensión")
-	_check(main_script._formato_informe("informe") == "csv", "_formato_informe asume csv sin extensión")
+	_check(InformeControllerScript.formato_de("informe.html") == "html", "el formato del informe se deduce por extensión")
+	_check(InformeControllerScript.formato_de("informe.csv") == "csv", "un .csv es csv")
+	_check(InformeControllerScript.formato_de("informe") == "csv", "sin extensión se asume csv")
 
 	# Restaurar copia (#23, #24)
 	var menu_file: PopupMenu = main.get_node("%File")

@@ -25,7 +25,6 @@ const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
 const LoggerScript := preload("res://scripts/logger.gd")
 const DiagnosticoScript := preload("res://scripts/diagnostico.gd")
 const ColaStoreScript := preload("res://scripts/cola_store.gd")
-const InformeStoreScript := preload("res://scripts/informe_store.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const ActualizadorScript := preload("res://scripts/actualizador.gd")
 const OrdenadorScript := preload("res://scripts/ordenador.gd")
@@ -38,6 +37,8 @@ const CatalogoControllerScript := preload("res://scripts/catalogo_controller.gd"
 const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 const CambiosControllerScript := preload("res://scripts/cambios_controller.gd")
+const SeleccionControllerScript := preload("res://scripts/seleccion_controller.gd")
+const InformeControllerScript := preload("res://scripts/informe_controller.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var grilla: GridContainer = %GridContenedor
@@ -71,6 +72,7 @@ const CambiosControllerScript := preload("res://scripts/cambios_controller.gd")
 @onready var dialogo_historial: Window = %DialogoHistorial
 @onready var dialogo_cambios: Window = %DialogoCambios
 @onready var timer_auto: Timer = %AutoEscaneo
+@onready var barra_seleccion: FlowContainer = %BarraSeleccion
 
 var _entradas: Array = []
 var _scan = ScanControllerScript.new()
@@ -93,7 +95,8 @@ var _red_sin_comprobar := true
 var _aceptar_certificados := false
 var _estados := {}
 var _borrados: Array = []
-var _item_pendiente_borrar: Button = null
+var _borrados_pendientes: Array = []
+var _urls_informe: Array = []
 var _persistir := true
 var _limpieza_resultado: Dictionary = {}
 var _cola_store: RefCounted = null
@@ -109,6 +112,7 @@ var _ultimo_repaint_ms := 0.0
 var _filas_visibles := 0
 var _cambios = CambiosControllerScript.new()
 var _estado_previo := {}
+var _sel = SeleccionControllerScript.new()
 
 
 func _ready() -> void:
@@ -123,6 +127,7 @@ func _ready() -> void:
 	busqueda.focus_exited.connect(_ui_busqueda_guardar)
 	%BotonComprobar.pressed.connect(_scan_iniciar)
 	%ConfirmarBorrado.confirmed.connect(_ui_confirmar_borrado)
+	%ConfirmarBorrado.canceled.connect(_ui_cancelar_borrado)
 	%ConfirmarLimpieza.confirmed.connect(_confirmar_limpieza)
 	%ConfirmarRestaurar.confirmed.connect(_confirmar_restaurar)
 	%ConfirmarReanudar.confirmed.connect(_scan_reanudar)
@@ -139,6 +144,13 @@ func _ready() -> void:
 	dashboard.comprobar_ya.connect(_scan_iniciar)
 	dialogo_cambios.filtrar_pedido.connect(_cambios_filtrar_lista)
 	dialogo_cambios.dashboard_pedido.connect(_cambios_abrir_dashboard)
+	%BotonSelTodos.pressed.connect(_sel_todo)
+	%BotonSelComprobar.pressed.connect(_sel_comprobar)
+	%BotonSelCopiar.pressed.connect(_sel_copiar)
+	%BotonSelExportar.pressed.connect(_sel_exportar)
+	%BotonSelEliminar.pressed.connect(_sel_eliminar)
+	%BotonSelLimpiar.pressed.connect(_sel_limpiar)
+	_sel.preparar(barra_seleccion, %SelContador, Callable(self, "_ui_filas_visibles"), Callable(self, "_urls_catalogo"))
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new(CONFIG_BASE)
 	_cola_store = ColaStoreScript.new()
@@ -288,6 +300,10 @@ func _on_utilidades_id(id: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	var seleccion := SeleccionControllerScript.atajo_de(event)
+	if not seleccion.is_empty():
+		_on_seleccion(seleccion)
+		return
 	if event.is_action_pressed("atajo_buscar"):
 		_on_atajo("atajo_buscar")
 	elif event.is_action_pressed("atajo_agregar"):
@@ -311,6 +327,22 @@ func _on_atajo(accion: String) -> void:
 				ventana_agregar.hide()
 			elif preferencias.visible:
 				preferencias.hide()
+			else:
+				_sel_limpiar()
+
+
+func _on_seleccion(accion: String) -> void:
+	match accion:
+		"todo":
+			_sel_todo()
+		"copiar":
+			_sel_copiar()
+		"comprobar":
+			_sel_comprobar()
+		"eliminar":
+			_sel_eliminar()
+		"limpiar":
+			_sel_limpiar()
 
 
 func _sugerir_etiquetas() -> Array:
@@ -499,15 +531,18 @@ func _ui_mostrar_lista(entradas: Array) -> void:
 			)
 		if item.has_method("marcar_cambio"):
 			item.marcar_cambio(_cambios.marca_de(GestorCatalogoScript.clave_unica(url_item)))
+		item.seleccionar(_sel.contiene(url_item))
 		contenedor.add_child(item)
 
 	_ui_aplicar_filtro()
+	_seleccion_conservar()
 	progreso.text = tr("%d enlaces") % contenedor.get_child_count()
 	_ultimo_repaint_ms = float(Time.get_ticks_usec() - inicio) / 1000.0
 	_filas_visibles = contenedor.get_child_count()
 
 
 func _conectar_fila(item: Button) -> void:
+	item.seleccion_pedido.connect(_sel_al_clic.bind(item))
 	item.eliminar_pedido.connect(_ui_eliminar_fila.bind(item))
 	item.recomprobar_pedido.connect(_scan_recomprobar.bind(item))
 	item.copiar_pedido.connect(_ui_copiar_url.bind(item))
@@ -783,6 +818,64 @@ func _ui_filas_visibles() -> Array:
 	return _lista.filas_visibles(_contenedor_activo())
 
 
+func _urls_visibles() -> Array:
+	return SeleccionControllerScript.urls_de_filas(_ui_filas_visibles())
+
+
+func _urls_catalogo() -> Array:
+	return SeleccionControllerScript.urls_de_entradas(_entradas)
+
+
+func _sel_al_clic(url: String, ctrl: bool, rango: bool, item: Button) -> void:
+	if url.is_empty() or not _fila_en_lista(item):
+		return
+	_sel.pintar(_sel.alternar(url, ctrl, rango, _urls_visibles()))
+
+
+func _sel_todo() -> void:
+	_sel.pintar(_sel.seleccionar_todo(_urls_visibles()))
+
+
+func _sel_limpiar() -> void:
+	_sel.pintar(_sel.limpiar())
+
+
+func _seleccion_conservar() -> void:
+	_sel.pintar(_sel.conservar(_urls_catalogo()))
+
+
+func _sel_urls() -> Array:
+	return _sel.intersectar(_urls_catalogo())
+
+
+func _sel_comprobar() -> void:
+	var filas: Array = _sel.filas_de(_sel_urls())
+	if filas.is_empty():
+		return
+	_scan_arrancar(filas, filas)
+
+
+func _sel_copiar() -> void:
+	var urls := _sel_urls()
+	if urls.is_empty():
+		return
+	DisplayServer.clipboard_set(SeleccionControllerScript.texto_urls(urls))
+	progreso.text = SeleccionControllerScript.texto_copiadas(urls.size())
+
+
+func _sel_exportar() -> void:
+	var urls := _sel_urls()
+	if urls.is_empty():
+		return
+	_urls_informe = urls
+	%DialogoInforme.current_file = "seleccion.csv"
+	%DialogoInforme.popup_centered()
+
+
+func _sel_eliminar() -> void:
+	_ui_pedir_borrado(_sel_urls())
+
+
 func _ui_menu_fila(item: Button) -> void:
 	if _orden_columna != "":
 		item.fijar_estado_reorden(false, false)
@@ -823,29 +916,51 @@ func _ui_historial(item: Button) -> void:
 
 
 func _ui_eliminar_fila(item: Button) -> void:
-	_item_pendiente_borrar = item
-	%ConfirmarBorrado.dialog_text = tr("¿Eliminar «%s» para siempre?") % item.get_node("%NombreLabel").text
+	if not _fila_en_lista(item):
+		return
+	_ui_pedir_borrado([str(item.url)], str(item.get_node("%NombreLabel").text))
+
+
+func _ui_pedir_borrado(urls: Array, etiqueta := "") -> void:
+	if urls.is_empty():
+		return
+	_borrados_pendientes = urls
+	%ConfirmarBorrado.dialog_text = SeleccionControllerScript.texto_eliminar(urls.size(), str(urls[0]), etiqueta)
 	%ConfirmarBorrado.popup_centered()
 
 
-func _ui_confirmar_borrado() -> void:
-	var item := _item_pendiente_borrar
-	_item_pendiente_borrar = null
-	if not _fila_en_lista(item):
-		return
+func _ui_cancelar_borrado() -> void:
+	_borrados_pendientes = []
 
-	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
+
+func _ui_confirmar_borrado() -> void:
+	var urls := _borrados_pendientes
+	_borrados_pendientes = []
+	var borradas: Array = []
+	for url in urls:
+		if _borrar_entrada(str(url)):
+			borradas.append(url)
+	if borradas.is_empty():
+		return
+	for fila in _ui_filas_visibles():
+		if borradas.has(str(fila.url)):
+			fila.queue_free()
+	_seleccion_conservar()
+	progreso.text = SeleccionControllerScript.texto_borrados(borradas.size())
+	_ui_aplicar_filtro()
+	_ui_status()
+
+
+func _borrar_entrada(url: String) -> bool:
+	var res: Dictionary = _catalogo.eliminar(_entradas, url)
+	if not res.get("ok", false):
+		return false
+	var clave_estado := GestorCatalogoScript.clave_unica(url)
 	_estado_store.marcar_borrado(clave_estado)
 	_estado_store.borrar_estado(clave_estado)
 	_estados.erase(clave_estado)
-
-	var res: Dictionary = _catalogo.eliminar(_entradas, item.url)
-
-	item.queue_free()
 	_borrar_captura_si_huerfana(str(res.get("img", "")))
-	progreso.text = tr("Enlace eliminado")
-	_ui_aplicar_filtro()
-	_ui_status()
+	return true
 
 
 func _ui_copiar_url(url: String, item: Button) -> void:
@@ -867,11 +982,14 @@ func _ui_editar_fila(item: Button) -> void:
 
 func _scan_iniciar() -> void:
 	var visibles: Array = []
-	for hijo in lista.get_children():
+	for hijo in _contenedor_activo().get_children():
 		if hijo.visible:
 			visibles.append(hijo)
+	_scan_arrancar(visibles, _contenedor_activo().get_children())
 
-	var total := _scan.preparar(visibles, lista.get_children())
+
+func _scan_arrancar(items: Array, todos := []) -> void:
+	var total := _scan.preparar(items, todos)
 	if total == 0:
 		%BarraProgreso.visible = false
 		progreso.text = tr("Nada que comprobar")
@@ -1099,43 +1217,15 @@ func _on_exportar_elegido(ruta: String) -> void:
 
 
 func _on_informe_elegido(ruta: String) -> void:
-	var formato := _formato_informe(ruta)
-	if not ruta.to_lower().ends_with(".csv") and not ruta.to_lower().ends_with(".html"):
-		ruta += ".csv"
-	var filas: Array = []
-	for entrada in _entradas:
-		if typeof(entrada) != TYPE_DICTIONARY:
-			continue
-		var url := str(entrada.get("url", ""))
-		var estado: Dictionary = _estados.get(GestorCatalogoScript.clave_unica(url), {})
-		var estado_texto := "Sin comprobar"
-		var fecha := 0
-		var mensaje := ""
-		var causa := ""
-		if not estado.is_empty():
-			estado_texto = InformeStoreScript.estado_texto(estado)
-			fecha = int(estado.get("fecha", 0))
-			mensaje = str(estado.get("mensaje", ""))
-			causa = InformeStoreScript.causa_texto(estado)
-		filas.append({
-			"nombre": str(entrada.get("nombre", "")),
-			"url": url,
-			"estado": estado_texto,
-			"fecha": fecha,
-			"mensaje": mensaje,
-			"causa": causa,
-		})
-	var res: Dictionary = InformeStoreScript.exportar_html(ruta, filas) if formato == "html" else InformeStoreScript.exportar_csv(ruta, filas)
+	var formato := InformeControllerScript.formato_de(ruta)
+	var solo := _urls_informe.duplicate()
+	_urls_informe = []
+	var filas: Array = InformeControllerScript.filas(_entradas, _estados, solo)
+	var res: Dictionary = InformeControllerScript.exportar(ruta, formato, filas)
 	if not res.get("ok", false):
 		progreso.text = str(res.get("error", "No se pudo guardar el informe."))
 		return
 	progreso.text = tr("Informe %s guardado (%d enlaces).") % [formato.to_upper(), int(res.get("total", 0))]
-
-
-func _formato_informe(ruta: String) -> String:
-	if ruta.to_lower().ends_with(".html"):
-		return "html"
-	return "csv"
 
 
 func _on_diag_elegido(ruta: String) -> void:
