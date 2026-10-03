@@ -1,0 +1,63 @@
+name: godot
+description: Descarga Godot 4.7.2 (y opcionalmente las plantillas de export) y expone la ruta del binario
+
+inputs:
+  templates:
+    description: "true para bajar tambien el .tpz de plantillas de export"
+    required: false
+    default: "false"
+
+outputs:
+  bin:
+    description: "Ruta del ejecutable de Godot"
+    value: ${{ steps.resolver.outputs.bin }}
+
+runs:
+  using: composite
+  steps:
+    - name: Cache del binario y de las plantillas
+      id: cache-godot
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/godot-bin
+          ~/.local/share/godot/export_templates
+        key: godot-4.7.2-${{ runner.os }}-${{ inputs.templates }}
+
+    - name: Instalar las plantillas de export
+      if: ${{ inputs.templates == 'true' && steps.cache-godot.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: |
+        set -euxo pipefail
+        curl -sSL -o /tmp/templates.tpz https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
+        unzip -o -q /tmp/templates.tpz -d /tmp/templates
+        mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
+        mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.7.2.stable/
+
+    - name: Descargar Godot
+      if: steps.cache-godot.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euxo pipefail
+        mkdir -p ~/godot-bin
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          curl -sSL -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_win64.zip
+          unzip -o -q /tmp/godot.zip -d ~/godot-bin
+        else
+          curl -sSL -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -o -q /tmp/godot.zip -d ~/godot-bin
+          mv ~/godot-bin/Godot_v4.7.2-stable_linux.x86_64 ~/godot-bin/godot
+          chmod +x ~/godot-bin/godot
+        fi
+
+    # Siempre, hit o miss de la cache: asi el consumidor no depende de cual de
+    # los dos caminos se ejecuto.
+    - name: Resolver la ruta del binario
+      id: resolver
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          echo "bin=$(cygpath -w "$HOME/godot-bin/Godot_v4.7.2-stable_win64_console.exe")" >> "$GITHUB_OUTPUT"
+        else
+          echo "bin=$HOME/godot-bin/godot" >> "$GITHUB_OUTPUT"
+        fi

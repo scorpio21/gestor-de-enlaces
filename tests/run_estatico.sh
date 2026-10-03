@@ -16,6 +16,16 @@ GODOT_BIN="${GODOT_BIN:-godot}"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 TIMEOUT_FICHERO="${TIMEOUT_FICHERO:-60}"
 
+# En Windows, con Git Bash, $PROJECT_DIR sale como /k/gestor-de-enlaces. Godot lo
+# resuelve gracias al path mangling de MSYS al recibir argumentos, pero si alguien
+# exporta MSYS2_ARG_CONV_EXCL se queda con la ruta POSIX y falla. cygpath deja el
+# valor en forma nativa antes de pasarselo.
+if command -v cygpath >/dev/null 2>&1; then
+	PROJECT_DIR_GODOT="$(cygpath -w "$PROJECT_DIR")"
+else
+	PROJECT_DIR_GODOT="$PROJECT_DIR"
+fi
+
 # Un array, no una cadena: con TIMEOUT="" la expansion sin comillas se
 # convierte en un argumento vacio y desplaza el resto de la linea de comando.
 TIMEOUT=()
@@ -33,7 +43,7 @@ for ruta in "$PROJECT_DIR"/scripts/*.gd "$PROJECT_DIR"/tests/*.gd; do
 	relativo="${ruta#"$PROJECT_DIR"/}"
 	estado=0
 	salida="$(
-		${TIMEOUT[@]+"${TIMEOUT[@]}"} "$TIMEOUT_FICHERO" "$GODOT_BIN" --headless --path "$PROJECT_DIR" \
+		${TIMEOUT[@]+"${TIMEOUT[@]}"} "$TIMEOUT_FICHERO" "$GODOT_BIN" --headless --path "$PROJECT_DIR_GODOT" \
 			--check-only --script "res://$relativo" 2>&1
 	)" || estado=$?
 	REVISADOS=$((REVISADOS + 1))

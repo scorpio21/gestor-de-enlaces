@@ -7,68 +7,106 @@ on:
     branches: [main]
 
 jobs:
-  test-export:
-    runs-on: ubuntu-latest
-    # Red de seguridad del job. Cada suite lleva timeout propio y el paso
-    # estatico va antes, asi que en teoria no se llega aqui; si algo se queda
-    # colgado en un export, preferimos un rojo en 20 min a un job de 6 horas
-    # sin diagnostico (#61).
-    timeout-minutes: 20
+  # La batería en los dos sistemas operativos (#61). Windows es donde se
+  # desarrolla y desde donde se depura, así que los paths, el separador \ y
+  # user:// no se ejercitaban nunca en el SO del usuario.
+  battery:
+    name: bateria (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache Godot
-        id: cache-godot
+      - name: Descargar Godot
+        id: godot
+        uses: ./.github/actions/godot
+        with:
+          templates: false
+
+      - name: Cache de la importacion
         uses: actions/cache@v4
         with:
           path: |
-            ~/godot-bin
-            ~/.local/share/godot/export_templates
-          key: godot-4.7.2
+            .godot/imported
+            .godot/uid_cache.bin
+          key: import-${{ runner.os }}-${{ hashFiles('project.godot', 'Assets/**', 'data/**') }}
+          restore-keys: |
+            import-${{ runner.os }}-
 
-      - name: Download Godot and export templates
-        if: steps.cache-godot.outputs.cache-hit != 'true'
-        run: |
-          set -euxo pipefail
-          mkdir -p ~/godot-bin
-          curl -L -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
-          unzip -o /tmp/godot.zip -d ~/godot-bin
-          mv ~/godot-bin/Godot_v4.7.2-stable_linux.x86_64 ~/godot-bin/godot
-          chmod +x ~/godot-bin/godot
-          curl -L -o /tmp/templates.tpz https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
-          unzip -o /tmp/templates.tpz -d /tmp/templates
-          mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
-          mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.7.2.stable/
-
-      - name: Import project assets
-        run: |
-          "$HOME/godot-bin/godot" --headless --path . --import
+      - name: Importar assets del proyecto
+        run: '"${{ steps.godot.outputs.bin }}" --headless --path . --import'
 
       # El import anterior escupe ruido benigno (Parse Error: Native class
       # TextFile y un Failed to load de test_preferencias.gd, porque el preload
       # del .tscn aun no resuelve al escanear) y aun asi sale con codigo 0, asi
       # que no sirve para detectar errores. --check-only si distingue (#61).
-      - name: Static check of GDScript files
+      - name: Comprobacion estatica de los .gd
+        shell: bash
         run: |
-          export GODOT_BIN="$HOME/godot-bin/godot"
+          export GODOT_BIN="${{ steps.godot.outputs.bin }}"
           bash tests/run_estatico.sh
 
-      - name: Run headless battery
+      # shell: bash es Git Bash en windows-latest, que es como se corre en local.
+      - name: Bateria headless
+        shell: bash
         run: |
-          export GODOT_BIN="$HOME/godot-bin/godot"
+          export GODOT_BIN="${{ steps.godot.outputs.bin }}"
           bash tests/run_battery.sh
 
-      - name: Export bundles
+  # El export y el arranque del binario solo se hacen en Linux: es donde esta
+  # el runner con las plantillas ya bajadas y donde se puede ejecutar el binario
+  # exportado sin inventar una maquina virtual de Windows.
+  test-export:
+    name: export y smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Descargar Godot y las plantillas
+        id: godot
+        uses: ./.github/actions/godot
+        with:
+          templates: true
+
+      - name: Cache de la importacion
+        uses: actions/cache@v4
+        with:
+          path: |
+            .godot/imported
+            .godot/uid_cache.bin
+          key: import-${{ runner.os }}-${{ hashFiles('project.godot', 'Assets/**', 'data/**') }}
+          restore-keys: |
+            import-${{ runner.os }}-
+
+      - name: Importar assets del proyecto
+        run: '"${{ steps.godot.outputs.bin }}" --headless --path . --import'
+
+      - name: Exportar los tres presets
         run: |
           set -euxo pipefail
-          G="$HOME/godot-bin/godot"
+          G="${{ steps.godot.outputs.bin }}"
           mkdir -p build
           "$G" --headless --path . --export-release "Windows" build/gestor-de-enlaces.exe
           "$G" --headless --path . --export-release "Linux/X11" build/gestor-de-enlaces.x86_64
           "$G" --headless --path . --export-release "macOS" build/gestor-de-enlaces_macos.app
           (cd build && zip -r gestor-de-enlaces-macos.zip gestor-de-enlaces_macos.app)
 
-      - name: Upload artifacts
+      # Hay fallos que solo existen dentro del pck: un recurso o una escena que no
+      # entra, un script que no compila en release, un user:// que no se puede
+      # escribir. Ninguna suite los ve, porque ellas corren con el proyecto
+      # abierto. Este paso arranca el binario de verdad (#61).
+      - name: Smoke test del binario exportado
+        shell: bash
+        run: |
+          export SMOKE_BIN="$PWD/build/gestor-de-enlaces.x86_64"
+          bash tests/run_smoke.sh
+
+      - name: Subir artefactos
         uses: actions/upload-artifact@v4
         with:
           name: gestor-de-enlaces-builds

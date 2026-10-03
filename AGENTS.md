@@ -26,6 +26,19 @@ Comprobación estática de parseo, antes de la batería (un segundo por fichero,
 GODOT_BIN=/ruta/a/godot bash tests/run_estatico.sh
 ```
 
+## Smoke test del binario exportado
+
+Exporta y arranca el binario de verdad. Caza lo que solo existe dentro del pck: un recurso o una escena que no entra, un script que no compila en release, un `user://` que no se puede escribir.
+
+```bash
+godot --headless --path . --export-release "Windows" build/gestor.exe
+SMOKE_BIN=build/gestor.console.exe bash tests/run_smoke.sh
+```
+
+El binario se lanza con `--headless -- --smoke`, y ese `--smoke` hace que `main.gd` ejecute `scripts/smoke.gd` y salga con código 0 o 1. `SMOKE_BIN` tiene que ser el `.console.exe` en Windows (el otro no escribe en la consola). El script no se conforma con el código de salida: exige la marca `GestorAO smoke OK` y que no haya ni un `SCRIPT ERROR`, porque Godot puede imprimir un error y salir con 0.
+
+Añadir una escena a `scenes/` obliga a meterla en `SmokeScript.ESCENAS`: `test_smoke.gd` comprueba que todas las de la lista existen de verdad, y no al revés.
+
 ## Regenerar export_presets.cfg
 
 1. Abre el proyecto en el editor Godot (`godot --path . -e`).

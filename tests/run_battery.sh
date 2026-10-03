@@ -19,6 +19,16 @@ PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 TIMEOUT_SUITE="${TIMEOUT_SUITE:-180}"
 PATRON="${PATRON:-tests/test_*.gd}"
 
+# En Windows, con Git Bash, $PROJECT_DIR sale como /k/gestor-de-enlaces. Godot lo
+# resuelve gracias al path mangling de MSYS al recibir argumentos, pero si alguien
+# exporta MSYS2_ARG_CONV_EXCL se queda con la ruta POSIX y falla. cygpath deja el
+# valor en forma nativa antes de pasarselo.
+if command -v cygpath >/dev/null 2>&1; then
+	PROJECT_DIR_GODOT="$(cygpath -w "$PROJECT_DIR")"
+else
+	PROJECT_DIR_GODOT="$PROJECT_DIR"
+fi
+
 # timeout(1) no está en todas partes: macOS usa gtimeout, y algún Windows
 # minimalista no lo trae. Sin él seguimos corriendo, pero avisamos de que una
 # suite colgada cuelga el proceso entero. Un array (y no una cadena) para que la
@@ -41,7 +51,7 @@ for ruta in "$PROJECT_DIR"/$PATRON; do
 	nombre="$(basename "$ruta")"
 	estado=0
 	salida="$(
-		${TIMEOUT[@]+"${TIMEOUT[@]}"} "$TIMEOUT_SUITE" "$GODOT_BIN" --headless --path "$PROJECT_DIR" \
+		${TIMEOUT[@]+"${TIMEOUT[@]}"} "$TIMEOUT_SUITE" "$GODOT_BIN" --headless --path "$PROJECT_DIR_GODOT" \
 			--script "res://tests/$nombre" 2>&1
 	)" || estado=$?
 

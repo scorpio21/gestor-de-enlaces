@@ -18,6 +18,7 @@ const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
 const InstantaneaStoreScript := preload("res://scripts/instantanea_store.gd")
+const SmokeScript := preload("res://scripts/smoke.gd")
 const IdiomaScript := preload("res://scripts/idioma.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
@@ -121,6 +122,8 @@ var _sel = SeleccionControllerScript.new()
 
 
 func _ready() -> void:
+	if SmokeScript.arrancar_desde_consola(get_tree()):
+		return
 	_configurar_menus()
 	_espera_busqueda = Timer.new()
 	_espera_busqueda.one_shot = true

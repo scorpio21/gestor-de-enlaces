@@ -7,9 +7,15 @@ func _initialize() -> void:
 	_check(_export_presets_ok(), "export_presets.cfg declara Windows, Linux/X11 y macOS")
 	_check(_ci_ok(), ".github/workflows/ci.yml tiene battery y upload-artifact")
 	_check(_ci_protegida(), "la CI limita el tiempo del job y ejecuta el paso estatico (#61)")
+	_check(_ci_matriz_windows(), "la CI corre la bateria tambien en Windows (#61)")
+	_check(_ci_cache_importacion(), "la CI cachea .godot/imported y uid_cache.bin (#61)")
+	_check(_ci_smoke(), "la CI arranca el binario exportado (#61)")
 	_check(FileAccess.file_exists("res://tests/run_battery.sh"), "existe tests/run_battery.sh")
 	_check(_bateria_con_timeout(), "run_battery.sh da timeout por suite (#61)")
 	_check(FileAccess.file_exists("res://tests/run_estatico.sh"), "existe tests/run_estatico.sh")
+	_check(FileAccess.file_exists("res://tests/run_smoke.sh"), "existe tests/run_smoke.sh (#61)")
+	_check(_smoke_exige_marca(), "run_smoke.sh no se conforma con un codigo de salida (#61)")
+	_check(_smoke_wiring(), "el binario sabe ejecutarse a si mismo en modo smoke (#61)")
 	_check(FileAccess.file_exists("res://AGENTS.md"), "existe AGENTS.md")
 	_check(_escaneo_extraido(), "la logica del escaneo vive en scan_controller, no en main.gd (#62)")
 	_check(_lista_extraida(), "la logica de filas vive en lista_controller, no en main.gd (#62)")
@@ -50,6 +56,52 @@ func _ci_ok() -> bool:
 func _ci_protegida() -> bool:
 	var txt := _leer("res://.github/workflows/ci.yml")
 	return "timeout-minutes:" in txt and "run_estatico.sh" in txt
+
+
+func _ci_matriz_windows() -> bool:
+	var txt := _leer("res://.github/workflows/ci.yml")
+	if "os: [ubuntu-latest, windows-latest]" not in txt:
+		return false
+	# En Windows los dos pasos de test son bash de Git Bash, no PowerShell: con el
+	# shell por defecto el script .sh no se ejecuta y el job pasa sin correr nada.
+	return "shell: bash" in txt and "run_battery.sh" in txt
+
+
+func _ci_cache_importacion() -> bool:
+	var txt := _leer("res://.github/workflows/ci.yml")
+	if ".godot/imported" not in txt or ".godot/uid_cache.bin" not in txt:
+		return false
+	return "hashFiles('project.godot'" in txt or "hashFiles(\"project.godot\"" in txt
+
+
+func _ci_smoke() -> bool:
+	var txt := _leer("res://.github/workflows/ci.yml")
+	return "run_smoke.sh" in txt and "--export-release" in txt \
+		and txt.find("run_smoke.sh") > txt.find("--export-release")
+
+
+func _smoke_exige_marca() -> bool:
+	var txt := _leer("res://tests/run_smoke.sh")
+	# Un codigo de salida 0 no basta: Godot puede imprimir un SCRIPT ERROR y salir
+	# con 0, y sin la marca del propio script no se distingue de un arranque bien.
+	# El grep se busca en la MISMA linea que SCRIPT ERROR: en el comentario que
+	# explica el motivo tambien aparece la palabra, y ahi no vigila nada.
+	var grep_errores := false
+	var grep_marca := false
+	for linea in txt.split("\n"):
+		if "grep -qE" in linea and "SCRIPT ERROR" in linea:
+			grep_errores = true
+		if "grep -q" in linea and "smoke OK" in linea:
+			grep_marca = true
+	return grep_errores and grep_marca and "SMOKE_BIN" in txt and "--smoke" in txt
+
+
+func _smoke_wiring() -> bool:
+	var main := _leer("res://scripts/main.gd")
+	if "smoke.gd" not in main or "arrancar_desde_consola" not in main:
+		return false
+	return FileAccess.file_exists("res://scripts/smoke.gd") \
+		and FileAccess.file_exists("res://tests/test_smoke.gd")
 
 
 func _bateria_con_timeout() -> bool:
