@@ -394,6 +394,78 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 4
 
+[node name="PanelReubicados" type="PanelContainer" parent="Margen/Desplazable/Columna/Datos"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="MargenReub" type="MarginContainer" parent="Margen/Desplazable/Columna/Datos/PanelReubicados"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelReubicados/MargenReub"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="FilaReub" type="HBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelReubicados/MargenReub/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TituloReub" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelReubicados/MargenReub/VBox/FilaReub"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "Enlaces reubicados"
+
+[node name="BotonReubicar" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelReubicados/MargenReub/VBox/FilaReub"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+text = "Actualizar todos"
+
+[node name="CabeceraReub" type="HBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelReubicados/MargenReub/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Nombre" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelReubicados/MargenReub/VBox/CabeceraReub"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+flat = true
+text = "Enlace"
+
+[node name="T1" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelReubicados/MargenReub/VBox/CabeceraReub"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+text = "Origen"
+
+[node name="T2" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelReubicados/MargenReub/VBox/CabeceraReub"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+text = "Destino"
+
+[node name="T3" type="Button" parent="Margen/Desplazable/Columna/Datos/PanelReubicados/MargenReub/VBox/CabeceraReub"]
+custom_minimum_size = Vector2(76, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+flat = true
+alignment = 2
+text = "Comprobado"
+
+[node name="ListaReubicados" type="VBoxContainer" parent="Margen/Desplazable/Columna/Datos/PanelReubicados/MargenReub/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
 [node name="AvisoSinComprobar" type="Label" parent="Margen/Desplazable/Columna"]
 unique_name_in_owner = true
 visible = false

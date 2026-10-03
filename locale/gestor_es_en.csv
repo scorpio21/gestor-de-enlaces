@@ -253,3 +253,21 @@ Exportar selección,Exportar selección,Export selection
 Eliminar seleccionados,Eliminar seleccionados,Delete selected
 Quitar selección,Quitar selección,Clear selection
 "Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Selected: Ctrl+C copies, Ctrl+Enter checks, Shift+Delete deletes."
+Actualizar URL,Actualizar URL,Update URL
+Actualizar,Actualizar,Update
+Enlaces reubicados,Enlaces reubicados,Relocated links
+Actualizar todos,Actualizar todos,Update all
+Origen,Origen,Origin
+Destino,Destino,Destination
+Comprobado,Comprobado,Checked
+Actualizar URL a la nueva,Actualizar URL a la nueva,Update URL to the new one
+movido,movido,moved
+No hay una redirección que actualizar.,No hay una redirección que actualizar.,There is no redirect to update.
+La URL nueva es la misma.,La URL nueva es la misma.,The new URL is the same.
+Redirige a: %s,Redirige a: %s,Redirects to: %s
+Solo cambia el dominio o el https: %s,Solo cambia el dominio o el https: %s,Only the domain or https changed: %s
+Cambiar la URL de %s por %s.,Cambiar la URL de %s por %s.,Change the URL of %s to %s.
+¿Actualizar «%s» a %s?,¿Actualizar «%s» a %s?,Update «%s» to %s?
+¿Actualizar la URL de %d enlaces a la nueva?,¿Actualizar la URL de %d enlaces a la nueva?,Update the URL of %d links to the new one?
+1 URL actualizada,1 URL actualizada,1 URL updated
+%d URLs actualizadas,%d URLs actualizadas,%d URLs updated

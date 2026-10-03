@@ -24,13 +24,13 @@ const LIMITE_HISTORIAL := 50
 const INTERVALO_VOLCADO := 25
 
 
-func guardar_estado(url: String, valido: Variant, mensaje: String, codigo := 0, intentos := 1, motivo := "") -> bool:
+func guardar_estado(url: String, valido: Variant, mensaje: String, codigo := 0, intentos := 1, motivo := "", url_final := "") -> bool:
 	_asegurar_cargado()
 	var ahora := int(Time.get_unix_time_from_system())
 	var previa: Dictionary = _estados.get(url, {})
 	var hist: Variant = previa.get("historial", [])
 	var historial: Array = hist if typeof(hist) == TYPE_ARRAY else []
-	var nuevo := {"fecha": ahora, "valido": valido, "mensaje": mensaje, "codigo": codigo, "intentos": intentos, "motivo": motivo}
+	var nuevo := {"fecha": ahora, "valido": valido, "mensaje": mensaje, "codigo": codigo, "intentos": intentos, "motivo": motivo, "url_final": url_final}
 	if historial.is_empty() or not _estados_iguales(historial[0], nuevo):
 		historial.push_front(nuevo)
 		if historial.size() > LIMITE_HISTORIAL:
@@ -42,6 +42,7 @@ func guardar_estado(url: String, valido: Variant, mensaje: String, codigo := 0, 
 		"fecha": ahora,
 		"intentos": intentos,
 		"motivo": motivo,
+		"url_final": url_final,
 		"historial": historial,
 	}
 	return true
@@ -63,7 +64,8 @@ func historial_de(url: String) -> Array:
 func _estados_iguales(a: Dictionary, b: Dictionary) -> bool:
 	return a.get("valido") == b.get("valido") \
 		and a.get("mensaje") == b.get("mensaje") \
-		and a.get("codigo") == b.get("codigo")
+		and a.get("codigo") == b.get("codigo") \
+		and str(a.get("url_final", "")) == str(b.get("url_final", ""))
 
 
 func marcar_borrado(url: String) -> bool:

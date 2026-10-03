@@ -26,7 +26,7 @@ func _arrancar() -> void:
 	root.add_child(valido)
 	root.add_child(fresco)
 	await process_frame
-	_check(_menu_completo(caido), "la fila construye el menú con 7 opciones")
+	_check(_menu_completo(caido), "la fila construye el menú con 8 opciones")
 	_check(_menu_completo(valido), "la fila válida también construye el menú")
 
 	var ruta_png := _generar_png_temporal()
@@ -74,7 +74,7 @@ func _arrancar() -> void:
 	var red := _crear_item()
 	red.setup("Nom", "Desc", "https://ejemplo.com/k")
 	red._checker = _checker_falso(3, true, "red")
-	red._on_check_terminado(false, "Sin respuesta (tiempo agotado)")
+	red._on_check_terminado(false, "Sin respuesta (tiempo agotado)", 0, "")
 	root.add_child(red)
 	await process_frame
 	_check(red.valido == null and red.estado == "sin_comprobar_red", "un fallo de red deja el enlace sin comprobar (#54)")
@@ -85,7 +85,7 @@ func _arrancar() -> void:
 	red_caido.setup("Nom", "Desc", "https://ejemplo.com/l")
 	red_caido.configurar_reintentos(true, false)
 	red_caido._checker = _checker_falso(3, true, "red")
-	red_caido._on_check_terminado(false, "Sin respuesta (tiempo agotado)")
+	red_caido._on_check_terminado(false, "Sin respuesta (tiempo agotado)", 0, "")
 	root.add_child(red_caido)
 	await process_frame
 	_check(red_caido.valido == false and red_caido.estado == "caido", "sin la opción de «sin comprobar» el fallo de red marca caído (#54)")
@@ -93,7 +93,7 @@ func _arrancar() -> void:
 	var definitivo := _crear_item()
 	definitivo.setup("Nom", "Desc", "https://ejemplo.com/m")
 	definitivo._checker = _checker_falso(1, false, "muerto")
-	definitivo._on_check_terminado(false, "No existe (404)")
+	definitivo._on_check_terminado(false, "No existe (404)", 404, "")
 	root.add_child(definitivo)
 	await process_frame
 	_check(definitivo.valido == false and definitivo.estado == "caido", "un 404 sigue marcando caído (#54)")
@@ -101,7 +101,7 @@ func _arrancar() -> void:
 	var ok_item := _crear_item()
 	ok_item.setup("Nom", "Desc", "https://ejemplo.com/n")
 	ok_item._checker = _checker_falso(2, true, "red")
-	ok_item._on_check_terminado(true, "OK (200)")
+	ok_item._on_check_terminado(true, "OK (200)", 200, "")
 	root.add_child(ok_item)
 	await process_frame
 	_check(ok_item.valido == true and ok_item.intentos == 2, "un válido tras reintentos se guarda como válido con sus intentos (#54)")
@@ -127,7 +127,7 @@ func _arrancar() -> void:
 	var ok_checker_tls := _crear_item()
 	ok_checker_tls.setup("Nom", "Desc", "https://ejemplo.com/r")
 	ok_checker_tls._checker = _checker_falso(1, false, "tls")
-	ok_checker_tls._on_check_terminado(true, "OK (200)")
+	ok_checker_tls._on_check_terminado(true, "OK (200)", 200, "")
 	root.add_child(ok_checker_tls)
 	await process_frame
 	_check(ok_checker_tls.valido == true and ok_checker_tls.estado == "ok_tls", "el checker con motivo tls pinta la fila con aviso (#56)")
@@ -205,6 +205,7 @@ func _arrancar() -> void:
 
 	var item_reorden := _crear_item()
 	item_reorden.setup("Nom", "Desc", "https://ejemplo.com/reorden")
+
 	var emitido_reorden: Array = []
 	item_reorden.subir_pedido.connect(func() -> void: emitido_reorden.append("subir"))
 	item_reorden.bajar_pedido.connect(func() -> void: emitido_reorden.append("bajar"))
@@ -225,6 +226,8 @@ func _arrancar() -> void:
 	item_reorden.fijar_estado_reorden(false, false)
 	_check(menu_reorden.is_item_disabled(menu_reorden.get_item_index(5)), "fijar_estado_reorden(false,false) deshabilita Subir")
 	_check(menu_reorden.is_item_disabled(menu_reorden.get_item_index(6)), "fijar_estado_reorden(false,false) deshabilita Bajar")
+
+	await _reubicado()
 
 	var cat_cliente := _crear_item()
 	cat_cliente.setup("Nom", "Desc", "https://ejemplo.com/cat1", "", "cliente")
@@ -298,6 +301,54 @@ func _checker_falso(intentos: int, transitorio: bool, motivo: String) -> Node:
 	return checker
 
 
+func _reubicado() -> void:
+	var item := _crear_item()
+	item.setup("Nom", "Desc", "https://ejemplo.com/reub/foto.png")
+	var menu: PopupMenu = item.get_node("%MenuContexto")
+	var marca: Label = item.get_node("%MarcaUrl")
+	root.add_child(item)
+	await process_frame
+
+	var indice := menu.get_item_index(ListItemScript.ID_ACTUALIZAR_URL)
+	_check(menu.is_item_disabled(indice), "sin redirección la opción de actualizar la URL está deshabilitada (#59)")
+	_check(menu.get_item_tooltip(indice) == "No hay una redirección que actualizar.", "sin redirección el menú explica por qué (#59)")
+	_check(marca.text == "" and marca.tooltip_text == "", "sin redirección la fila no muestra la marca de movido (#59)")
+
+	var pedido: Array = []
+	item.actualizar_url_pedido.connect(func() -> void: pedido.append("url"))
+
+	# Un simple https/www no basta para ofrecer la actualización
+	item.aplicar_estado(true, "OK (200)", 200, 1000000000, 1, "", "https://www.ejemplo.com/reub/foto.png")
+	_check(not item.puede_actualizar_url(), "una simple normalización no habilita la actualización (#59)")
+	_check(marca.text == "", "una simple normalización no marca la fila (#59)")
+	_check(menu.is_item_disabled(indice), "una simple normalización deja la opción deshabilitada (#59)")
+	_check("Redirige a:" not in item.tooltip_text, "una simple normalización no añade la línea de redirección (#59)")
+	_check(item.url_final == "https://www.ejemplo.com/reub/foto.png", "la fila guarda la URL final aunque no sea reubicable (#59)")
+
+	# Un destino que no es el mismo archivo no se ofrece
+	item.aplicar_estado(true, "OK (200)", 200, 1000000000, 1, "", "https://otro.test/descarga.zip")
+	_check(not item.puede_actualizar_url(), "un destino distinto no habilita la actualización (#59)")
+	_check(marca.text == "", "un destino distinto no marca la fila (#59)")
+
+	# Con destino reubicable, la fila lo enseña y lo ofrece
+	item.aplicar_estado(true, "OK (200)", 200, 1000000000, 1, "", "https://otro.test/reub/foto.png")
+	_check(item.puede_actualizar_url(), "con destino reubicable la fila sí se puede actualizar (#59)")
+	_check(marca.text == "movido", "con destino reubicable la marca dice movido (#59)")
+	_check(marca.tooltip_text == "Cambiar la URL de https://ejemplo.com/reub/foto.png por https://otro.test/reub/foto.png.", "la marca explica el cambio (#59): %s" % marca.tooltip_text)
+	_check(not menu.is_item_disabled(indice), "con destino la opción se habilita (#59)")
+	_check(menu.get_item_tooltip(indice) == "Redirige a: https://otro.test/reub/foto.png", "el menú enseña el destino (#59): %s" % menu.get_item_tooltip(indice))
+	_check(item.tooltip_text.contains("\nRedirige a: https://otro.test/reub/foto.png"), "el tooltip añade la línea de redirección (#59)")
+	item._on_menu(ListItemScript.ID_ACTUALIZAR_URL)
+	_check(pedido == ["url"], "elegir la opción emite actualizar_url_pedido (#59)")
+
+	# Al perder el destino, todo vuelve a su estado inicial
+	item.aplicar_estado(true, "OK (200)", 200, 1000000000)
+	_check(not item.puede_actualizar_url(), "sin url_final la fila vuelve a no poder actualizarse (#59)")
+	_check(marca.text == "" and marca.tooltip_text == "", "sin url_final la marca se borra (#59)")
+	_check(not item.tooltip_text.contains("Redirige a:"), "sin url_final el tooltip deja de avisar (#59)")
+	_check(menu.is_item_disabled(indice), "sin url_final el menú se vuelve a deshabilitar (#59)")
+
+
 func _menu_completo(item: Control) -> bool:
 	var menu: PopupMenu = item.get_node("%MenuContexto")
 	if menu == null:
@@ -306,9 +357,9 @@ func _menu_completo(item: Control) -> bool:
 	for i in range(menu.get_item_count()):
 		if not menu.is_item_separator(i):
 			opciones += 1
-	if opciones != 7:
+	if opciones != 8:
 		return false
-	for id in [0, 1, 2, 3, 4, 5, 6]:
+	for id in [0, 1, 2, 3, 4, 5, 6, ListItemScript.ID_ACTUALIZAR_URL]:
 		if menu.get_item_index(id) == -1:
 			return false
 	return true

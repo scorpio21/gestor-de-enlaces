@@ -2,6 +2,7 @@ extends RefCounted
 
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const ColaEscaneoScript := preload("res://scripts/cola_escaneo.gd")
+const RedireccionesScript := preload("res://scripts/redirecciones.gd")
 
 
 static func agregar_datos(entradas: Array, estados: Dictionary, dias := 0) -> Dictionary:
@@ -11,6 +12,7 @@ static func agregar_datos(entradas: Array, estados: Dictionary, dias := 0) -> Di
 		"hosts": por_host(entradas, estados, 10),
 		"serie": serie_diaria(entradas, estados, dias),
 		"top": top_caidos(entradas, estados),
+		"reubicados": RedireccionesScript.reubicados_de(entradas, estados),
 		"ultima": ultima_comprobacion(estados),
 		"dias": dias,
 	}
@@ -130,6 +132,7 @@ static func top_caidos(entradas: Array, estados: Dictionary, tope := 8) -> Array
 			"codigo": int(ultima.get("codigo", 0)),
 			"mensaje": str(ultima.get("mensaje", "")),
 			"fecha": int(ultima.get("fecha", 0)),
+			"url_final": str(estado.get("url_final", "")),
 		})
 	lista.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if int(a["veces"]) == int(b["veces"]):
@@ -176,6 +179,12 @@ static func exportar_csv(ruta: String, datos: Dictionary) -> Dictionary:
 			int(t.get("veces", 0)),
 			int(t.get("fecha", 0)),
 		])
+	for r in datos.get("reubicados", []):
+		lineas.append("Reubicado;%s;%s;%d" % [
+			_escape_csv(str(r.get("nombre", ""))),
+			_escape_csv(str(r.get("destino", ""))),
+			int(r.get("fecha", 0)),
+		])
 	for d in datos.get("serie", []):
 		var validos := int(d.get("validos", 0))
 		var caidos := int(d.get("caidos", 0))
@@ -197,7 +206,7 @@ static func exportar_json(ruta: String, datos: Dictionary) -> Dictionary:
 	if fichero == null:
 		return {"ok": false, "total": 0}
 	fichero.store_string(JSON.stringify(datos, "\t"))
-	return {"ok": true, "total": 1 + int(datos.get("categorias", []).size()) + int(datos.get("hosts", []).size()) + int(datos.get("serie", []).size()) + int(datos.get("top", []).size())}
+	return {"ok": true, "total": 1 + int(datos.get("categorias", []).size()) + int(datos.get("hosts", []).size()) + int(datos.get("serie", []).size()) + int(datos.get("top", []).size()) + int(datos.get("reubicados", []).size())}
 
 
 static func _lista_ordenada(grupos: Dictionary, clave_nombre: String, por_rotos: bool) -> Array:

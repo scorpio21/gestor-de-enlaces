@@ -28,7 +28,7 @@ func _arrancar() -> void:
 	root.add_child(valido)
 	root.add_child(pendiente)
 	await process_frame
-	_check(_menu_completo(caido), "la tarjeta construye el menú con 7 opciones")
+	_check(_menu_completo(caido), "la tarjeta construye el menú con 8 opciones")
 	_check(_menu_completo(valido), "la tarjeta válida también construye el menú")
 	_check(caido.valido == false and caido.estado == "caido", "aplicar_estado guarda el estado caído")
 	_check(valido.valido == true and valido.estado == "ok", "aplicar_estado guarda el estado válido")
@@ -92,6 +92,8 @@ func _arrancar() -> void:
 	_check(invalida.get_node("%EstadoLabel").text == "URL inválida", "la tarjeta inválida pinta URL inválida")
 	_check(emitida.size() == 1, "verificar emite verificacion_terminada")
 
+	await _reubicado()
+
 	IdiomaScript.cargar_traducciones()
 	TranslationServer.set_locale("en")
 	var i18n_item := _crear_item()
@@ -104,6 +106,27 @@ func _arrancar() -> void:
 	TranslationServer.set_locale("es")
 
 	_cerrar()
+
+
+func _reubicado() -> void:
+	var item := _crear_item()
+	item.setup("Nom", "Desc", "https://ejemplo.com/reub/foto.png")
+	var menu: PopupMenu = item.get_node("%MenuContexto")
+	root.add_child(item)
+	await process_frame
+	var indice := menu.get_item_index(ListItemScript.ID_ACTUALIZAR_URL)
+
+	_check(menu.is_item_disabled(indice), "sin redirección la tarjeta deja actualizar la URL deshabilitado (#59)")
+	_check(item.get_node_or_null("%MarcaUrl") == null, "la tarjeta no tiene marca de movido, y no se rompe (#59)")
+
+	var pedido: Array = []
+	item.actualizar_url_pedido.connect(func() -> void: pedido.append("url"))
+	item.aplicar_estado(true, "OK (200)", 200, 1000000000, 1, "", "https://otro.test/reub/foto.png")
+	_check(item.puede_actualizar_url(), "la tarjeta también detecta el destino (#59)")
+	_check(not menu.is_item_disabled(indice), "con destino la tarjeta habilita la opción (#59)")
+	_check(item.tooltip_text.contains("Redirige a: https://otro.test/reub/foto.png"), "la tarjeta avisa del destino en el tooltip (#59)")
+	item._on_menu(ListItemScript.ID_ACTUALIZAR_URL)
+	_check(pedido == ["url"], "la tarjeta emite actualizar_url_pedido (#59)")
 
 
 func _crear_item() -> Control:
@@ -120,7 +143,7 @@ func _menu_completo(item: Control) -> bool:
 	for i in range(menu.get_item_count()):
 		if not menu.is_item_separator(i):
 			opciones += 1
-	if opciones != 7:
+	if opciones != 8:
 		return false
 	for id in [0, 1, 2, 3, 4, 5, 6]:
 		if menu.get_item_index(id) == -1:

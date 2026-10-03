@@ -82,7 +82,7 @@ func _comprobar(srv: RefCounted, aceptar: bool, esquema := "https", guion := [{"
 	checker.timeout_s = 5.0
 	checker.aceptar_certificados = aceptar
 	root.add_child(checker)
-	checker.terminado.connect(func(v: bool, m: String) -> void:
+	checker.terminado.connect(func(v: bool, m: String, _c: int, _d: String) -> void:
 		_fin = true
 		_valido = v
 		_mensaje = m

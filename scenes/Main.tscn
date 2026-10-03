@@ -300,6 +300,11 @@ unique_name_in_owner = true
 title = "Eliminar enlace"
 ok_button_text = "Eliminar"
 
+[node name="ConfirmarReubicar" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Actualizar URL"
+ok_button_text = "Actualizar"
+
 [node name="ConfirmarLimpieza" type="ConfirmationDialog" parent="." unique_id=217548021]
 unique_name_in_owner = true
 title = "Limpiar capturas huérfanas"

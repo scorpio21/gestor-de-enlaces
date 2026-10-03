@@ -1,12 +1,13 @@
 extends Node
 
-signal terminado(valido: bool, mensaje: String)
+signal terminado(valido: bool, mensaje: String, codigo: int, url_final: String)
 
 var timeout_s: float = 10.0
 var codigo := 0
 var intentos := 1
 var transitorio := false
 var motivo := MOTIVO_OK
+var url_final := ""
 var reintentar_transitorios := true
 var aceptar_certificados := false
 const MAX_RETRY_AFTER := 10.0
@@ -107,6 +108,7 @@ func comprobar(url: String) -> void:
 	intentos = 1
 	transitorio = false
 	motivo = MOTIVO_OK
+	url_final = ""
 	set_process(true)
 	_conectar(_url)
 
@@ -385,7 +387,8 @@ func _cerrar(mensaje: String, valido: bool, causa := MOTIVO_HTTP) -> void:
 	_activo = false
 	set_process(false)
 	_cliente.close()
-	terminado.emit(valido, mensaje)
+	url_final = _url if _url != _url_inicial else ""
+	terminado.emit(valido, mensaje, codigo, url_final)
 	queue_free()
 
 

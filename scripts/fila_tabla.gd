@@ -11,7 +11,7 @@ signal elegido
 @onready var barra: ProgressBar = %Barra
 
 
-func configurar(texto_nombre: String, a: String, b: String, c: String, color: Color, ratio := -1.0, columna_color := 2) -> void:
+func configurar(texto_nombre: String, a: String, b: String, c: String, color: Color, ratio := -1.0, columna_color := 2, tooltip := "") -> void:
 	nombre.text = texto_nombre
 	nombre.tooltip_text = texto_nombre
 	col_a.text = a
@@ -27,6 +27,7 @@ func configurar(texto_nombre: String, a: String, b: String, c: String, color: Co
 	if ratio >= 0.0:
 		barra.value = clampf(ratio * 100.0, 0.0, 100.0)
 		barra.add_theme_stylebox_override("fill", TemaStoreScript.relleno(color))
+	tooltip_text = texto_nombre if tooltip.is_empty() else tooltip
 
 
 func configurar_columnas(texto_nombre: String, columnas: Array, color: Color, color_columna := 0, anchos := [], alineaciones := []) -> void:
@@ -38,6 +39,8 @@ func configurar_columnas(texto_nombre: String, columnas: Array, color: Color, co
 		etiqueta.text = str(columnas[i])
 		if i < anchos.size() and float(anchos[i]) > 0.0:
 			etiqueta.custom_minimum_size.x = float(anchos[i])
+			etiqueta.clip_text = true
+			etiqueta.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		if i < alineaciones.size():
 			etiqueta.horizontal_alignment = int(alineaciones[i])
 		if i == color_columna:

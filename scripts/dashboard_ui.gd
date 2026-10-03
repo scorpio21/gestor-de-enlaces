@@ -3,6 +3,7 @@ extends Window
 const DashboardStoreScript := preload("res://scripts/dashboard_store.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
+const RedireccionesScript := preload("res://scripts/redirecciones.gd")
 const FILA_SCENE := preload("res://scenes/FilaTabla.tscn")
 const CABECERAS := {
 	"categoria": {"campo": "categoria", "claves": ["nombre", "activos", "rotos", "disponible_pct"]},
@@ -12,6 +13,7 @@ const CABECERAS := {
 
 signal navegar(tipo: String, valor: String)
 signal comprobar_ya
+signal actualizar_urls(urls: Array)
 
 @onready var _cabeceras := {
 	"categoria": %CabeceraCategorias,
@@ -35,6 +37,7 @@ func _ready() -> void:
 	%BotonCsv.pressed.connect(_exportar.bind("csv"))
 	%BotonJson.pressed.connect(_exportar.bind("json"))
 	%BotonComprobar.pressed.connect(_on_comprobar)
+	%BotonReubicar.pressed.connect(_on_actualizar_urls)
 	%Rango.item_selected.connect(_on_rango)
 	%DialogoExportar.file_selected.connect(_on_exportar_elegido)
 	%DialogoExportar.access = FileDialog.ACCESS_FILESYSTEM
@@ -141,6 +144,7 @@ func _recalcular() -> void:
 	_pintar_kpis()
 	_pintar_grupos()
 	_pintar_top()
+	_pintar_reubicados()
 	%Grafico.serie = _datos.get("serie", [])
 	%Grafico.queue_redraw()
 
@@ -206,7 +210,57 @@ func _pintar_top() -> void:
 		fila.pulsable(true)
 		fila.elegido.connect(_on_elegido.bind("enlace", url))
 		fila.configurar(str(t.get("nombre", "")), str(int(t.get("veces", 0))), str(codigo), \
-			_fecha_corta(int(t.get("fecha", 0))), TemaStoreScript.color_estado(false), -1.0, 1)
+			_fecha_corta(int(t.get("fecha", 0))), TemaStoreScript.color_estado(false), -1.0, 1, \
+			_tooltip_redirect(url, str(t.get("url_final", ""))))
+
+
+func _tooltip_redirect(url: String, destino: String) -> String:
+	var lineas := PackedStringArray([url])
+	var aviso := RedireccionesScript.explicar(url, destino)
+	if not aviso.is_empty():
+		lineas.append(aviso)
+	return "\n".join(lineas)
+
+
+func _pintar_reubicados() -> void:
+	for hijo in %ListaReubicados.get_children():
+		%ListaReubicados.remove_child(hijo)
+		hijo.queue_free()
+	var reubicados: Array = _datos.get("reubicados", [])
+	%PanelReubicados.visible = not reubicados.is_empty()
+	for r in reubicados:
+		var url := str(r.get("url", ""))
+		var fila := FILA_SCENE.instantiate()
+		%ListaReubicados.add_child(fila)
+		fila.pulsable(true)
+		fila.elegido.connect(_on_elegido.bind("enlace", url))
+		fila.configurar_columnas(
+			str(r.get("nombre", "")),
+			[
+				_host_de_url(url),
+				_host_de_url(str(r.get("destino", ""))),
+				_fecha_corta(int(r.get("fecha", 0))),
+			],
+			TemaStoreScript.color_estado(null),
+			1,
+			[120, 220, 76],
+			[HORIZONTAL_ALIGNMENT_LEFT, HORIZONTAL_ALIGNMENT_LEFT, HORIZONTAL_ALIGNMENT_RIGHT]
+		)
+		fila.tooltip_text = _tooltip_redirect(url, str(r.get("destino", "")))
+
+
+func _host_de_url(url: String) -> String:
+	return str(url).trim_prefix("https://").trim_prefix("http://").get_slice("/", 0)
+
+
+func _on_actualizar_urls() -> void:
+	var reubicados: Array = _datos.get("reubicados", [])
+	if reubicados.is_empty():
+		return
+	var urls: Array = []
+	for r in reubicados:
+		urls.append(str(r.get("url", "")))
+	actualizar_urls.emit(urls)
 
 
 func _on_elegido(tipo: String, valor: String) -> void:

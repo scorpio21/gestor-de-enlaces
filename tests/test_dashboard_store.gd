@@ -38,6 +38,7 @@ func _arrancar() -> void:
 	_serie(entradas, estados)
 	_rango(entradas, estados)
 	_top(entradas, estados)
+	_reubicados(entradas, estados)
 	_exportacion(entradas, estados)
 	if _fallos == 0:
 		print("TESTS OK")
@@ -127,6 +128,38 @@ func _top(entradas: Array, estados: Dictionary) -> void:
 	_check(ninguno.is_empty(), "sin historial no hay enlaces problemáticos")
 	_check(DashboardStoreScript.ultima_comprobacion(estados) == Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 9, "day": 2, "hour": 10}), "ultima_comprobacion devuelve la marca más reciente")
 	_check(DashboardStoreScript.ultima_comprobacion({}) == 0, "sin historial no hay última comprobación")
+
+
+func _reubicados(entradas: Array, estados: Dictionary) -> void:
+	var con_destino := estados.duplicate(true)
+	con_destino["mediafire.com/a"] = {
+		"valido": true, "fecha": 100, "url_final": "https://mirror.com/a.zip",
+		"historial": [{"fecha": 100, "valido": true, "mensaje": "OK", "codigo": 200}],
+	}
+	con_destino["mediafire.com/d"] = {
+		"valido": true, "fecha": 200, "url_final": "https://mediafire.com/d",
+		"historial": [{"fecha": 200, "valido": true, "mensaje": "OK", "codigo": 200}],
+	}
+	var lista: Array = DashboardStoreScript.agregar_datos(entradas, con_destino).get("reubicados", [])
+	_check(lista.size() == 1, "el bloque de reubicados solo lista los destinos que se pueden actualizar")
+	_check(str(lista[0].get("nombre")) == "A" and str(lista[0].get("destino")) == "https://mirror.com/a.zip", "reubicados trae nombre y destino")
+	_check(DashboardStoreScript.agregar_datos(entradas, estados).get("reubicados", []).is_empty(), "sin url_final no hay reubicados")
+
+	var con_normalizada: Dictionary = estados.duplicate(true)
+	con_normalizada["mega.nz/b"] = {"valido": false, "fecha": 5, "url_final": "https://www.mega.nz/b"}
+	_check(DashboardStoreScript.agregar_datos(entradas, con_normalizada).get("reubicados", []).is_empty(), "un simple https/www no cuenta como reubicado (#59)")
+
+	_dir_csv(entradas, con_destino)
+
+
+func _dir_csv(entradas: Array, estados: Dictionary) -> void:
+	DirAccess.make_dir_recursive_absolute(BASE)
+	var datos: Dictionary = DashboardStoreScript.agregar_datos(entradas, estados)
+	var ruta := BASE + "/reubicados.csv"
+	_check(DashboardStoreScript.exportar_csv(ruta, datos).get("ok") == true, "exportar_csv escribe también con reubicados")
+	var contenido := FileAccess.get_file_as_string(ruta)
+	_check(contenido.contains("Reubicado;A;https://mirror.com/a.zip;100"), "el CSV incluye el bloque de reubicados (#59)")
+	DirAccess.remove_absolute(BASE)
 
 
 func _exportacion(entradas: Array, estados: Dictionary) -> void:

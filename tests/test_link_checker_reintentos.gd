@@ -168,7 +168,7 @@ func _comprobar(guion: Array, timeout := 10.0, reintentar := true, limite_ms := 
 	checker.timeout_s = timeout
 	checker.reintentar_transitorios = reintentar
 	root.add_child(checker)
-	checker.terminado.connect(func(v: bool, m: String) -> void:
+	checker.terminado.connect(func(v: bool, m: String, _c: int, _d: String) -> void:
 		_emitidas += 1
 		_fin = true
 		_valido = v

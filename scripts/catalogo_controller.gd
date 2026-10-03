@@ -155,6 +155,17 @@ func editar(entradas: Array, estados: Dictionary, borrados: Array, datos: Dictio
 	}
 
 
+func actualizar_url(entradas: Array, estados: Dictionary, borrados: Array, url_original: String, url_nueva: String) -> Dictionary:
+	var entrada := buscar_entrada(entradas, url_original)
+	if entrada.is_empty():
+		return {"ok": false, "mensaje": tr("No se encontró el enlace.")}
+	if url_nueva.is_empty() or url_nueva == url_original:
+		return {"ok": false, "mensaje": tr("La URL nueva es la misma.")}
+	var copia: Dictionary = entrada.duplicate(true)
+	copia["url"] = url_nueva
+	return editar(entradas, estados, borrados, copia, url_original, "")
+
+
 func eliminar(entradas: Array, url: String) -> Dictionary:
 	var clave := GestorCatalogoScript.clave_unica(url)
 	var img := ""

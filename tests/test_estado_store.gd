@@ -42,6 +42,13 @@ func _initialize() -> void:
 	_check(intentos_no_ensucian_historial(), "cambiar solo los intentos no añade entrada al historial (#54)")
 	_check(volcado_conserva_tri_estado(), "tras volcar() el fallo de red sigue siendo null (#54)")
 	_limpiar()
+	_check(guarda_url_final(), "guardar_estado() guarda la URL final de la redirección (#59)")
+	_check(url_final_por_defecto_vacia(), "guardar_estado() sin redirección deja la URL final vacía (#59)")
+	_check(url_final_no_ensucia_historial(), "repetir el mismo destino no añade entrada al historial (#59)")
+	_check(url_final_cambia_registra_historial(), "cambiar solo el destino sí se apunta en el historial (#59)")
+	_check(url_final_en_historial(), "la entrada del historial guarda su propia URL final (#59)")
+	_check(url_final_sobrevive_al_volcado(), "tras volcar() la URL final sigue ahí (#59)")
+	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -224,6 +231,51 @@ func intentos_no_ensucian_historial() -> bool:
 	store.guardar_estado("https://red.com/c", null, "Sin respuesta", 0, 3, "red")
 	var e: Dictionary = store.cargar()["estados"].get("https://red.com/c", {})
 	return int(e.get("historial", []).size()) == 1 and int(e.get("intentos", 0)) == 3
+
+
+func guarda_url_final() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://viejo.com/a.png", true, "OK (200)", 200, 1, "ok", "https://nuevo.com/a.png")
+	var e: Dictionary = store.cargar()["estados"].get("https://viejo.com/a.png", {})
+	return str(e.get("url_final", "")) == "https://nuevo.com/a.png"
+
+
+func url_final_por_defecto_vacia() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://plano.com/a.png", true, "OK (200)", 200)
+	var e: Dictionary = store.cargar()["estados"].get("https://plano.com/a.png", {})
+	return e.has("url_final") and str(e.get("url_final", "")) == ""
+
+
+func url_final_no_ensucia_historial() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://igual.com/a.png", true, "OK (200)", 200, 1, "ok", "https://nuevo.com/a.png")
+	store.guardar_estado("https://igual.com/a.png", true, "OK (200)", 200, 1, "ok", "https://nuevo.com/a.png")
+	var e: Dictionary = store.cargar()["estados"].get("https://igual.com/a.png", {})
+	return int(e.get("historial", []).size()) == 1
+
+
+func url_final_cambia_registra_historial() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://mueve.com/a.png", true, "OK (200)", 200, 1, "ok", "https://nuevo.com/a.png")
+	store.guardar_estado("https://mueve.com/a.png", true, "OK (200)", 200, 1, "ok", "https://otro.com/a.png")
+	var e: Dictionary = store.cargar()["estados"].get("https://mueve.com/a.png", {})
+	return int(e.get("historial", []).size()) == 2
+
+
+func url_final_en_historial() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://hist.com/a.png", true, "OK (200)", 200, 1, "ok", "https://nuevo.com/a.png")
+	var h: Array = store.historial_de("https://hist.com/a.png")
+	return h.size() == 1 and str(h[0].get("url_final", "")) == "https://nuevo.com/a.png"
+
+
+func url_final_sobrevive_al_volcado() -> bool:
+	var store := EstadoStore.new(BASE)
+	store.guardar_estado("https://volcado.com/a.png", true, "OK (200)", 200, 1, "ok", "https://nuevo.com/a.png")
+	store.volcar()
+	var e: Dictionary = EstadoStore.new(BASE).cargar()["estados"].get("https://volcado.com/a.png", {})
+	return str(e.get("url_final", "")) == "https://nuevo.com/a.png"
 
 
 func volcado_conserva_tri_estado() -> bool:

@@ -16,6 +16,7 @@ func _initialize() -> void:
 	_editar()
 	_editar_url()
 	_editar_imagen()
+	_actualizar_url()
 	_eliminar()
 	_capturas()
 	_limpiar()
@@ -173,6 +174,35 @@ func _editar_url() -> void:
 
 	res = _cat.editar(repetida, {}, [], {"nombre": "A2", "url": "http://a.test/otra-ruta"}, "http://a.test", ASSETS)
 	_check(res.get("ok", false), "editar a una variante canonica de la misma URL se permite")
+
+
+func _actualizar_url() -> void:
+	var captura := _crear_captura("img_reub.png")
+	var entradas: Array = [_entrada("Foto", "https://viejo.test/foto.png", captura, "cliente")]
+	var estados := {"viejo.test/foto.png": {"valido": true, "url_final": "https://nuevo.test/foto.png"}}
+	var borrados := ["viejo.test/foto.png"]
+
+	var res: Dictionary = _cat.actualizar_url(entradas, estados, borrados, "https://viejo.test/foto.png", "https://nuevo.test/foto.png")
+	_check(res.get("ok", false), "actualizar_url cambia la URL al destino de la redireccion (#59)")
+	_check(str(entradas[0].get("url")) == "https://nuevo.test/foto.png", "actualizar_url guarda la URL nueva en la entrada (#59)")
+	_check(str(entradas[0].get("nombre")) == "Foto", "actualizar_url no toca el nombre del enlace (#59)")
+	_check(str(entradas[0].get("cat")) == "cliente" and entradas[0].get("tags") == [], "actualizar_url conserva categoria y etiquetas (#59)")
+	_check(str(entradas[0].get("img")) == captura, "actualizar_url conserva la captura (#59)")
+	_check(FileAccess.file_exists(ProjectSettings.globalize_path(captura)), "actualizar_url no borra la captura del enlace (#59)")
+	_check(res.get("renombrar", []) == ["viejo.test/foto.png", "nuevo.test/foto.png"], "actualizar_url devuelve las claves a renombrar (#59)")
+	_check(estados.has("nuevo.test/foto.png") and not estados.has("viejo.test/foto.png"), "actualizar_url mueve el estado a la clave nueva (#59)")
+	_check(borrados == ["nuevo.test/foto.png"], "actualizar_url renombra tambien los borrados (#59)")
+
+	var res2: Dictionary = _cat.actualizar_url(entradas, {}, [], "https://nada.test/x.png", "https://otro.test/x.png")
+	_check(not res2.get("ok", true), "actualizar_url de una URL que no esta falla (#59)")
+	_check(str(res2.get("mensaje", "")) == "No se encontró el enlace.", "actualizar_url de una URL que no esta lo explica (#59)")
+
+	var res3: Dictionary = _cat.actualizar_url(entradas, {}, [], "https://nuevo.test/foto.png", "https://nuevo.test/foto.png")
+	_check(not res3.get("ok", true), "actualizar_url a la misma URL no hace nada (#59)")
+	_check(str(res3.get("mensaje", "")) == "La URL nueva es la misma.", "actualizar_url a la misma URL lo explica (#59)")
+
+	var res4: Dictionary = _cat.actualizar_url(entradas, {}, [], "https://nuevo.test/foto.png", "")
+	_check(not res4.get("ok", true), "actualizar_url sin destino no hace nada (#59)")
 
 
 func _editar_imagen() -> void:

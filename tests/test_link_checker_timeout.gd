@@ -18,6 +18,8 @@ var _evidencia := ""
 var _intentos := 1
 var _transitorio := false
 var _motivo := ""
+var _codigo := 0
+var _url_final := ""
 
 
 func _initialize() -> void:
@@ -103,7 +105,7 @@ func _arrancar() -> void:
 	_emitido_1 = false
 	_valido_1 = true
 	_mensaje_1 = ""
-	c1.terminado.connect(func(v: bool, m: String) -> void:
+	c1.terminado.connect(func(v: bool, m: String, _c: int, _d: String) -> void:
 		_emitido_1 = true
 		_valido_1 = v
 		_mensaje_1 = m)
@@ -112,7 +114,7 @@ func _arrancar() -> void:
 
 	var c2 := LinkChecker.new()
 	_emitido_2 = false
-	c2.terminado.connect(func(v: bool, _m: String) -> void:
+	c2.terminado.connect(func(v: bool, _m: String, _c: int, _d: String) -> void:
 		_emitido_2 = true)
 	c2.comprobar("gopher://x")
 	_check(_emitido_2 and not c2._activo, "comprobar('gopher://x') emite terminado sin red")
@@ -146,6 +148,7 @@ func _red() -> void:
 	_check(bool(r2.get("valido", false)) and str(r2.get("mensaje", "")) == "OK (200)", "un 200 normal se da por válido")
 	var peticiones: PackedStringArray = r2.get("peticiones", PackedStringArray())
 	_check(peticiones.size() == 1 and peticiones[0].to_lower().contains("range: bytes=0-65535"), "la petición pide solo los primeros 64 KB con Range (#53)")
+	_check(str(r2.get("url_final", "")).is_empty(), "sin redirecciones no hay URL final que proponer (#59)")
 
 	# 206 (respuesta parcial) se reporta como 200
 	var r3: Dictionary = await _comprobar([{
@@ -197,6 +200,25 @@ func _red() -> void:
 	var r9: Dictionary = await _comprobar([{"estado": "404 Not Found", "cuerpo": "nada", "espera": 30}])
 	_check(not bool(r9.get("valido", true)) and str(r9.get("mensaje", "")) == "No existe (404)", "un 404 se decide por el código sin esperar al cuerpo")
 
+	# Cadena de redirecciones: la URL final que se guarda (#59)
+	var base := "http://127.0.0.1:%d" % int(_srv.puerto)
+	var r10: Dictionary = await _comprobar([
+		{"estado": "301 Moved Permanently", "cuerpo": "", "extra": "Location: /viejo/foto.png\r\n"},
+		{"estado": "302 Found", "cuerpo": "", "extra": "Location: /nuevo/foto.png\r\n"},
+		{"estado": "200 OK", "cuerpo": "<html>hola</html>"},
+	])
+	_check(bool(r10.get("valido", false)) and int(r10.get("codigo", 0)) == 200, "una cadena de 301 y 302 termina en el 200 del destino")
+	_check(str(r10.get("url_final", "")) == "%s/nuevo/foto.png" % base, "la URL final es el último destino, no el de partida (#59)")
+	var pet10: PackedStringArray = r10.get("peticiones", PackedStringArray())
+	_check(pet10.size() == 3 and pet10[2].contains("GET /nuevo/foto.png"), "sigue la redirección hasta el final (#59)")
+
+	var r11: Dictionary = await _comprobar([
+		{"estado": "301 Moved Permanently", "cuerpo": "", "extra": "Location: /otro/foto.png\r\n"},
+		{"estado": "410 Gone", "cuerpo": "nada"},
+	])
+	_check(not bool(r11.get("valido", true)), "un enlace reubicado que además está caído se marca caído (#59)")
+	_check(str(r11.get("url_final", "")) == "%s/otro/foto.png" % base, "también se guarda el destino cuando el final es un error (#59)")
+
 
 func _comprobar(guion: Array, timeout := 10.0, reintentar := false) -> Dictionary:
 	_srv.preparar(guion)
@@ -208,15 +230,19 @@ func _comprobar(guion: Array, timeout := 10.0, reintentar := false) -> Dictionar
 	_intentos = 1
 	_transitorio = false
 	_motivo = ""
+	_codigo = 0
+	_url_final = ""
 
 	var checker := LinkChecker.new()
 	checker.timeout_s = timeout
 	checker.reintentar_transitorios = reintentar
 	root.add_child(checker)
-	checker.terminado.connect(func(v: bool, m: String) -> void:
+	checker.terminado.connect(func(v: bool, m: String, c: int, d: String) -> void:
 		_fin = true
 		_valido = v
 		_mensaje = m
+		_codigo = c
+		_url_final = d
 		_leidos = checker._leidos
 		_evidencia = checker._cuerpo
 		_intentos = int(checker.intentos)
@@ -240,6 +266,8 @@ func _comprobar(guion: Array, timeout := 10.0, reintentar := false) -> Dictionar
 		"intentos": _intentos,
 		"transitorio": _transitorio,
 		"motivo": _motivo,
+		"codigo": _codigo,
+		"url_final": _url_final,
 	}
 	if is_instance_valid(checker):
 		if checker.get_parent() != null:

@@ -1,6 +1,7 @@
 extends Window
 
 const ListItemScript := preload("res://scripts/list_item.gd")
+const RedireccionesScript := preload("res://scripts/redirecciones.gd")
 
 @onready var lista_historial: VBoxContainer = %ListaHistorial
 @onready var aviso_vacio: Label = %AvisoVacio
@@ -10,7 +11,7 @@ func _ready() -> void:
 	close_requested.connect(hide)
 
 
-func abrir(entradas: Array) -> void:
+func abrir(entradas: Array, url := "") -> void:
 	for hijo in lista_historial.get_children():
 		hijo.queue_free()
 	var filas := 0
@@ -21,6 +22,9 @@ func abrir(entradas: Array) -> void:
 		var detalle := ListItemScript.formatear_mensaje(str(e.get("mensaje", "")), int(e.get("codigo", 0)))
 		if intentos > 1:
 			detalle += " " + tr("(%d intentos)") % intentos
+		var aviso := RedireccionesScript.explicar(url, str(e.get("url_final", "")))
+		if not aviso.is_empty():
+			detalle += " · " + aviso
 		var fila := Label.new()
 		fila.text = tr("%s — %s — %s") % [
 			ListItemScript.formatear_fecha(int(e.get("fecha", 0))),

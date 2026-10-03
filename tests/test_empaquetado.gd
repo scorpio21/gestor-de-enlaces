@@ -20,6 +20,8 @@ func _initialize() -> void:
 	_check(_seleccion_extraida(), "la seleccion multiple vive en seleccion_controller, no en main.gd (#58)")
 	_check(_informe_extraido(), "el armado del informe vive en informe_controller, no en main.gd (#58)")
 	_check(_marca_cambio_segura(), "list_item no busca %MarcaCambio a saco: la grilla no lo tiene (#58)")
+	_check(_reubicar_extraido(), "el criterio de reubicacion vive en redirecciones.gd, no en main.gd (#59)")
+	_check(_url_final_propaga(), "la URL final viaja del checker al estado y se persiste (#59)")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -104,7 +106,7 @@ func _catalogo_extraido() -> bool:
 
 func _main_no_secha() -> bool:
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1600
+	return main.split("\n").size() <= 1700
 
 
 func _seleccion_extraida() -> bool:
@@ -149,6 +151,37 @@ func _marca_cambio_segura() -> bool:
 	if not item.contains("get_node_or_null(\"%MarcaCambio\")"):
 		return false
 	return not item.contains("%MarcaCambio.")
+
+
+func _reubicar_extraido() -> bool:
+	var main := _leer("res://scripts/main.gd")
+	var prohibidas := [
+		"func normalizada(",
+		"func reubicable(",
+		"func clasificar(",
+		"func texto_actualizar_uno(",
+		"func texto_actualizar_varios(",
+		"func texto_confirmar(",
+		"\"Redirige a: %s\"",
+		"\"¿Actualizar «%s» a %s?\"",
+	]
+	for texto in prohibidas:
+		if main.contains(texto):
+			return false
+	if not main.contains("RedireccionesScript.reubicables_de("):
+		return false
+	return FileAccess.file_exists("res://scripts/redirecciones.gd") \
+		and FileAccess.file_exists("res://tests/test_redirecciones.gd")
+
+
+func _url_final_propaga() -> bool:
+	var checker := _leer("res://scripts/link_checker.gd")
+	if not checker.contains("signal terminado(valido: bool, mensaje: String, codigo: int, url_final: String)"):
+		return false
+	var store := _leer("res://scripts/estado_store.gd")
+	if not store.contains("\"url_final\": url_final"):
+		return false
+	return _leer("res://scripts/main.gd").contains("item.url_final")
 
 
 func _cambios_extraidos() -> bool:

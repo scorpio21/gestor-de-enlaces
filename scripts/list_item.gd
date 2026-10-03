@@ -10,6 +10,7 @@ signal subir_pedido
 signal bajar_pedido
 signal menu_solicitado
 signal seleccion_pedido(url: String, alternar: bool, rango: bool)
+signal actualizar_url_pedido
 
 var mensaje: String = ""
 var codigo := 0
@@ -20,7 +21,9 @@ const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const RutasScript := preload("res://scripts/rutas.gd")
 const CacheTexturasScript := preload("res://scripts/cache_texturas.gd")
+const RedireccionesScript := preload("res://scripts/redirecciones.gd")
 const PLACEHOLDER := preload("res://Assets/png/no-disponible.png")
+const ID_ACTUALIZAR_URL := 7
 
 var url: String = ""
 var nombre := ""
@@ -32,6 +35,7 @@ var tags: Array = []
 var en_escaneo := false
 var intentos := 1
 var motivo := ""
+var url_final := ""
 var seleccionado := false
 
 var _checker: Node = null
@@ -45,6 +49,7 @@ var _abrir_al_presionar := true
 func _ready() -> void:
 	var menu: PopupMenu = %MenuContexto
 	menu.add_item(tr("Editar…"), 0)
+	menu.add_item(tr("Actualizar URL a la nueva"), ID_ACTUALIZAR_URL)
 	menu.add_separator()
 	menu.add_item(tr("Subir"), 5)
 	menu.add_item(tr("Bajar"), 6)
@@ -55,6 +60,7 @@ func _ready() -> void:
 	menu.add_item(tr("Eliminar"), 4)
 	menu.id_pressed.connect(_on_menu)
 	gui_input.connect(_on_gui_input)
+	_pintar_menu_reubicar()
 
 
 func setup(nombre: String, descripcion: String, enlace: String, imagen := "", categoria := "") -> void:
@@ -80,19 +86,23 @@ func setup(nombre: String, descripcion: String, enlace: String, imagen := "", ca
 	%CategoriaLabel.text = GestorCatalogoScript.new().categoria_display(self.categoria)
 	var textura := CacheTexturasScript.textura(RutasScript.resolver(imagen))
 	%Imagen.texture = textura if textura != null else PLACEHOLDER
+	url_final = ""
+	_pintar_reubicado()
+	_pintar_menu_reubicar()
 
 
 func reutilizable() -> bool:
 	return _checker == null and not en_escaneo
 
 
-func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva := 0, intentos_nuevos := 1, motivo_nuevo := "") -> void:
+func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva := 0, intentos_nuevos := 1, motivo_nuevo := "", url_final_nuevo := "") -> void:
 	valido = ok
 	mensaje = texto
 	codigo = codigo_nuevo
 	fecha = fecha_nueva
 	intentos = intentos_nuevos
 	motivo = motivo_nuevo
+	url_final = url_final_nuevo
 	_pintar_fecha()
 	if ok == true:
 		estado = "ok_tls" if _es_aviso_tls() else "ok"
@@ -103,6 +113,8 @@ func aplicar_estado(ok: Variant, texto: String, codigo_nuevo := 0, fecha_nueva :
 	else:
 		estado = "pendiente"
 		_pintar_estado(_texto_estado(tr("Sin comprobar"), intentos), "sin_comprobar")
+	_pintar_reubicado()
+	_pintar_menu_reubicar()
 	_actualizar_tooltip()
 
 
@@ -189,6 +201,9 @@ func seleccionar(activo: bool) -> void:
 func _actualizar_tooltip() -> void:
 	if valido == null:
 		tooltip_text = url + "\n" + tr("Sin comprobar")
+		var ayuda := RedireccionesScript.explicar(url, url_final)
+		if not ayuda.is_empty():
+			tooltip_text += "\n" + ayuda
 		if seleccionado:
 			tooltip_text += "\n" + tr("Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.")
 		return
@@ -199,9 +214,40 @@ func _actualizar_tooltip() -> void:
 	lineas.append(formatear_mensaje(mensaje, codigo))
 	if _es_aviso_tls():
 		lineas.append(tr("Certificado no válido (aceptado por preferencia)"))
+	var aviso := RedireccionesScript.explicar(url, url_final)
+	if not aviso.is_empty():
+		lineas.append(aviso)
 	if seleccionado:
 		lineas.append(tr("Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina."))
 	tooltip_text = "\n".join(lineas)
+
+
+func puede_actualizar_url() -> bool:
+	return RedireccionesScript.reubicable(url, url_final)
+
+
+func _pintar_reubicado() -> void:
+	var marca := get_node_or_null("%MarcaUrl")
+	if marca == null:
+		return
+	if not puede_actualizar_url():
+		marca.text = ""
+		marca.tooltip_text = ""
+		return
+	marca.text = tr("movido")
+	marca.tooltip_text = RedireccionesScript.aviso_destino(url, url_final)
+	TemaStoreScript.marcar(marca, "aviso")
+
+
+func _pintar_menu_reubicar() -> void:
+	var menu: PopupMenu = %MenuContexto
+	if menu.get_item_count() == 0:
+		return
+	var indice := menu.get_item_index(ID_ACTUALIZAR_URL)
+	if indice == -1:
+		return
+	menu.set_item_disabled(indice, not puede_actualizar_url())
+	menu.set_item_tooltip(indice, RedireccionesScript.explicar(url, url_final) if puede_actualizar_url() else tr("No hay una redirección que actualizar."))
 
 
 func configurar_timeout(segundos: float) -> void:
@@ -238,6 +284,7 @@ func verificar() -> void:
 
 	estado = "comprobando"
 	_pintar_estado(tr("Comprobando…"), "comprobando")
+	url_final = ""
 	_checker = LinkCheckerScript.new()
 	add_child(_checker)
 	_checker.terminado.connect(_on_check_terminado)
@@ -247,8 +294,8 @@ func verificar() -> void:
 	_checker.comprobar(url)
 
 
-func _on_check_terminado(ok: bool, texto: String) -> void:
-	codigo = _checker.codigo
+func _on_check_terminado(ok: bool, texto: String, codigo_nuevo: int, destino: String) -> void:
+	codigo = codigo_nuevo
 	fecha = int(Time.get_unix_time_from_system())
 	_pintar_fecha()
 	var fallo_red: bool = not ok and bool(_checker.transitorio)
@@ -256,6 +303,7 @@ func _on_check_terminado(ok: bool, texto: String) -> void:
 	motivo = str(_checker.motivo)
 	_checker = null
 	mensaje = texto
+	url_final = destino
 	if fallo_red and _red_sin_comprobar:
 		estado = "sin_comprobar_red"
 		valido = null
@@ -268,6 +316,8 @@ func _on_check_terminado(ok: bool, texto: String) -> void:
 		valido = false
 		estado = "caido"
 		_pintar_estado(_texto_estado(texto, intentos), "caido")
+	_pintar_reubicado()
+	_pintar_menu_reubicar()
 	_actualizar_tooltip()
 	verificacion_terminada.emit()
 
@@ -353,6 +403,8 @@ func _on_menu(id: int) -> void:
 			subir_pedido.emit()
 		6:
 			bajar_pedido.emit()
+		ID_ACTUALIZAR_URL:
+			actualizar_url_pedido.emit()
 
 
 func _pintar_fecha() -> void:

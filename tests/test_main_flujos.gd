@@ -364,8 +364,106 @@ func _arrancar() -> void:
 	var estados: Dictionary = EstadoStoreScript.new("user://__test_main_flujos__").cargar()["estados"]
 	_check(estados.size() == enlaces, "tras el escaneo los %d estados quedan en el fichero (#51)" % enlaces)
 	_check(int(estados.get("e7.test", {}).get("codigo", -1)) == 200, "el estado volcado conserva el código (#51)")
+	await _reubicar(main, main_script)
 	Ayuda.borrar_arbol("user://__test_main_flujos__")
 	_cerrar()
+
+
+func _reubicar(main: Node, main_script) -> void:
+	var dir := "user://__test_reubicar__"
+	Ayuda.borrar_arbol(dir)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	main_script._estado_store = EstadoStoreScript.new(dir)
+	main_script._persistir = false
+	main_script._estados = {}
+	main_script._entradas = [
+		{"nombre": "Foto", "desc": "d", "url": "https://viejo.test/foto.png", "img": "", "cat": "cliente", "tags": ["x"]},
+		{"nombre": "Otro", "desc": "", "url": "https://plano.test/pagina.html", "img": "", "cat": "otro"},
+	]
+	main_script._ui_refrescar()
+	await process_frame
+
+	# Sin redirección: la acción no se ofrece
+	var fila_plana = _fila(main, "https://plano.test/pagina.html")
+	_check(fila_plana != null and not fila_plana.puede_actualizar_url(), "una fila sin redirección no se puede actualizar (#59)")
+	fila_plana._on_menu(7)
+	await process_frame
+	_check(not main.get_node("%ConfirmarReubicar").visible, "sin destino no se abre el diálogo de actualizar URL (#59)")
+	_check(main_script._reubicar_pendientes.is_empty(), "sin destino no queda nada pendiente de actualizar (#59)")
+
+	# Con redirección: el diálogo nombra el enlace y el destino
+	main_script._estados = {
+		"viejo.test/foto.png": {
+			"valido": true, "mensaje": "OK (200)", "codigo": 200, "fecha": 100,
+			"url_final": "https://nuevo.test/foto.png",
+		},
+		"plano.test/pagina.html": {"valido": true, "mensaje": "OK (200)", "codigo": 200, "fecha": 100},
+	}
+	main_script._ui_refrescar()
+	await process_frame
+	var fila = _fila(main, "https://viejo.test/foto.png")
+	_check(fila != null and fila.puede_actualizar_url(), "una fila con destino utilizable sí se puede actualizar (#59)")
+	if fila != null:
+		_check(fila.get_node("%MarcaUrl").text == "movido", "la fila marca el enlace reubicado (#59)")
+		_check(fila.get_node("%MarcaUrl").tooltip_text.contains("https://nuevo.test/foto.png"), "la marca explica cuál es el destino (#59)")
+		_check(fila.tooltip_text.contains("Redirige a: https://nuevo.test/foto.png"), "el tooltip de la fila dice a dónde redirige (#59)")
+		var menu: PopupMenu = fila.get_node("%MenuContexto")
+		_check(menu.get_item_text(menu.get_item_index(7)) == "Actualizar URL a la nueva", "el menú ofrece actualizar la URL (#59)")
+		_check(not menu.is_item_disabled(menu.get_item_index(7)), "con destino el menú está habilitado (#59)")
+		fila._on_menu(7)
+		await process_frame
+		_check(main.get_node("%ConfirmarReubicar").visible, "pedir actualizar la URL abre el diálogo (#59)")
+		_check(
+			str(main.get_node("%ConfirmarReubicar").dialog_text) == "¿Actualizar «Foto» a https://nuevo.test/foto.png?",
+			"el diálogo nombra el enlace y el destino (#59): %s" % str(main.get_node("%ConfirmarReubicar").dialog_text)
+		)
+
+		# Cancelar no cambia nada
+		main_script._ui_cancelar_reubicar()
+		main.get_node("%ConfirmarReubicar").hide()
+		_check(str(main_script._entradas[0].get("url")) == "https://viejo.test/foto.png", "cancelar no cambia la URL del catálogo (#59)")
+		_check(main_script._reubicar_pendientes.is_empty(), "cancelar vacía la lista de pendientes (#59)")
+
+		# Confirmar actualiza de verdad
+		main_script._ui_pedir_reubicar(["https://viejo.test/foto.png"])
+		main_script._ui_confirmar_reubicar()
+		await process_frame
+		_check(str(main_script._entradas[0].get("url")) == "https://nuevo.test/foto.png", "confirmar guarda la URL nueva en el catálogo (#59)")
+		_check(str(main_script._entradas[0].get("nombre")) == "Foto", "confirmar no renombra el enlace (#59)")
+		_check(main_script._entradas[0].get("tags") == ["x"], "confirmar conserva las etiquetas (#59)")
+		_check(main_script._estados.has("nuevo.test/foto.png") and not main_script._estados.has("viejo.test/foto.png"), "confirmar traslada el estado a la clave nueva (#59)")
+		_check(str(main_script._estados.get("nuevo.test/foto.png", {}).get("valido", "")) == "true", "confirmar conserva el estado al trasladarlo (#59)")
+		_check(str(main_script._estados.get("nuevo.test/foto.png", {}).get("url_final", "x")) == "", "tras actualizar no queda una redirección pendiente (#59)")
+		_check(main.get_node("%Progreso").text == "1 URL actualizada", "confirmar informa en la barra (#59): %s" % main.get_node("%Progreso").text)
+
+	# Actualización en lote desde el dashboard
+	main_script._estados = {
+		"nuevo.test/foto.png": {"valido": true, "url_final": "https://final.test/foto.png"},
+		"plano.test/pagina.html": {"valido": true, "url_final": "https://final.test/otra.html"},
+		"viejo.test/guia.html": {"valido": true, "url_final": "https://final.test/login.html"},
+	}
+	main_script._ui_pedir_reubicar_lote(["https://nuevo.test/foto.png", "https://plano.test/pagina.html", "https://nieva.test/x.png"])
+	_check(main_script._reubicar_pendientes == ["https://nuevo.test/foto.png", "https://plano.test/pagina.html"], "el lote filtra lo que no se puede actualizar (#59)")
+	_check(str(main.get_node("%ConfirmarReubicar").dialog_text) == "¿Actualizar la URL de 2 enlaces a la nueva?", "el lote avisa del número de enlaces (#59)")
+	main_script._ui_confirmar_reubicar()
+	await process_frame
+	_check(str(main_script._entradas[0].get("url")) == "https://final.test/foto.png", "el lote actualiza el primer enlace (#59)")
+	_check(str(main_script._entradas[1].get("url")) == "https://final.test/otra.html", "el lote actualiza el segundo enlace (#59)")
+	_check(main.get_node("%Progreso").text == "2 URLs actualizadas", "el lote informa de cuántos se actualizaron (#59)")
+
+	# Una página de login no se ofrece como reubicación
+	main_script._estados = {"viejo.test/guia.html": {"valido": true, "url_final": "https://final.test/login.html"}}
+	main_script._ui_pedir_reubicar(["https://viejo.test/guia.html"])
+	_check(main_script._reubicar_pendientes.is_empty(), "un destino de login no se ofrece (#59)")
+	main_script._reubicar_pendientes = []
+	Ayuda.borrar_arbol(dir)
+
+
+func _fila(main: Node, url: String):
+	for hijo in main.get_node("%ListaContenedor").get_children():
+		if hijo.url == url:
+			return hijo
+	return null
 
 
 func _instancias(main_script) -> int:

@@ -5,7 +5,7 @@ class _FakeStore extends RefCounted:
 		return true
 	func cargar() -> Dictionary:
 		return {"estados": {}}
-	func guardar_estado(_clave: String, _valido, _mensaje: String, _codigo: int, _intentos: int, _motivo: String) -> void:
+	func guardar_estado(_clave: String, _valido, _mensaje: String, _codigo: int, _intentos: int, _motivo: String, _url_final: String) -> void:
 		pass
 	func borrar_estado(_clave: String) -> bool:
 		return true
