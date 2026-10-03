@@ -24,6 +24,7 @@ signal actualizar_urls(urls: Array)
 var _datos := {}
 var _entradas: Array = []
 var _estados: Dictionary = {}
+var _instantaneas: Array = []
 var _formato := ""
 var _rango := 0
 var _orden := {"categoria": "", "host": "", "top": ""}
@@ -113,9 +114,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		hide()
 
 
-func abrir(entradas: Array, estados: Dictionary) -> void:
+func abrir(entradas: Array, estados: Dictionary, instantaneas := []) -> void:
 	_entradas = entradas
 	_estados = estados
+	_instantaneas = instantaneas
 	_recalcular()
 	popup_centered()
 
@@ -123,6 +125,7 @@ func abrir(entradas: Array, estados: Dictionary) -> void:
 func aplicar_paleta() -> void:
 	%LeyendaOk.color = TemaStoreScript.color_estado(true)
 	%LeyendaCaido.color = TemaStoreScript.color_estado(false)
+	%LeyendaSinComprobar.color = TemaStoreScript.color_estado(null)
 	if _entradas.is_empty():
 		%Grafico.queue_redraw()
 		return
@@ -130,12 +133,13 @@ func aplicar_paleta() -> void:
 
 
 func _recalcular() -> void:
-	_datos = DashboardStoreScript.agregar_datos(_entradas, _estados, _rango)
+	_datos = DashboardStoreScript.agregar_datos(_entradas, _estados, _rango, _instantaneas)
 	var vacio := _entradas.is_empty()
 	%Datos.visible = not vacio
 	%EstadoVacio.visible = vacio
 	%Rango.visible = not vacio
 	%AvisoSinComprobar.visible = not vacio and int(_datos.get("ultima", 0)) == 0
+	%AvisoInstantaneas.visible = not vacio and int(_datos.get("instantaneas", 0)) == 0
 	if vacio:
 		%Grafico.limpiar_globo()
 		%Grafico.serie = []

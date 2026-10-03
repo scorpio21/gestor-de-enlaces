@@ -5,17 +5,28 @@ const ColaEscaneoScript := preload("res://scripts/cola_escaneo.gd")
 const RedireccionesScript := preload("res://scripts/redirecciones.gd")
 
 
-static func agregar_datos(entradas: Array, estados: Dictionary, dias := 0) -> Dictionary:
+static func agregar_datos(entradas: Array, estados: Dictionary, dias := 0, instantaneas := []) -> Dictionary:
 	return {
 		"resumen": resumen(entradas, estados),
 		"categorias": por_categoria(entradas, estados),
 		"hosts": por_host(entradas, estados, 10),
-		"serie": serie_diaria(entradas, estados, dias),
+		"serie": serie_diaria(entradas, estados, dias, instantaneas),
 		"top": top_caidos(entradas, estados),
 		"reubicados": RedireccionesScript.reubicados_de(entradas, estados),
 		"ultima": ultima_comprobacion(estados),
+		"instantaneas": cuenta_instantaneas(instantaneas),
 		"dias": dias,
 	}
+
+
+static func cuenta_instantaneas(instantaneas: Variant) -> int:
+	if typeof(instantaneas) != TYPE_ARRAY:
+		return 0
+	var cuenta := 0
+	for fila in instantaneas:
+		if typeof(fila) == TYPE_DICTIONARY and str((fila as Dictionary).get("fecha", "")).length() == 10:
+			cuenta += 1
+	return cuenta
 
 
 static func resumen(entradas: Array, estados: Dictionary) -> Dictionary:
@@ -73,9 +84,44 @@ static func por_host(entradas: Array, estados: Dictionary, tope := 0) -> Array:
 	return lista
 
 
-static func serie_diaria(entradas: Array, estados: Dictionary, dias := 0) -> Array:
-	var fichas := {}
+static func serie_diaria(entradas: Array, estados: Dictionary, dias := 0, instantaneas := []) -> Array:
 	var desde := _clave_desde(dias)
+	var cambios := _cambios_por_dia(entradas, estados, desde)
+	var fotos := _fotos_por_dia(instantaneas, desde)
+	var hay_foto := not fotos.is_empty()
+	var claves := {}
+	for dia in cambios:
+		claves[dia] = true
+	for dia in fotos:
+		claves[dia] = true
+	var lista: Array = []
+	for dia in claves:
+		var cambio: Dictionary = cambios.get(dia, {})
+		var foto: Dictionary = fotos.get(dia, {})
+		var con_foto := not foto.is_empty()
+		lista.append({
+			"fecha": dia,
+			"instantanea": con_foto,
+			"sin_datos": hay_foto and not con_foto,
+			"total": int(foto.get("total", 0)),
+			"validos": int(foto.get("validos", 0)) if con_foto else int(cambio.get("validos", 0)),
+			"caidos": int(foto.get("caidos", 0)) if con_foto else int(cambio.get("caidos", 0)),
+			"sin_comprobar": int(foto.get("sin_comprobar", 0)),
+			"cambios_validos": int(cambio.get("validos", 0)),
+			"cambios_caidos": int(cambio.get("caidos", 0)),
+			"con_delta": false,
+			"delta_validos": 0,
+			"delta_caidos": 0,
+		})
+	lista.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return str(a["fecha"]) < str(b["fecha"])
+	)
+	_anadir_deltas(lista)
+	return lista
+
+
+static func _cambios_por_dia(entradas: Array, estados: Dictionary, desde: String) -> Dictionary:
+	var fichas := {}
 	for entrada in entradas:
 		if typeof(entrada) != TYPE_DICTIONARY:
 			continue
@@ -86,7 +132,7 @@ static func serie_diaria(entradas: Array, estados: Dictionary, dias := 0) -> Arr
 		for marca in hist:
 			if typeof(marca) != TYPE_DICTIONARY:
 				continue
-			var dia := _clave_dia(int(marca.get("fecha", 0)))
+			var dia := clave_de_dia(int(marca.get("fecha", 0)))
 			if dia.is_empty() or dia < desde:
 				continue
 			var ficha: Dictionary = fichas.get(dia, {"fecha": dia, "validos": 0, "caidos": 0})
@@ -95,13 +141,35 @@ static func serie_diaria(entradas: Array, estados: Dictionary, dias := 0) -> Arr
 			elif marca.get("valido") == false:
 				ficha["caidos"] += 1
 			fichas[dia] = ficha
-	var lista: Array = []
-	for clave in fichas:
-		lista.append(fichas[clave])
-	lista.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		return str(a["fecha"]) < str(b["fecha"])
-	)
-	return lista
+	return fichas
+
+
+static func _fotos_por_dia(instantaneas: Variant, desde: String) -> Dictionary:
+	var fotos := {}
+	if typeof(instantaneas) != TYPE_ARRAY:
+		return fotos
+	for fila in instantaneas:
+		if typeof(fila) != TYPE_DICTIONARY:
+			continue
+		var dato: Dictionary = fila
+		var dia := str(dato.get("fecha", ""))
+		if dia.length() != 10 or dia < desde:
+			continue
+		fotos[dia] = dato
+	return fotos
+
+
+static func _anadir_deltas(lista: Array) -> void:
+	var previa := {}
+	for i in range(lista.size()):
+		var actual: Dictionary = lista[i]
+		if not bool(actual.get("instantanea", false)):
+			continue
+		if not previa.is_empty():
+			actual["con_delta"] = true
+			actual["delta_validos"] = int(actual.get("validos", 0)) - int(previa.get("validos", 0))
+			actual["delta_caidos"] = int(actual.get("caidos", 0)) - int(previa.get("caidos", 0))
+		previa = actual
 
 
 static func top_caidos(entradas: Array, estados: Dictionary, tope := 8) -> Array:
@@ -160,7 +228,7 @@ static func ultima_comprobacion(estados: Dictionary) -> int:
 
 
 static func exportar_csv(ruta: String, datos: Dictionary) -> Dictionary:
-	var lineas := PackedStringArray(["Seccion;Clave;Comprobados;Activos;Rotos;Disponible"])
+	var lineas := PackedStringArray(["Seccion;Clave;Comprobados;Activos;Rotos;Disponible;Total;SinComprobar;Foto"])
 	var res: Dictionary = datos.get("resumen", {})
 	lineas.append("Resumen;Total;%d;%d;%d;%.1f" % [
 		int(res.get("total", 0)),
@@ -188,15 +256,16 @@ static func exportar_csv(ruta: String, datos: Dictionary) -> Dictionary:
 	for d in datos.get("serie", []):
 		var validos := int(d.get("validos", 0))
 		var caidos := int(d.get("caidos", 0))
-		var pct := 0.0
-		if validos + caidos > 0:
-			pct = 100.0 * float(validos) / float(validos + caidos)
-		lineas.append("Serie;%s;%d;%d;%d;%.1f" % [
+		var pct := _porcentaje(validos, validos + caidos)
+		lineas.append("Serie;%s;%d;%d;%d;%.1f;%d;%d;%s" % [
 			_escape_csv(str(d.get("fecha", ""))),
 			validos + caidos,
 			validos,
 			caidos,
 			pct,
+			int(d.get("total", 0)),
+			int(d.get("sin_comprobar", 0)),
+			"si" if bool(d.get("instantanea", false)) else "no",
 		])
 	return _escribir(ruta, "\n".join(lineas) + "\n", lineas.size() - 1)
 
@@ -241,11 +310,15 @@ static func _porcentaje(activos: int, comprobados: int) -> float:
 	return 100.0 * float(activos) / float(comprobados)
 
 
-static func _clave_dia(unix: int) -> String:
+static func clave_de_dia(unix: int) -> String:
 	if unix <= 0:
 		return ""
 	var d := Time.get_datetime_dict_from_unix_time(unix)
 	return "%04d-%02d-%02d" % [d.year, d.month, d.day]
+
+
+static func _clave_dia(unix: int) -> String:
+	return clave_de_dia(unix)
 
 
 static func _clave_desde(dias: int) -> String:

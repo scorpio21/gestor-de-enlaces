@@ -70,8 +70,9 @@ func _arrancar() -> void:
 func _menu(s) -> void:
 	var utilidades: PopupMenu = s.get_node("%Utilidades")
 	var ultimo := utilidades.item_count - 1
-	_check(utilidades.get_item_text(ultimo) == "Viendo cambios…", "el menu de utilidades ofrece ver los cambios")
-	_check(utilidades.get_item_id(ultimo) == 6, "la entrada de cambios tiene su propio identificador")
+	_check(utilidades.get_item_text(ultimo - 1) == "Viendo cambios…", "el menu de utilidades ofrece ver los cambios")
+	_check(utilidades.get_item_id(ultimo - 1) == 6, "la entrada de cambios tiene su propio identificador")
+	_check(utilidades.get_item_id(ultimo) == 7, "purgar instantáneas tiene su propio identificador (#60)")
 
 
 func _marca_de(s, clave: String) -> String:

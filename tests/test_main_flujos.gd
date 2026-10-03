@@ -456,7 +456,65 @@ func _reubicar(main: Node, main_script) -> void:
 	main_script._ui_pedir_reubicar(["https://viejo.test/guia.html"])
 	_check(main_script._reubicar_pendientes.is_empty(), "un destino de login no se ofrece (#59)")
 	main_script._reubicar_pendientes = []
+
+	await _instantaneas(main, main_script)
 	Ayuda.borrar_arbol(dir)
+
+
+func _instantaneas(main: Node, main_script) -> void:
+	var store = main_script._instantanea_store
+	_check(store != null, "main tiene su store de instantáneas (#60)")
+	_check(str(store.ruta()) == main.CONFIG_BASE + "/instantaneas.json", "el store de instantáneas cuelga de CONFIG_BASE (#60): %s" % str(store.ruta()))
+
+	main_script._entradas = [
+		{"nombre": "A", "url": "https://foto.test/a", "cat": "cliente"},
+		{"nombre": "B", "url": "https://foto.test/b", "cat": "cliente"},
+		{"nombre": "C", "url": "https://foto.test/c", "cat": "otro"},
+	]
+	main_script._estados = {"foto.test/a": {"valido": true}, "foto.test/b": {"valido": false}}
+	main_script._scan_terminado(3, 1)
+	await process_frame
+	var fotos: Array = main_script._instantaneas()
+	_check(fotos.size() == 1, "terminar el escaneo deja una instantánea diaria (#60)")
+	_check(int(fotos[0].get("total", 0)) == 3 and int(fotos[0].get("validos", 0)) == 1, "la instantánea cuenta el catálogo entero (#60)")
+	_check(int(fotos[0].get("sin_comprobar", 0)) == 1, "la instantánea cuenta también lo sin comprobar (#60)")
+
+	main_script._scan_terminado(3, 0)
+	await process_frame
+	_check(main_script._instantaneas().size() == 1, "comprobar dos veces el mismo día no acumula instantáneas (#60)")
+
+	main_script._entradas = []
+	main_script._estados = {}
+	main_script._scan_terminado(0, 0)
+	await process_frame
+	_check(main_script._instantaneas().size() == 1, "un catálogo vacío no pisa la instantánea de hoy (#60)")
+
+	main_script._on_utilidades_id(7)
+	_check(main.get_node("%Progreso").text == "No hay instantáneas más antiguas de 365 días.", "purgar sin nada viejo lo dice (#60): %s" % main.get_node("%Progreso").text)
+
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro", "es", true, true, false, 45)
+	_check(main_script._instantaneas_dias == 45, "las preferencias fijan la retención de instantáneas (#60)")
+	_check(int(main_script._config_store.cargar().get("instantaneas_dias", 0)) == 45, "la retención se guarda en la config (#60)")
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro", "es", true, true, false, 4)
+	_check(main_script._instantaneas_dias == 30, "una retención por debajo del mínimo se recorta (#60)")
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro", "es", true, true, false, 0)
+	_check(main_script._instantaneas_dias == 30, "sin retención explícita se conserva la anterior (#60)")
+
+	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro", "es", true, true, false, 45)
+	main_script._on_utilidades_id(7)
+	_check(main.get_node("%Progreso").text == "No hay instantáneas más antiguas de 45 días.", "purgar usa la retención elegida (#60): %s" % main.get_node("%Progreso").text)
+
+	main_script._entradas = [
+		{"nombre": "A", "url": "https://foto.test/a", "cat": "cliente"},
+		{"nombre": "B", "url": "https://foto.test/b", "cat": "cliente"},
+	]
+	main_script._estados = {"foto.test/a": {"valido": true}, "foto.test/b": {"valido": false}}
+	main_script._abrir_dashboard()
+	await process_frame
+	var ventana: Node = main.get_node("%VentanaDashboard")
+	var grafico: Control = ventana.get_node("%Grafico")
+	_check(grafico.serie.size() == 1 and bool((grafico.serie[0] as Dictionary).get("instantanea")), "el dashboard de main se abre con la instantánea del día (#60)")
+	_check(not ventana.get_node("%AvisoInstantaneas").visible, "con instantánea el dashboard no avisa de que no hay datos (#60)")
 
 
 func _fila(main: Node, url: String):

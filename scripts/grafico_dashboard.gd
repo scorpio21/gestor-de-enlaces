@@ -9,6 +9,7 @@ const MARGEN_HOJA := 18.0
 const LINEAS_REJILLA := 4
 const SEPARACION := 3.0
 const FUENTE_EJE := 10
+const MARCA_SIN_DATOS := 3.0
 
 var serie: Array = []
 var _indice := -1
@@ -55,9 +56,7 @@ func _draw() -> void:
 	var color_ok := TemaStoreScript.color_estado(true)
 	var color_caido := TemaStoreScript.color_estado(false)
 	var color_tenue := TemaStoreScript.color_estado(null)
-	var maximo := 1
-	for dia in serie:
-		maximo = maxi(maximo, int(dia.get("validos", 0)) + int(dia.get("caidos", 0)))
+	var maximo := _maximo()
 	var fuente := get_theme_default_font()
 	for i in range(LINEAS_REJILLA + 1):
 		var y := MARGEN_INF + alto * float(i) / float(LINEAS_REJILLA)
@@ -70,13 +69,20 @@ func _draw() -> void:
 		var dia: Dictionary = serie[i]
 		var validos := int(dia.get("validos", 0))
 		var caidos := int(dia.get("caidos", 0))
+		var sin_comprobar := int(dia.get("sin_comprobar", 0))
 		var x := MARGEN_IZQ + paso * float(i)
+		var pie := MARGEN_INF + alto
 		var alto_caidos := alto * float(caidos) / float(maximo)
-		if caidos > 0:
-			draw_rect(Rect2(x, MARGEN_INF + alto - alto_caidos, grosor, alto_caidos), color_caido)
+		var alto_sin := alto * float(sin_comprobar) / float(maximo)
 		var alto_validos := alto * float(validos) / float(maximo)
+		if caidos > 0:
+			draw_rect(Rect2(x, pie - alto_caidos, grosor, alto_caidos), color_caido)
+		if sin_comprobar > 0:
+			draw_rect(Rect2(x, pie - alto_caidos - alto_sin, grosor, alto_sin), color_tenue)
 		if validos > 0:
-			draw_rect(Rect2(x, MARGEN_INF + alto - alto_caidos - alto_validos, grosor, alto_validos), color_ok)
+			draw_rect(Rect2(x, pie - alto_caidos - alto_sin - alto_validos, grosor, alto_validos), color_ok)
+		if bool(dia.get("sin_datos", false)):
+			draw_rect(Rect2(x, pie - MARCA_SIN_DATOS, grosor, MARCA_SIN_DATOS), Color(color_tenue, 0.45))
 		if i == _indice:
 			draw_rect(Rect2(x - 1.0, MARGEN_INF - 2.0, grosor + 2.0, alto + 2.0), Color(color_tenue, 0.8), false, 1.0)
 	for pos in _posiciones_fecha(serie.size()):
@@ -88,6 +94,14 @@ func _draw() -> void:
 
 func _ancho_util() -> float:
 	return size.x - MARGEN_IZQ - MARGEN_DER
+
+
+func _maximo() -> int:
+	var tope := 1
+	for dia in serie:
+		tope = maxi(tope, int(dia.get("total", 0)))
+		tope = maxi(tope, int(dia.get("validos", 0)) + int(dia.get("caidos", 0)) + int(dia.get("sin_comprobar", 0)))
+	return tope
 
 
 func _posiciones_fecha(total: int) -> Array:
@@ -123,15 +137,7 @@ func _pintar_globo() -> void:
 	if _indice < 0 or _indice >= serie.size():
 		_globo.visible = false
 		return
-	var dia: Dictionary = serie[_indice]
-	var validos := int(dia.get("validos", 0))
-	var caidos := int(dia.get("caidos", 0))
-	var texto := "%s · %s %d · %s %d" % [
-		str(dia.get("fecha", "")),
-		tr("Válidos"), validos,
-		tr("Caídos"), caidos,
-	]
-	_globo.text = texto
+	_globo.text = texto_dia(serie[_indice])
 	_globo.add_theme_stylebox_override("normal", _caja_globo())
 	_globo.reset_size()
 	var alto := size.y - MARGEN_INF - MARGEN_HOJA
@@ -139,6 +145,29 @@ func _pintar_globo() -> void:
 	var x := MARGEN_IZQ + paso * (float(_indice) + 0.5) - _globo.size.x * 0.5
 	_globo.position = Vector2(clampf(x, 0.0, maxf(size.x - _globo.size.x, 0.0)), maxf(alto - _globo.size.y - 6.0, 0.0))
 	_globo.visible = true
+
+
+func texto_dia(dia: Dictionary) -> String:
+	var clave := str(dia.get("fecha", ""))
+	var cambios := int(dia.get("cambios_validos", 0)) + int(dia.get("cambios_caidos", 0))
+	if bool(dia.get("sin_datos", false)):
+		var sueltas := PackedStringArray(["%s · %s" % [clave, tr("Sin datos: ese día no hubo Instantánea.")]])
+		if cambios > 0:
+			sueltas.append(tr("Cambios de estado: %d") % cambios)
+		return "\n".join(sueltas)
+	var lineas := PackedStringArray([
+		"%s · %s %d" % [clave, tr("Total"), int(dia.get("total", 0))],
+		"%s %d · %s %d · %s %d" % [
+			tr("Válidos"), int(dia.get("validos", 0)),
+			tr("Caídos"), int(dia.get("caidos", 0)),
+			tr("Sin comprobar"), int(dia.get("sin_comprobar", 0)),
+		],
+	])
+	if cambios > 0:
+		lineas.append(tr("Cambios de estado: %d") % cambios)
+	if bool(dia.get("con_delta", false)):
+		lineas.append(tr("Desde el día anterior: %+d válidos, %+d caídos") % [int(dia.get("delta_validos", 0)), int(dia.get("delta_caidos", 0))])
+	return "\n".join(lineas)
 
 
 func _caja_globo() -> StyleBoxFlat:

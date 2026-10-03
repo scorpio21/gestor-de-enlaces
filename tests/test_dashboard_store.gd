@@ -39,6 +39,7 @@ func _arrancar() -> void:
 	_rango(entradas, estados)
 	_top(entradas, estados)
 	_reubicados(entradas, estados)
+	_instantaneas(entradas, estados)
 	_exportacion(entradas, estados)
 	if _fallos == 0:
 		print("TESTS OK")
@@ -162,6 +163,37 @@ func _dir_csv(entradas: Array, estados: Dictionary) -> void:
 	DirAccess.remove_absolute(BASE)
 
 
+func _instantaneas(entradas: Array, estados: Dictionary) -> void:
+	var sin_fotos: Array = DashboardStoreScript.serie_diaria(entradas, estados)
+	_check(not bool(sin_fotos[0].get("instantanea", true)), "sin instantáneas ninguna fila se marca como foto (#60)")
+	_check(not bool(sin_fotos[0].get("sin_datos", true)), "sin instantáneas no se marcan días sin datos (#60)")
+	_check(int(sin_fotos[0].get("total", -1)) == 0 and int(sin_fotos[0].get("sin_comprobar", -1)) == 0, "sin instantáneas el total y el sin comprobar siguen a cero (#60)")
+
+	var fotos := [
+		{"fecha": "2026-09-01", "total": 4, "validos": 2, "caidos": 1, "sin_comprobar": 1},
+		{"fecha": "2026-09-03", "total": 4, "validos": 3, "caidos": 1, "sin_comprobar": 0},
+	]
+	var serie: Array = DashboardStoreScript.serie_diaria(entradas, estados, 0, fotos)
+	_check(serie.size() == 3, "con instantáneas la serie une fotos y cambios de estado (#60)")
+	_check(bool(serie[0].get("instantanea")) and int(serie[0].get("total")) == 4, "la foto del día 1 aporta el total del catálogo (#60)")
+	_check(int(serie[0].get("validos")) == 2 and int(serie[0].get("sin_comprobar")) == 1, "la foto manda en válidos y sin comprobar (#60)")
+	_check(int(serie[1].get("cambios_validos")) == 2 and int(serie[1].get("cambios_caidos")) == 0, "el día sin foto sigue contando los cambios del historial (#60)")
+	_check(bool(serie[1].get("sin_datos")) and not bool(serie[1].get("instantanea")), "un día intermedio sin foto se marca como sin datos (#60)")
+	_check(int(serie[1].get("validos")) == 2 and int(serie[1].get("total")) == 0, "un día sin foto no inventa un total de catálogo (#60)")
+	_check(bool(serie[2].get("con_delta")) and int(serie[2].get("delta_validos")) == 1, "el delta se mide contra la foto anterior, saltando el día sin foto (#60)")
+	_check(not bool(serie[0].get("con_delta")) and not bool(serie[1].get("con_delta")), "sin foto anterior no hay delta (#60)")
+
+	var sin_historial: Array = DashboardStoreScript.serie_diaria(entradas, {}, 0, fotos)
+	_check(sin_historial.size() == 2, "sin historial la serie sale solo de las fotos (#60)")
+	_check(not bool(sin_historial[1].get("sin_datos")), "sin historial no se puede decir que falte un día (#60)")
+
+	var roto: Array = DashboardStoreScript.serie_diaria(entradas, estados, 0, ["basura", 7, {"total": 4}, {"fecha": "ayer"}])
+	_check(roto.size() == 2 and not bool(roto[0].get("instantanea")), "unas instantáneas corruptas no rompen la serie (#60)")
+	_check(DashboardStoreScript.cuenta_instantaneas(fotos) == 2 and DashboardStoreScript.cuenta_instantaneas(["basura", 7]) == 0, "cuenta_instantaneas solo cuenta filas con fecha (#60)")
+	_check(int(DashboardStoreScript.agregar_datos(entradas, estados, 0, fotos).get("instantaneas", 0)) == 2, "agregar_datos cuenta las instantáneas (#60)")
+	_check(int(DashboardStoreScript.agregar_datos(entradas, estados).get("instantaneas", -1)) == 0, "sin instantáneas el bloque cuenta cero (#60)")
+
+
 func _exportacion(entradas: Array, estados: Dictionary) -> void:
 	DirAccess.make_dir_recursive_absolute(BASE)
 	var datos: Dictionary = DashboardStoreScript.agregar_datos(entradas, estados)
@@ -176,6 +208,15 @@ func _exportacion(entradas: Array, estados: Dictionary) -> void:
 	_check(contenido.contains("Categoria;cliente;2;1;1;50.0"), "el CSV incluye una categoría formateada")
 	_check(contenido.contains("Host;mega.nz;1;0;1;0.0"), "el CSV incluye un host formateado")
 	_check(contenido.contains("Serie;2026-09-01;3;1;2;33.3"), "el CSV incluye la serie diaria")
+	_check(contenido.contains("Seccion;Clave;Comprobados;Activos;Rotos;Disponible;Total;SinComprobar;Foto"), "la cabecera del CSV avisa de las columnas nuevas (#60)")
+	_check(contenido.contains("Serie;2026-09-01;3;1;2;33.3;0;0;no"), "sin instantáneas la fila de la serie dice Foto=no (#60)")
+	var con_fotos: Dictionary = DashboardStoreScript.agregar_datos(entradas, estados, 0, [
+		{"fecha": "2026-09-01", "total": 4, "validos": 2, "caidos": 1, "sin_comprobar": 1},
+	])
+	var ruta_fotos := BASE + "/estadisticas_fotos.csv"
+	DashboardStoreScript.exportar_csv(ruta_fotos, con_fotos)
+	var contenido_fotos := FileAccess.get_file_as_string(ruta_fotos)
+	_check(contenido_fotos.contains("Serie;2026-09-01;3;2;1;66.7;4;1;si"), "con instantáneas la fila de la serie sale de la foto (#60)")
 	_check(contenido.contains("Caidos;A;404;1;"), "el CSV incluye los enlaces problemáticos con su código y veces")
 	var ruta_json := BASE + "/estadisticas.json"
 	var json: Dictionary = DashboardStoreScript.exportar_json(ruta_json, datos)

@@ -3,6 +3,7 @@ extends SceneTree
 const DASHBOARD := preload("res://scenes/Dashboard.tscn")
 const TARJETA := preload("res://scenes/TarjetaKpi.tscn")
 const FILA := preload("res://scenes/FilaTabla.tscn")
+const DashboardStoreScript := preload("res://scripts/dashboard_store.gd")
 const IdiomaScript := preload("res://scripts/idioma.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
 
@@ -15,6 +16,7 @@ func _initialize() -> void:
 	_tarjetas()
 	_filas()
 	await _panel()
+	await _instantaneas()
 	_cerrar()
 
 
@@ -134,6 +136,77 @@ func _panel() -> void:
 	_check(ui.get_node("%AvisoSinComprobar").visible, "sin comprobaciones se pide pulsar Comprobar (#49)")
 	_check(ui.get_node("%PctDisponibilidad").text == "0%", "sin comprobaciones la disponibilidad es cero")
 	_check(ui.get_node("%EtiquetaDisponibilidad").text == "Sin comprobaciones todavía", "sin comprobaciones se explica que aún no hay datos")
+	ui.queue_free()
+	await process_frame
+
+
+func _instantaneas() -> void:
+	var ui: Window = DASHBOARD.instantiate()
+	root.add_child(ui)
+	await process_frame
+	await process_frame
+	var entradas := [
+		{"nombre": "A", "url": "https://a.test", "cat": "servidor", "tags": ["AO"]},
+		{"nombre": "B", "url": "https://b.test", "cat": "cliente", "tags": []},
+		{"nombre": "C", "url": "https://c.test", "cat": "cliente", "tags": []},
+		{"nombre": "D", "url": "https://d.test", "cat": "cliente", "tags": []},
+	]
+	var estados := {
+		"a.test": {"valido": true},
+		"b.test": {"valido": false},
+	}
+	var grafico: Control = ui.get_node("%Grafico")
+	var hoy := DashboardStoreScript.clave_de_dia(int(Time.get_unix_time_from_system()))
+	var ayer := DashboardStoreScript.clave_de_dia(int(Time.get_unix_time_from_system()) - 86400)
+	var fotos := [
+		{"fecha": ayer, "total": 4, "validos": 2, "caidos": 1, "sin_comprobar": 1},
+		{"fecha": hoy, "total": 4, "validos": 2, "caidos": 1, "sin_comprobar": 1},
+	]
+
+	ui.abrir(entradas, estados)
+	await process_frame
+	_check(ui.get_node("%AvisoInstantaneas").visible, "sin instantáneas el gráfico aviva de que usa el historial (#60)")
+	_check(grafico.serie.is_empty(), "sin comprobaciones la serie del gráfico queda vacía (#60)")
+
+	ui.abrir(entradas, estados, fotos)
+	await process_frame
+	await process_frame
+	_check(not ui.get_node("%AvisoInstantaneas").visible, "con instantáneas ya no hace falta el aviso (#60)")
+	_check(grafico.serie.size() == 2, "el gráfico dibuja una barra por cada día fotografiado (#60)")
+	var hoy_fila: Dictionary = grafico.serie[1]
+	_check(bool(hoy_fila.get("instantanea")) and int(hoy_fila.get("total")) == 4, "la barra del día trae el total del catálogo (#60)")
+	_check(int(hoy_fila.get("sin_comprobar")) == 1, "la barra del día trae los sin comprobar (#60)")
+	_check(bool(hoy_fila.get("con_delta")) and int(hoy_fila.get("delta_validos")) == 0, "el globo calcula el delta entre fotos (#60)")
+	_check(grafico._maximo() == 4, "la escala del eje llega al total del catálogo (#60)")
+	grafico.serie = [{"fecha": "2026-09-01", "total": 40, "validos": 2, "caidos": 1, "sin_comprobar": 1}]
+	_check(grafico._maximo() == 40, "una foto con más enlaces que estados decide la escala el total (#60)")
+	grafico.serie = [{"fecha": "2026-09-01", "total": 2, "validos": 9, "caidos": 3, "sin_comprobar": 5}]
+	_check(grafico._maximo() == 17, "unos datos que no cuadran no recortan la barra: manda la suma de las series (#60)")
+	grafico.serie = [{"fecha": "2026-09-01", "validos": 9, "caidos": 3, "sin_comprobar": 5}]
+	_check(grafico._maximo() == 17, "sin total la escala suma las tres series (#60)")
+	grafico.serie = [{"fecha": "2026-09-01", "sin_datos": true}]
+	_check(grafico._maximo() == 1, "un gráfico sin nada que dibujar no divide por cero (#60)")
+	grafico.serie = [{"fecha": "2026-09-01", "total": 4, "validos": 2, "caidos": 1, "sin_comprobar": 1}]
+
+	var texto: String = grafico.texto_dia(hoy_fila)
+	_check(texto.contains("Sin comprobar 1"), "el globo explica los sin comprobar del día (#60)")
+	_check(texto.contains("Desde el día anterior"), "el globo compara con la foto anterior (#60)")
+	var sin_datos: String = grafico.texto_dia({"fecha": "2026-09-02", "sin_datos": true, "cambios_validos": 3})
+	_check(sin_datos.contains("Sin datos"), "un día sin foto se explica en el globo (#60)")
+	_check(not sin_datos.contains("Válidos 0"), "un día sin foto no finge cero válidos (#60)")
+	var plano: String = grafico.texto_dia({"fecha": "2026-09-02"})
+	_check(plano.contains("Total 0") and not plano.contains("Desde el día anterior"), "un día sin deltas no inventa comparación (#60)")
+
+	ui.abrir(entradas, estados, [{"fecha": "basura"}])
+	await process_frame
+	_check(grafico.serie.is_empty(), "unas instantáneas corruptas no inventan barras (#60)")
+	_check(ui.get_node("%AvisoInstantaneas").visible, "unas instantáneas corruptas vuelven a avisar (#60)")
+
+	ui.abrir([], {}, fotos)
+	await process_frame
+	_check(ui.get_node("%EstadoVacio").visible and not ui.get_node("%AvisoInstantaneas").visible, "sin enlaces no se avisa de instantáneas (#60)")
+	ui.queue_free()
+	await process_frame
 
 
 func _nombres(ui: Window, ruta: String) -> Array:

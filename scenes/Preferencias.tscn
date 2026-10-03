@@ -131,6 +131,20 @@ layout_mode = 2
 tooltip_text = "Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído»."
 text = "Aceptar los certificados TLS no válidos"
 
+[node name="EtiquetaInstantaneas" type="Label" parent="Margen/Columna"]
+layout_mode = 2
+text = "Instantáneas diarias"
+
+[node name="InstantaneasDias" type="SpinBox" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga."
+min_value = 30.0
+max_value = 3650.0
+value = 365.0
+rounded = true
+suffix = " días"
+
 [node name="Error" type="Label" parent="Margen/Columna"]
 unique_name_in_owner = true
 layout_mode = 2

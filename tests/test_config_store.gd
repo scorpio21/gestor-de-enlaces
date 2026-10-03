@@ -54,6 +54,11 @@ func _initialize() -> void:
 	_check(vista_persistida(), "guardar() persiste la vista de grilla")
 	_check(vista_invalida_normaliza(), "vista inválida vuelve a lista")
 	_limpiar()
+	_check(instantaneas_dias_default(), "sin fichero se guardan 365 días de instantáneas (#60)")
+	_check(instantaneas_dias_persistidos(), "guardar() persiste la retención de instantáneas (#60)")
+	_check(instantaneas_dias_no_numero_normaliza(), "una retención que no es número vuelve al default (#60)")
+	_check(instantaneas_dias_rango(), "una retención fuera de rango se recorta (#60)")
+	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -263,6 +268,33 @@ func escaneo_no_bool_normaliza() -> bool:
 	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"reintentar_transitorios": "no", "red_sin_comprobar": 7, "aceptar_certificados": "si"}')
 	var cfg: Dictionary = ConfigStore.new(BASE).cargar()
 	return cfg.get("reintentar_transitorios", false) == true and cfg.get("red_sin_comprobar", false) == true and cfg.get("aceptar_certificados", true) == false
+
+
+func instantaneas_dias_default() -> bool:
+	return int(ConfigStore.new(BASE).cargar().get("instantaneas_dias", 0)) == 365
+
+
+func instantaneas_dias_persistidos() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(3, 10.0, true, 0, "auto", "", "", 1, "es", 0, 0, "", "", "", 0, "and", "lista", true, true, false, 120):
+		return false
+	return int(store.cargar().get("instantaneas_dias", 0)) == 120
+
+
+func instantaneas_dias_no_numero_normaliza() -> bool:
+	FileAccess.open(BASE + "/config.json", FileAccess.WRITE).store_string('{"instantaneas_dias": "un año"}')
+	return int(ConfigStore.new(BASE).cargar().get("instantaneas_dias", 0)) == 365
+
+
+func instantaneas_dias_rango() -> bool:
+	var store := ConfigStore.new(BASE)
+	if not store.guardar(3, 10.0, true, 0, "auto", "", "", 1, "es", 0, 0, "", "", "", 0, "and", "lista", true, true, false, 2):
+		return false
+	var bajo := int(store.cargar().get("instantaneas_dias", 0))
+	if not store.guardar(3, 10.0, true, 0, "auto", "", "", 1, "es", 0, 0, "", "", "", 0, "and", "lista", true, true, false, 99999):
+		return false
+	var alto := int(store.cargar().get("instantaneas_dias", 0))
+	return bajo == 30 and alto == 3650
 
 
 func filtro_etiqueta_persistida() -> bool:

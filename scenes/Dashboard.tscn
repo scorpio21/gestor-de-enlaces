@@ -152,7 +152,7 @@ theme_override_constants/separation = 12
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 13
-text = "Comprobaciones por día"
+text = "Estado del catálogo por día"
 
 [node name="AyudaGrafico" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox/CabeceraGrafico"]
 layout_mode = 2
@@ -190,6 +190,28 @@ layout_mode = 2
 size_flags_vertical = 4
 theme_override_font_sizes/font_size = 11
 text = "Caídos"
+
+[node name="LeyendaSinComprobar" type="ColorRect" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox/Leyenda"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.6, 0.6, 0.62, 1)
+
+[node name="LeyendaSinComprobarTexto" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox/Leyenda"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 11
+text = "Sin comprobar"
+
+[node name="AvisoInstantaneas" type="Label" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.65, 0.65, 0.68, 1)
+theme_override_font_sizes/font_size = 11
+text = "Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial."
 
 [node name="Grafico" type="Control" parent="Margen/Desplazable/Columna/Datos/PanelGrafico/MargenGraf/VBox"]
 unique_name_in_owner = true

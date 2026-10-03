@@ -35,15 +35,17 @@ func _claves() -> void:
 	_check(nombres.size() == ConfigControllerScript.CLAVES.size(), "CLAVES tiene tantos elementos como argumentos tiene guardar(): %d vs %d" % [ConfigControllerScript.CLAVES.size(), nombres.size()])
 	_check(nombres == ConfigControllerScript.CLAVES, "el orden de CLAVES es el de los argumentos de guardar(): %s vs %s" % [str(ConfigControllerScript.CLAVES), str(nombres)])
 	_check(ConfigControllerScript.CLAVES.has("aceptar_certificados"), "CLAVES incluye los tres campos anadidos en #56")
+	_check(ConfigControllerScript.CLAVES.has("instantaneas_dias") and str(ConfigControllerScript.CLAVES[-1]) == "instantaneas_dias", "CLAVES anade instantaneas_dias al final (#60)")
 
 
 func _fusionar(ctrl) -> void:
-	var base := {"paralelismo": 5, "tema": "oscuro", "idioma": "es", "aceptar_certificados": true, "extra": "no tocar"}
-	var fusionado: Dictionary = ctrl.fusionar(base, {"tema": "claro", "busqueda": "srv", "inventada": 1})
+	var base := {"paralelismo": 5, "tema": "oscuro", "idioma": "es", "aceptar_certificados": true, "instantaneas_dias": 90, "extra": "no tocar"}
+	var fusionado: Dictionary = ctrl.fusionar(base, {"tema": "claro", "busqueda": "srv", "instantaneas_dias": 30, "inventada": 1})
 	_check(fusionado.get("tema") == "claro", "fusionar sustituye la clave indicada")
 	_check(fusionado.get("busqueda") == "srv", "fusionar anade una clave que no estaba")
 	_check(fusionado.get("paralelismo") == 5, "fusionar conserva lo que no se toca")
 	_check(fusionado.get("aceptar_certificados") == true, "fusionar conserva los campos que anadio #56")
+	_check(int(fusionado.get("instantaneas_dias", 0)) == 30, "fusionar cambia la retencion de instantaneas (#60)")
 	_check(fusionado.get("extra") == "no tocar", "fusionar deja intactas las claves que no son de la config")
 	_check(not fusionado.has("inventada"), "fusionar ignora una clave que no existe en la config (#62)")
 	_check(base.get("tema") == "oscuro", "fusionar no modifica el diccionario base")
@@ -52,6 +54,12 @@ func _fusionar(ctrl) -> void:
 
 func _guardar(ctrl, store) -> void:
 	_check(ctrl.guardar(store, {}), "guardar sin cambios no falla")
+
+	store.guardar(3, 10.0, true, 0, "oscuro", "", "", 1, "es", 0, 0, "", "", "", 0, "and", "lista", true, true, false, 90)
+	_check(ctrl.guardar(store, {"busqueda": "glaciar"}), "se puede cambiar un filtro sin perder la retencion (#60)")
+	_check(int(store.cargar().get("instantaneas_dias", 0)) == 90, "persistir un filtro ya no borra instantaneas_dias (#60)")
+	_check(ctrl.guardar(store, {"instantaneas_dias": 5}), "se puede cambiar la retencion de instantaneas (#60)")
+	_check(int(store.cargar().get("instantaneas_dias", 0)) == 30, "una retencion ridicula sube al minimo de 30 dias (#60)")
 
 	store.guardar(3, 10.0, true, 0, "oscuro", "", "", 1, "es", 0, 0, "", "", "", 0, "and", "lista", true, true, false)
 	_check(ctrl.guardar(store, {"orden_columna": "fecha", "orden_direccion": -1}), "guardar devuelve lo que devuelve el store")

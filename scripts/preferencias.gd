@@ -1,6 +1,6 @@
 extends Window
 
-signal aplicado(paralelismo: int, timeout: float, auto_abrir: bool, intervalo: int, tema: String, idioma: String, reintentar_transitorios: bool, red_sin_comprobar: bool, aceptar_certificados: bool)
+signal aplicado(paralelismo: int, timeout: float, auto_abrir: bool, intervalo: int, tema: String, idioma: String, reintentar_transitorios: bool, red_sin_comprobar: bool, aceptar_certificados: bool, instantaneas_dias: int)
 
 const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
 
@@ -13,6 +13,7 @@ const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
 @onready var reintentar_box: CheckBox = %ReintentarTransitorios
 @onready var red_sin_comprobar_box: CheckBox = %RedSinComprobar
 @onready var certificados_box: CheckBox = %AceptarCertificados
+@onready var instantaneas_spin: SpinBox = %InstantaneasDias
 
 
 func _ready() -> void:
@@ -26,13 +27,14 @@ func _ready() -> void:
 	%BotonGuardar.pressed.connect(_on_guardar)
 
 
-func abrir(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "oscuro", idioma := "es", reintentar_transitorios := true, red_sin_comprobar := true, aceptar_certificados := false) -> void:
+func abrir(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "oscuro", idioma := "es", reintentar_transitorios := true, red_sin_comprobar := true, aceptar_certificados := false, instantaneas_dias := 365) -> void:
 	paralelismo_spin.value = paralelismo
 	timeout_spin.value = timeout
 	auto_abrir_box.button_pressed = auto_abrir
 	reintentar_box.button_pressed = reintentar_transitorios
 	red_sin_comprobar_box.button_pressed = red_sin_comprobar
 	certificados_box.button_pressed = aceptar_certificados
+	instantaneas_spin.value = instantaneas_dias
 	_seleccionar_intervalo(intervalo)
 	_seleccionar_tema(tema)
 	_seleccionar_idioma(idioma)
@@ -70,6 +72,7 @@ func _on_guardar() -> void:
 		IDIOMAS[idioma_opcion.get_selected_id()][0],
 		reintentar_box.button_pressed,
 		red_sin_comprobar_box.button_pressed,
-		certificados_box.button_pressed
+		certificados_box.button_pressed,
+		int(instantaneas_spin.value)
 	)
 	hide()

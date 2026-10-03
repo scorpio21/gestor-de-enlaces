@@ -21,6 +21,7 @@ const CLAVES := [
 	"reintentar_transitorios",
 	"red_sin_comprobar",
 	"aceptar_certificados",
+	"instantaneas_dias",
 ]
 
 func fusionar(base: Dictionary, cambios: Dictionary) -> Dictionary:

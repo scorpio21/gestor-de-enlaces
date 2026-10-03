@@ -271,3 +271,14 @@ Cambiar la URL de %s por %s.,Cambiar la URL de %s por %s.,Change the URL of %s t
 ¿Actualizar la URL de %d enlaces a la nueva?,¿Actualizar la URL de %d enlaces a la nueva?,Update the URL of %d links to the new one?
 1 URL actualizada,1 URL actualizada,1 URL updated
 %d URLs actualizadas,%d URLs actualizadas,%d URLs updated
+Instantáneas diarias,Instantáneas diarias,Daily snapshots
+"Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga.","Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga.","How many days of daily snapshot are kept for the dashboard chart. Anything older is purged."
+Estado del catálogo por día,Estado del catálogo por día,Catalogue state per day
+Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial.,Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial.,No daily snapshots yet: the chart shows the state changes from history.
+Purgar instantáneas antiguas…,Purgar instantáneas antiguas…,Purge old snapshots…
+No se pudieron purgar las instantáneas.,No se pudieron purgar las instantáneas.,Could not purge the snapshots.
+No hay instantáneas más antiguas de %d días.,No hay instantáneas más antiguas de %d días.,There are no snapshots older than %d days.
+Instantáneas antiguas eliminadas: %d,Instantáneas antiguas eliminadas: %d,Old snapshots deleted: %d
+Sin datos: ese día no hubo Instantánea.,Sin datos: ese día no hubo Instantánea.,No data: no snapshot that day.
+Cambios de estado: %d,Cambios de estado: %d,State changes: %d
+"Desde el día anterior: %+d válidos, %+d caídos","Desde el día anterior: %+d válidos, %+d caídos","Since the previous day: %+d valid, %+d broken"

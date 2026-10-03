@@ -17,6 +17,7 @@ var ASSETS_BASE := RutasScript.ASSETS_USER:
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
 const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
+const InstantaneaStoreScript := preload("res://scripts/instantanea_store.gd")
 const IdiomaScript := preload("res://scripts/idioma.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
@@ -82,6 +83,7 @@ var _config_ctrl = ConfigControllerScript.new()
 var _catalogo = CatalogoControllerScript.new()
 var _estado_store: RefCounted
 var _config_store: RefCounted
+var _instantanea_store: RefCounted = null
 var CONFIG_BASE := "user://"
 var _orden_columna := ""
 var _orden_direccion := 1
@@ -94,6 +96,7 @@ var _intervalo_auto := 0
 var _reintentar_transitorios := true
 var _red_sin_comprobar := true
 var _aceptar_certificados := false
+var _instantaneas_dias := InstantaneaStoreScript.LIMITE_DEFAULT
 var _estados := {}
 var _borrados: Array = []
 var _borrados_pendientes: Array = []
@@ -158,6 +161,7 @@ func _ready() -> void:
 	_sel.preparar(barra_seleccion, %SelContador, Callable(self, "_ui_filas_visibles"), Callable(self, "_urls_catalogo"))
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new(CONFIG_BASE)
+	_instantanea_store = InstantaneaStoreScript.new(CONFIG_BASE)
 	_cola_store = ColaStoreScript.new()
 	_scan = ScanControllerScript.new(_cola_store)
 	_scan.configure(_scan_lanzar_item)
@@ -177,6 +181,7 @@ func _ready() -> void:
 	_reintentar_transitorios = cfg.get("reintentar_transitorios", true) == true
 	_red_sin_comprobar = cfg.get("red_sin_comprobar", true) == true
 	_aceptar_certificados = cfg.get("aceptar_certificados", false) == true
+	_instantaneas_dias = InstantaneaStoreScript.limite_ok(cfg.get("instantaneas_dias", InstantaneaStoreScript.LIMITE_DEFAULT))
 	_scan.paralelismo = _paralelismo
 	_scan.intervalo_auto = _intervalo_auto
 	_scan.auto_abrir = _auto_abrir
@@ -267,6 +272,7 @@ func _configurar_menus() -> void:
 	menu_util.add_item(tr("Comprobar actualizaciones…"), 4)
 	menu_util.add_item(tr("Dashboard de estadísticas…"), 5)
 	menu_util.add_item(tr("Viendo cambios…"), 6)
+	menu_util.add_item(tr("Purgar instantáneas antiguas…"), 7)
 	if menu_util.id_pressed.is_connected(_on_utilidades_id):
 		menu_util.id_pressed.disconnect(_on_utilidades_id)
 	menu_util.id_pressed.connect(_on_utilidades_id)
@@ -290,7 +296,7 @@ func _on_utilidades_id(id: int) -> void:
 	if id == 0:
 		ventana_agregar.abrir(_sugerir_etiquetas())
 	elif id == 1:
-		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "auto")), String(_config_store.cargar().get("idioma", "")), _reintentar_transitorios, _red_sin_comprobar, _aceptar_certificados)
+		preferencias.abrir(_paralelismo, _timeout, _auto_abrir, _intervalo_auto, String(_config_store.cargar().get("tema", "auto")), String(_config_store.cargar().get("idioma", "")), _reintentar_transitorios, _red_sin_comprobar, _aceptar_certificados, _instantaneas_dias)
 	elif id == 2:
 		_solicitar_limpieza_capturas()
 	elif id == 3:
@@ -298,10 +304,32 @@ func _on_utilidades_id(id: int) -> void:
 	elif id == 4:
 		_comprobar_actualizaciones(true)
 	elif id == 5:
-		_estado_store.volcar()
-		dashboard.abrir(_entradas, _estado_store.cargar().get("estados", {}))
+		_abrir_dashboard()
 	elif id == 6:
 		_cambios_ver()
+	elif id == 7:
+		_purgar_instantaneas()
+
+
+func _abrir_dashboard() -> void:
+	_estado_store.volcar()
+	dashboard.abrir(_entradas, _estado_store.cargar().get("estados", {}), _instantaneas())
+
+
+func _instantaneas() -> Array:
+	return [] if _instantanea_store == null else _instantanea_store.cargar()
+
+
+func _purgar_instantaneas() -> void:
+	var res: Dictionary = _instantanea_store.purgar(_instantaneas_dias)
+	if not res.get("ok", false):
+		progreso.text = tr("No se pudieron purgar las instantáneas.")
+		return
+	var borradas := int(res.get("borradas", 0))
+	if borradas == 0:
+		progreso.text = tr("No hay instantáneas más antiguas de %d días.") % _instantaneas_dias
+		return
+	progreso.text = tr("Instantáneas antiguas eliminadas: %d") % borradas
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -1115,7 +1143,14 @@ func _scan_terminado(total: int, caidos: int) -> void:
 	%BotonComprobar.disabled = false
 	_ui_barra_final(caidos)
 	progreso.text = tr("Listo: %d caídos de %d") % [caidos, total]
+	_instantanea_guardar()
 	_cambios_al_terminar()
+
+
+func _instantanea_guardar() -> void:
+	if _instantanea_store == null:
+		return
+	_instantanea_store.guardar(_entradas, _estados, _instantaneas_dias)
 
 
 func _cambios_al_terminar() -> void:
@@ -1147,8 +1182,7 @@ func _cambios_filtrar_lista() -> void:
 
 
 func _cambios_abrir_dashboard() -> void:
-	_estado_store.volcar()
-	dashboard.abrir(_entradas, _estado_store.cargar().get("estados", {}))
+	_abrir_dashboard()
 
 
 func _scan_log(url: String, resultado: String, detalle := "") -> void:
@@ -1495,7 +1529,7 @@ func _confirmar_restaurar() -> void:
 	progreso.text = tr("Catálogo restaurado desde la copia.")
 
 
-func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "auto", idioma := "es", reintentar_transitorios := true, red_sin_comprobar := true, aceptar_certificados := false) -> void:
+func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "auto", idioma := "es", reintentar_transitorios := true, red_sin_comprobar := true, aceptar_certificados := false, instantaneas_dias := 0) -> void:
 	var locale_anterior := TranslationServer.get_locale()
 	_paralelismo = paralelismo
 	_timeout = timeout
@@ -1504,6 +1538,7 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	_reintentar_transitorios = reintentar_transitorios
 	_red_sin_comprobar = red_sin_comprobar
 	_aceptar_certificados = aceptar_certificados
+	_instantaneas_dias = InstantaneaStoreScript.limite_ok(instantaneas_dias) if instantaneas_dias > 0 else _instantaneas_dias
 	_scan.paralelismo = _paralelismo
 	_scan.intervalo_auto = _intervalo_auto
 	_scan.auto_abrir = _auto_abrir
@@ -1523,6 +1558,7 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	cambios["reintentar_transitorios"] = reintentar_transitorios
 	cambios["red_sin_comprobar"] = red_sin_comprobar
 	cambios["aceptar_certificados"] = aceptar_certificados
+	cambios["instantaneas_dias"] = _instantaneas_dias
 	if not _config_ctrl.guardar(_config_store, cambios):
 		TranslationServer.set_locale(locale_anterior)
 		progreso.text = tr("No se pudo guardar la configuración.")
