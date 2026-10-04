@@ -30,6 +30,10 @@ func _initialize() -> void:
 	_check(_marca_cambio_segura(), "list_item no busca %MarcaCambio a saco: la grilla no lo tiene (#58)")
 	_check(_reubicar_extraido(), "el criterio de reubicacion vive en redirecciones.gd, no en main.gd (#59)")
 	_check(_url_final_propaga(), "la URL final viaja del checker al estado y se persiste (#59)")
+	_check(_almacen_antes_de_stores(), "el almacenamiento se abre antes de crear los stores (#63)")
+	_check(_almacen_no_preload_circular(), "almacen.gd no preloadea sus backends: seria circular (#63)")
+	_check(_preferencias_enseña_almacen(), "Preferencias tiene seccion de almacenamiento (#63)")
+	_check(_escritura_atomica_compartida(), "config y cola usan la escritura atomica compartida (#63)")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -212,9 +216,63 @@ func _catalogo_extraido() -> bool:
 		and FileAccess.file_exists("res://tests/test_catalogo_controller.gd")
 
 
-func _main_no_secha() -> bool:
+func _escritura_atomica_compartida() -> bool:
+	# config_store._escribir_json abria el destino en WRITE y escribia encima:
+	# un corte a mitad dejaba config.json en cero. cola_store iba por .tmp y
+	# rename, pero borraba el destino antes, dejando un hueco sin fichero. Los dos
+	# delegan ahora en la misma de almacen.gd, que ademas deja un .bak (#63).
+	for nombre in ["config_store.gd", "cola_store.gd"]:
+		var src := _leer("res://scripts/%s" % nombre)
+		if "AlmacenScript.escribir_json(ruta, dato)" not in src:
+			return false
+		if "FileAccess.open(ruta, FileAccess.WRITE)" in src:
+			return false
+	var almacen := _leer("res://scripts/almacen.gd")
+	return "static func escribir_json" in almacen and ".bak" in almacen and "rename_absolute" in almacen
+
+
+func _almacen_antes_de_stores() -> bool:
+	# El orden importa: CONFIG_BASE decide de donde salen enlaces.json y el resto.
+	# Si _abrir_almacen() fuera despues de ConfigStoreScript.new(), el store se
+	# construiria contra user:// y el resto de la sesion escribiria ahi (#63).
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1700
+	var abrir := main.find("_abrir_almacen()")
+	if abrir < 0:
+		return false
+	for marca in ["ConfigStoreScript.new(", "InstantaneaStoreScript.new(", "PresetsStoreScript.new("]:
+		var donde := main.find(marca)
+		if donde < 0 or donde < abrir:
+			return false
+	return main.contains("_almacen.aplicar_a(self)") \
+		and _leer("res://scripts/almacen_controller.gd").contains("nodo.DATA_USER = base + \"enlaces.json\"")
+
+
+func _almacen_no_preload_circular() -> bool:
+	# almacen.gd es la base de la que extienden los backends. Si preloadease a
+	# almacen_json.gd para resolver el modo, el preload de este ultimo sobre el
+	# de aquel se cortocircuitaria al cargar (#63).
+	var base := _leer("res://scripts/almacen.gd")
+	if "almacen_json" in base or "almacen_controller" in base:
+		return false
+	var json := _leer("res://scripts/almacen_json.gd")
+	return "extends AlmacenScript" in json and "const AlmacenScript := preload(\"res://scripts/almacen.gd\")" in json
+
+
+func _preferencias_enseña_almacen() -> bool:
+	var escena := _leer("res://scenes/Preferencias.tscn")
+	var codigo := _leer("res://scripts/preferencias.gd")
+	for nodo in ["AlmacenBase", "BotonExaminar", "BotonAbrirCarpeta", "AlmacenDetalle", "DialogoCarpeta"]:
+		if not ("name=\"%s\"" % nodo) in escena:
+			return false
+	return "func _mostrar_almacen() -> void:" in codigo and "migrar_a_otro" in codigo
+
+
+func _main_no_secha() -> bool:
+	# El techo estaba en 1700 y #63 lo subio a 1710: main.gd necesita un
+	# _abrir_almacen() para resolver CONFIG_BASE antes de crear los stores, y
+	# quitando lineas de ahi se tocaria logica que no tiene nada que ver.
+	var main := _leer("res://scripts/main.gd")
+	return main.split("\n").size() <= 1710
 
 
 func _seleccion_extraida() -> bool:

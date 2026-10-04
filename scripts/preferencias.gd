@@ -2,6 +2,10 @@ extends Window
 
 signal aplicado(paralelismo: int, timeout: float, auto_abrir: bool, intervalo: int, tema: String, idioma: String, reintentar_transitorios: bool, red_sin_comprobar: bool, aceptar_certificados: bool, instantaneas_dias: int)
 
+const AlmacenConfigScript := preload("res://scripts/almacen_config.gd")
+const AlmacenControllerScript := preload("res://scripts/almacen_controller.gd")
+const AlmacenJsonScript := preload("res://scripts/almacen_json.gd")
+
 const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
 
 @onready var paralelismo_spin: SpinBox = %Paralelismo
@@ -14,6 +18,12 @@ const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
 @onready var red_sin_comprobar_box: CheckBox = %RedSinComprobar
 @onready var certificados_box: CheckBox = %AceptarCertificados
 @onready var instantaneas_spin: SpinBox = %InstantaneasDias
+@onready var almacen_base: LineEdit = %AlmacenBase
+@onready var almacen_detalle: Label = %AlmacenDetalle
+@onready var almacen_aviso: Label = %AlmacenAviso
+
+var _almacen_actual: RefCounted = null
+var _lector_config: RefCounted = null
 
 
 func _ready() -> void:
@@ -25,6 +35,9 @@ func _ready() -> void:
 	close_requested.connect(hide)
 	%BotonCancelar.pressed.connect(hide)
 	%BotonGuardar.pressed.connect(_on_guardar)
+	%BotonExaminar.pressed.connect(_examinar_carpeta)
+	%BotonAbrirCarpeta.pressed.connect(_abrir_carpeta)
+	%DialogoCarpeta.dir_selected.connect(_carpeta_elegida)
 
 
 func abrir(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0, tema := "oscuro", idioma := "es", reintentar_transitorios := true, red_sin_comprobar := true, aceptar_certificados := false, instantaneas_dias := 365) -> void:
@@ -38,7 +51,81 @@ func abrir(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0,
 	_seleccionar_intervalo(intervalo)
 	_seleccionar_tema(tema)
 	_seleccionar_idioma(idioma)
+	_mostrar_almacen()
 	popup_centered()
+
+
+func _mostrar_almacen() -> void:
+	_lector_config = AlmacenConfigScript.new()
+	_almacen_actual = AlmacenControllerScript.new()
+	var info: Dictionary = _almacen_actual.info()
+	var rec: Dictionary = info.get("recuentos", {})
+	almacen_base.text = str(info.get("base", "user://"))
+	almacen_base.tooltip_text = tr("%s\nOrigen: %s") % [str(info.get("base", "")), str(info.get("origen", ""))]
+	almacen_detalle.text = tr("Almacenamiento: %s · %d enlaces · %d estados · %d capturas · %s en disco") % [
+		str(info.get("modo", "ficheros")),
+		int(rec.get("entradas", 0)),
+		int(rec.get("estados", 0)),
+		int(rec.get("capturas", 0)),
+		_tamano_legible(int(info.get("total", 0))),
+	]
+	var avisos: Array = info.get("avisos", [])
+	# En una variable y no en la asignacion: el "\n" de un join pegado al .text
+	# parece una cadena de UI y el chequeo de traducciones lo pide (#63).
+	var texto := ""
+	for aviso in avisos:
+		texto += str(aviso) + "\n"
+	almacen_aviso.text = texto
+
+
+func _tamano_legible(bytes: int) -> String:
+	if bytes < 1024:
+		return tr("%d B") % bytes
+	if bytes < 1024 * 1024:
+		return tr("%.1f KB") % (float(bytes) / 1024.0)
+	return tr("%.1f MB") % (float(bytes) / (1024.0 * 1024.0))
+
+
+func _examinar_carpeta() -> void:
+	%DialogoCarpeta.popup_centered_ratio(0.7)
+
+
+func _abrir_carpeta() -> void:
+	var base := almacen_base.text
+	if base.is_empty():
+		base = "user://"
+	OS.shell_open(ProjectSettings.globalize_path(base))
+
+
+func _carpeta_elegida(ruta: String) -> void:
+	# No se cambia la base en caliente: los stores ya tienen sus rutas y sus
+	# ficheros abiertos, y cambiarlos a mitad de sesion es la forma facil de
+	# partir un JSON. Se copia todo al sitio nuevo y se deja escrito el fichero
+	# de configuracion; el cambio entra en vigor al reiniciar.
+	almacen_aviso.text = ""
+	var destino := AlmacenJsonScript.new(ruta)
+	var res: Dictionary = _almacen_actual.migrar_a_otro(destino)
+	if not res.get("ok", false):
+		almacen_aviso.text = tr("No se pudo migrar a la carpeta elegida: %s") % _detalle_migracion(res)
+		return
+	var guardado: Dictionary = _lector_config.guardar(str(_almacen_actual.config.get("modo", "ficheros")), str(_almacen_actual.config.get("ruta_bd", "")), ruta)
+	if not guardado.get("ok", false):
+		almacen_aviso.text = tr("Se copiaron los datos, pero no se pudo guardar la preferencia: %s") % str(guardado.get("error", ""))
+		return
+	_mostrar_almacen()
+	almacen_aviso.text = tr("Datos copiados a %s. Reinicia para usarlos.") % ruta
+
+
+func _detalle_migracion(res: Dictionary) -> String:
+	var detalle := str(res.get("detalle", ""))
+	if not detalle.is_empty():
+		return detalle
+	var origen: Dictionary = res.get("origen", {})
+	var destino: Dictionary = res.get("destino", {})
+	for clave in origen.keys():
+		if int(origen[clave]) != int(destino.get(clave, 0)):
+			return tr("%s: %d de %d") % [str(clave), int(destino.get(clave, 0)), int(origen[clave])]
+	return tr("recuentos distintos")
 
 
 func _seleccionar_intervalo(minutos: int) -> void:

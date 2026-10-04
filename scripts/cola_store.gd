@@ -1,6 +1,8 @@
 class_name ColaStore
 extends RefCounted
 
+const AlmacenScript := preload("res://scripts/almacen.gd")
+
 var _base: String
 const _NOMBRE := "colas.json"
 
@@ -60,26 +62,11 @@ func _leer_json(ruta: String) -> Variant:
 
 
 func _escribir_json(ruta: String, dato: Variant) -> bool:
-	var texto := JSON.stringify(dato, "\t")
-	if texto.is_empty():
-		return false
 	escrituras += 1
-	var abs := ProjectSettings.globalize_path(ruta)
-	var abs_tmp := ProjectSettings.globalize_path(ruta + ".tmp")
-	var archivo := FileAccess.open(ruta + ".tmp", FileAccess.WRITE)
-	if archivo == null:
-		return false
-	archivo.store_string(texto)
-	archivo.close()
-	if archivo.get_error() != OK:
-		DirAccess.remove_absolute(abs_tmp)
-		return false
-	if FileAccess.file_exists(ruta):
-		DirAccess.remove_absolute(abs)
-	if DirAccess.rename_absolute(abs_tmp, abs) != OK:
-		DirAccess.remove_absolute(abs_tmp)
-		return false
-	return true
+	# Antes el destino se borraba antes de renombrar el .tmp, de modo que entre
+	# una cosa y otra no habia ni el fichero viejo ni el nuevo. Ahora el viejo
+	# pasa a .bak, asi que siempre hay algo que leer (#63).
+	return AlmacenScript.escribir_json(ruta, dato)
 
 
 func _ruta() -> String:

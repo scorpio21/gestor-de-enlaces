@@ -15,6 +15,7 @@ var ASSETS_BASE := RutasScript.ASSETS_USER:
 		if ventana != null:
 			ventana.ASSETS_BASE = valor
 const EstadoStoreScript := preload("res://scripts/estado_store.gd")
+const AlmacenControllerScript := preload("res://scripts/almacen_controller.gd")
 const ContadoresScript := preload("res://scripts/gestor_contadores.gd")
 const ConfigStoreScript := preload("res://scripts/config_store.gd")
 const InstantaneaStoreScript := preload("res://scripts/instantanea_store.gd")
@@ -85,6 +86,7 @@ var _catalogo = CatalogoControllerScript.new()
 var _estado_store: RefCounted
 var _config_store: RefCounted
 var _instantanea_store: RefCounted = null
+var _almacen: RefCounted = null
 var CONFIG_BASE := "user://"
 var _orden_columna := ""
 var _orden_direccion := 1
@@ -162,6 +164,7 @@ func _ready() -> void:
 	%BotonSelEliminar.pressed.connect(_sel_eliminar)
 	%BotonSelLimpiar.pressed.connect(_sel_limpiar)
 	_sel.preparar(barra_seleccion, %SelContador, Callable(self, "_ui_filas_visibles"), Callable(self, "_urls_catalogo"))
+	_abrir_almacen()
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new(CONFIG_BASE)
 	_instantanea_store = InstantaneaStoreScript.new(CONFIG_BASE)
@@ -464,6 +467,17 @@ func _indice_etiqueta(etiqueta: String) -> int:
 		if filtro_tag.get_item_text(i).to_lower() == clave:
 			return i
 	return 0
+
+
+func _abrir_almacen() -> void:
+	# El almacenamiento se abre antes que nada: CONFIG_BASE decide de donde salen
+	# enlaces.json, estados.json, config.json y las capturas, y todos los stores
+	# se crean despues. Con -- --almacen=<ruta> se puede apuntar a otra carpeta
+	# sin tocar el fichero de configuracion (#63).
+	_almacen = AlmacenControllerScript.new(OS.get_cmdline_user_args())
+	_almacen.aplicar_a(self)
+	for aviso in _almacen.avisos:
+		push_warning(str(aviso))
 
 
 func _cargar_datos() -> void:

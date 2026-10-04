@@ -2,6 +2,7 @@ extends RefCounted
 
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const InstantaneaStoreScript := preload("res://scripts/instantanea_store.gd")
+const AlmacenScript := preload("res://scripts/almacen.gd")
 
 const PARALELO_DEFAULT := 3
 const TIMEOUT_DEFAULT := 10.0
@@ -217,12 +218,11 @@ func _leer_json(ruta: String) -> Variant:
 
 
 func _escribir_json(ruta: String, dato: Variant) -> bool:
-	var archivo := FileAccess.open(ruta, FileAccess.WRITE)
-	if archivo == null:
-		return false
-	archivo.store_string(JSON.stringify(dato, "\t"))
-	archivo.close()
-	return true
+	# Antes se abria el destino en WRITE y se escribia encima: un corte de luz
+	# a mitad dejaba config.json en cero y, con ella, todos los ajustes que el
+	# usuario hubiera cambiado (#63). Ahora es el mismo escritura atomica que
+	# usan el resto de stores: .tmp, .bak y rename.
+	return AlmacenScript.escribir_json(ruta, dato)
 
 
 func _ruta(nombre: String) -> String:

@@ -6,10 +6,14 @@ const ConfigStoreScript := preload("res://scripts/config_store.gd")
 const ColaStoreScript := preload("res://scripts/cola_store.gd")
 const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 const InstantaneaStoreScript := preload("res://scripts/instantanea_store.gd")
+const AlmacenControllerScript := preload("res://scripts/almacen_controller.gd")
+const AlmacenJsonScript := preload("res://scripts/almacen_json.gd")
+const AlmacenScript := preload("res://scripts/almacen.gd")
 
 const MARCA := "GestorAO smoke OK"
 const ARGUMENTO := "--smoke"
 const SONDA := "user://__smoke__.txt"
+const BASE_SMOKE_ALMACEN := "user://__smoke_almacen__"
 const ESCENAS := [
 	"res://scenes/Main.tscn",
 	"res://scenes/Dashboard.tscn",
@@ -67,11 +71,33 @@ static func ejecutar(escenas: Array = ESCENAS, recursos: Array = RECURSOS, store
 	fallos.append_array(_recursos(recursos))
 	fallos.append_array(_escenas(escenas))
 	fallos.append_array(_stores(stores))
+	fallos.append_array(_almacen())
 	var lineas: Array = []
 	for fallo in fallos:
 		lineas.append("SMOKE FALLO: %s" % fallo)
 	lineas.append("SMOKE: %d comprobacion(es) fallida(s)" % fallos.size())
 	return {"ok": fallos.is_empty(), "fallos": fallos, "lineas": lineas}
+
+
+static func _almacen() -> Array:
+	# El almacenamiento no entra en STORES porque su constructor no es _init(base):
+	# es _init(argumentos, base_config, config_inyectada). Se comprueba aparte
+	# porque es lo que main.gd ejecuta antes que nada, y un preload que falla
+	# dentro del pck solo se ve aqui (#63).
+	var fallos: Array = []
+	var ctrl = AlmacenControllerScript.new(PackedStringArray(), BASE_SMOKE_ALMACEN)
+	if ctrl == null or ctrl.almacen == null:
+		fallos.append("el almacenamiento no se abre")
+		return fallos
+	if not (ctrl.almacen.modo() in AlmacenScript.MODOS):
+		fallos.append("el backend no declara un modo valido (%s)" % ctrl.almacen.modo())
+	var prueba = AlmacenJsonScript.new(BASE_SMOKE_ALMACEN)
+	# Se borra antes: si la escritura fallara en silencio, el colas.json de una
+	# pasada anterior seguiria ahi y el store lo devolveria como si nada (#63).
+	DirAccess.remove_absolute(ProjectSettings.globalize_path("%s/colas.json" % BASE_SMOKE_ALMACEN))
+	if not prueba.abrir() or not prueba.guardar_cola(["https://example.com/"]) or prueba.cola() != ["https://example.com/"]:
+		fallos.append("el backend no escribe y relee una cola")
+	return fallos
 
 
 static func _sonda_escritura(sonda: String) -> Array:

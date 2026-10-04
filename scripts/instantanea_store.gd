@@ -1,6 +1,7 @@
 extends RefCounted
 
 const DashboardStoreScript := preload("res://scripts/dashboard_store.gd")
+const AlmacenScript := preload("res://scripts/almacen.gd")
 
 const LIMITE_DEFAULT := 365
 const LIMITE_MIN := 30
@@ -155,15 +156,10 @@ func _leer_json() -> Variant:
 
 
 func _escribir_json(lista: Array) -> bool:
+	# Antes abria el destino en WRITE y escribia encima. Perder un dia entero de
+	# instantaneas por un corte a mitad no es grave, pero no cuesta nada que el
+	# fichero anterior quede en .bak (#63).
 	if not _base.ends_with("://"):
 		DirAccess.make_dir_recursive_absolute(_base)
-	var texto := JSON.stringify(lista, "\t")
-	if texto.is_empty():
-		return false
 	escrituras += 1
-	var archivo := FileAccess.open(ruta(), FileAccess.WRITE)
-	if archivo == null:
-		return false
-	archivo.store_string(texto)
-	archivo.close()
-	return true
+	return AlmacenScript.escribir_json(ruta(), lista)

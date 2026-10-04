@@ -145,6 +145,53 @@ value = 365.0
 rounded = true
 suffix = " días"
 
+[node name="SeparadorAlmacen" type="HSeparator" parent="Margen/Columna"]
+layout_mode = 2
+
+[node name="EtiquetaAlmacen" type="Label" parent="Margen/Columna"]
+layout_mode = 2
+text = "Almacenamiento"
+
+[node name="AlmacenBase" type="LineEdit" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+editable = false
+tooltip_text = "Carpeta donde viven enlaces.json, estados.json, config.json y las capturas. Se lee de user://almacenamiento.json."
+
+[node name="FilaAlmacen" type="HBoxContainer" parent="Margen/Columna"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BotonExaminar" type="Button" parent="Margen/Columna/FilaAlmacen"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Elige otra carpeta y copia todo allí. Se aplica al reiniciar."
+text = "Cambiar carpeta..."
+
+[node name="BotonAbrirCarpeta" type="Button" parent="Margen/Columna/FilaAlmacen"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Abrir carpeta"
+
+[node name="AlmacenDetalle" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Lo que ocupa el almacenamiento ahora mismo."
+text = ""
+autowrap_mode = 3
+
+[node name="AlmacenAviso" type="Label" parent="Margen/Columna"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.4, 0.4, 1)
+text = ""
+
+[node name="DialogoCarpeta" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Elige la carpeta de datos"
+access = 2
+file_mode = 2
+
 [node name="Error" type="Label" parent="Margen/Columna"]
 unique_name_in_owner = true
 layout_mode = 2

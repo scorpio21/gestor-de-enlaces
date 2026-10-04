@@ -76,4 +76,11 @@ static func _parsear(ruta: String) -> Variant:
 	var archivo := FileAccess.open(ruta, FileAccess.READ)
 	if archivo == null:
 		return null
-	return JSON.parse_string(archivo.get_as_text())
+	# JSON.new().parse() en vez de parse_string(): el segundo escribe el error en
+	# la consola aunque el fichero este corrupto, y en el arranque eso es ruido
+	# para un usuario que no sabe leer un "Expected key" (#63).
+	var texto := archivo.get_as_text()
+	var json := JSON.new()
+	if json.parse(texto) != OK:
+		return null
+	return json.data
