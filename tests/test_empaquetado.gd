@@ -10,6 +10,7 @@ func _initialize() -> void:
 	_check(_ci_matriz_windows(), "la CI corre la bateria tambien en Windows (#61)")
 	_check(_ci_cache_importacion(), "la CI cachea .godot/imported y uid_cache.bin (#61)")
 	_check(_ci_smoke(), "la CI arranca el binario exportado (#61)")
+	_check(_ci_pasos_bash(), "todo paso que toca Godot va con shell: bash (#61)")
 	_check(_godot_action_curl_falla(), "las descargas de la accion de Godot usan curl -f (#61)")
 	_check(FileAccess.file_exists("res://tests/run_battery.sh"), "existe tests/run_battery.sh")
 	_check(_bateria_con_timeout(), "run_battery.sh da timeout por suite (#61)")
@@ -79,6 +80,42 @@ func _ci_smoke() -> bool:
 	var txt := _leer("res://.github/workflows/ci.yml")
 	return "run_smoke.sh" in txt and "--export-release" in txt \
 		and txt.find("run_smoke.sh") > txt.find("--export-release")
+
+
+func _ci_pasos_bash() -> bool:
+	# En windows-latest el shell por defecto de un step es pwsh, donde
+	# "C:\...\godot.exe --headless --path . --import" ni siquiera parsea (hace
+	# falta el operador & delante), y un bash tests/run_x.sh no se ejecuta. Cada
+	# paso que toca Godot o un .sh tiene que declarar shell: bash.
+	# Los pasos se parten por su "- name:" porque el cuerpo de un run: | va en
+	# lineas siguientes: buscar la cadena solo en la linea del run: no encuentra
+	# ni el nombre del script.
+	var necesidad := ["run_battery.sh", "run_estatico.sh", "run_smoke.sh", "--import", "--export-release"]
+	var pasos: Array = []
+	for linea in _leer("res://.github/workflows/ci.yml").split("\n"):
+		var limpia := linea.strip_edges()
+		if limpia.begins_with("- name:"):
+			pasos.append({"texto": limpia, "bash": false})
+			continue
+		if pasos.is_empty():
+			continue
+		var paso: Dictionary = pasos[pasos.size() - 1]
+		paso["texto"] = "%s\n%s" % [paso["texto"], limpia]
+		if limpia.begins_with("shell:") and "bash" in limpia:
+			paso["bash"] = true
+	var revisados := 0
+	for entrada in pasos:
+		var texto := str(entrada["texto"])
+		var toca := false
+		for clave in necesidad:
+			if texto.contains(clave):
+				toca = true
+		if not toca:
+			continue
+		revisados += 1
+		if not bool(entrada["bash"]):
+			return false
+	return revisados >= 5
 
 
 func _godot_action_curl_falla() -> bool:

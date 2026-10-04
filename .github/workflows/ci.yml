@@ -37,7 +37,12 @@ jobs:
           restore-keys: |
             import-${{ runner.os }}-
 
+      # shell: bash en todos los pasos que tocan Godot, tambien en Windows: el
+      # shell por defecto ahi es pwsh, donde '"C:\...\godot.exe" --headless' es
+      # un error de sintaxis (hace falta el operador &) y el job falla antes de
+      # arrancar nada.
       - name: Importar assets del proyecto
+        shell: bash
         run: '"${{ steps.godot.outputs.bin }}" --headless --path . --import'
 
       # El import anterior escupe ruido benigno (Parse Error: Native class
@@ -84,9 +89,11 @@ jobs:
             import-${{ runner.os }}-
 
       - name: Importar assets del proyecto
+        shell: bash
         run: '"${{ steps.godot.outputs.bin }}" --headless --path . --import'
 
       - name: Exportar los tres presets
+        shell: bash
         run: |
           set -euxo pipefail
           G="${{ steps.godot.outputs.bin }}"
