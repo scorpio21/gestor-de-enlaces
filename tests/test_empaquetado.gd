@@ -10,6 +10,7 @@ func _initialize() -> void:
 	_check(_ci_matriz_windows(), "la CI corre la bateria tambien en Windows (#61)")
 	_check(_ci_cache_importacion(), "la CI cachea .godot/imported y uid_cache.bin (#61)")
 	_check(_ci_smoke(), "la CI arranca el binario exportado (#61)")
+	_check(_godot_action_curl_falla(), "las descargas de la accion de Godot usan curl -f (#61)")
 	_check(FileAccess.file_exists("res://tests/run_battery.sh"), "existe tests/run_battery.sh")
 	_check(_bateria_con_timeout(), "run_battery.sh da timeout por suite (#61)")
 	_check(FileAccess.file_exists("res://tests/run_estatico.sh"), "existe tests/run_estatico.sh")
@@ -78,6 +79,24 @@ func _ci_smoke() -> bool:
 	var txt := _leer("res://.github/workflows/ci.yml")
 	return "run_smoke.sh" in txt and "--export-release" in txt \
 		and txt.find("run_smoke.sh") > txt.find("--export-release")
+
+
+func _godot_action_curl_falla() -> bool:
+	var txt := _leer("res://.github/actions/godot/action.yml")
+	# Sin -f, curl sale con 0 ante un 404 y se guarda el "Not Found" de GitHub en
+	# el .zip: el fallo que se ve es "End-of-central-directory signature not
+	# found" de unzip, que no dice nada de la URL. Pasa en cuanto una URL de un
+	# release se queda sin .exe (el zip de Windows es win64.exe.zip, no win64.zip).
+	var curls := 0
+	for linea in txt.split("\n"):
+		# Solo los comandos: el comentario que explica el -f menciona curl y por
+		# supuesto no lleva -f.
+		if not linea.strip_edges().begins_with("curl "):
+			continue
+		curls += 1
+		if not "curl -f" in linea:
+			return false
+	return curls >= 2
 
 
 func _smoke_exige_marca() -> bool:

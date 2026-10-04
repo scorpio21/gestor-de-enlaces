@@ -29,11 +29,14 @@ runs:
       shell: bash
       run: |
         set -euxo pipefail
-        curl -sSL -o /tmp/templates.tpz https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
+        curl -fsSL -o /tmp/templates.tpz https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
         unzip -o -q /tmp/templates.tpz -d /tmp/templates
         mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
         mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.7.2.stable/
 
+    # -f en todos los curl: sin el, un 404 sale con codigo 0 y curl escribe el
+    # "Not Found" de GitHub en el .zip, que luego unzip no sabe abrir. Asi el
+    # fallo dice que paso en vez de "End-of-central-directory signature not found".
     - name: Descargar Godot
       if: steps.cache-godot.outputs.cache-hit != 'true'
       shell: bash
@@ -41,10 +44,11 @@ runs:
         set -euxo pipefail
         mkdir -p ~/godot-bin
         if [ "$RUNNER_OS" = "Windows" ]; then
-          curl -sSL -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_win64.zip
+          # Ojo con el nombre: el zip de Windows lleva .exe.zip, no .zip a secas.
+          curl -fsSL -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_win64.exe.zip
           unzip -o -q /tmp/godot.zip -d ~/godot-bin
         else
-          curl -sSL -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          curl -fsSL -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
           unzip -o -q /tmp/godot.zip -d ~/godot-bin
           mv ~/godot-bin/Godot_v4.7.2-stable_linux.x86_64 ~/godot-bin/godot
           chmod +x ~/godot-bin/godot
