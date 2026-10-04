@@ -51,7 +51,8 @@ Linux/CI: `GODOT_BIN=/ruta/a/godot bash tests/run_battery.sh` (en pwsh hay que u
 - ✅ **#48 assets de los tests aislados**: `main.ASSETS_BASE` (parametrizable, la ventana de alta lo hereda) + guardián en `test_proyecto`; la batería ya no toca `res://Assets`.
 - ✅ Ronda de versiones: 0.1.0 (empaquetado #26/#28/#29) → 0.1.9 (capturas con nombre #47). Últimas: etiquetas (#42), filtros avanzados + presets (#44 en 0.1.2/0.1.3), grilla (#43 0.1.4), dashboard (#45 0.1.5), dedup de capturas (#36 0.1.6), tema automático (#46 0.1.7), diálogos nativos (#38 0.1.8), caché reverse-lookup (#40), capturas con nombre (#47 0.1.9).
 - ✅ **#41 residuos cerrado** (`c2d9e70`): versionado el addon tercero `addons/godot_ai` (Godot AI v3.2.1, MIT) + bloque `[autoload]/[editor_plugins]` de `project.godot` (el addon retira su autoload MCP de los exports); `export_presets.cfg` regenerado por el editor 4.7; metadatos Godot pendientes (16 `.uid`, 2 `.translation`, 7 `.import`). Eliminados localmente `data/data2.json` (sin uso) y 2 `.import` huérfanos de `Assets/png`. Planes ajenos sin commitear en `.gitignore`.
-- ⏳ Backlog: ninguno. El CHANGELOG acumula en `[Sin publicar]` #30 (i18n), #17 (ordenación) y #40 (caché) sin elevar a release todavía.
+- ⏳ Backlog: ninguno. El CHANGELOG acumula en `[Sin publicar]` lo que se cierre después de la 0.2.0.
+- ✅ **Release 0.2.0** (2026-10-04): sube `config/version` a `0.2.0` y cierra `[Sin publicar]` con 48 entradas (#17, #30, #40, #48, #49, #54–#63, el rediseño del dashboard, i18n y ordenación). Tag `v0.2.0` y release de GitHub. **Antes no había ni un tag ni una release en el repo**, así que `actualizador.gd`, que consulta `releases/latest`, llevaba desde siempre recibiendo un 404: el aviso de «hay una nueva versión» no había podido activarse nunca.
 
 ## Historial de trabajo (Grupo C: después de la base `0a77542`)
 
@@ -84,7 +85,7 @@ Entregables: `scripts/cola_store.gd`, `scripts/informe_store.gd`, `scripts/tema_
 
 ## Próximos pasos
 
-1. Backlog abierto: **#63 fase 2** (backend SQLite por GDExtension). Solo faltaría `AlmacenSqlite extends AlmacenScript`: la superficie, las rutas, la migración y el recuento ya están escritos contra la interfaz, y `MODOS` ya acepta `base_datos` (la config lo guarda y la fábrica lo rechaza con un aviso). Cierra el issue al terminar. Después: elevar `[Sin publicar]` de #30/#17/#40/#48/#49/#58/#59/#60/#61/#63 con bump de versión (los commits de estas rondas quedan en `[Sin publicar]` sin bump).
+1. Backlog abierto: **#63 fase 2** (backend SQLite por GDExtension). Solo faltaría `AlmacenSqlite extends AlmacenScript`: la superficie, las rutas, la migración y el recuento ya están escritos contra la interfaz, y `MODOS` ya acepta `base_datos` (la config lo guarda y la fábrica lo rechaza con un aviso). Cierra el issue al terminar. Sus entradas irán a `[Sin publicar]` (la 0.2.0 ya salió con la fase 1 dentro).
 2. Si se abre el editor y guarda, `export_presets.cfg` se re-reescribe a su formato; comitear el cambio (AGENTS.md).
 3. `MEMORIA.md` y `README.md`/`CHANGELOG.md` se mantienen al día en cada ronda.
 

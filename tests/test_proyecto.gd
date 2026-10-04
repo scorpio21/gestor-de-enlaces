@@ -4,9 +4,10 @@ var _fallos := 0
 
 
 func _initialize() -> void:
-	_check(_version_ok(), "project.godot tiene config/version=0.1.9")
+	_check(_version_ok(), "project.godot tiene config/version=0.2.0")
 	_check(_icon_ok(), "project.godot apunta a Assets/icon/icon.svg")
-	_check(_title_ok(), "project.godot tiene título GestorAO v0.1.9")
+	_check(_title_ok(), "project.godot tiene título GestorAO v0.2.0")
+	_check(_version_un_lugar_ok(), "el rótulo de Main.tscn lleva la misma versión que project.godot")
 	_rutas()
 	_cache_texturas()
 	if _fallos == 0:
@@ -48,7 +49,16 @@ func _cache_texturas() -> void:
 
 
 func _version_ok() -> bool:
-	return ProjectSettings.get_setting("application/config/version") == "0.1.9"
+	return ProjectSettings.get_setting("application/config/version") == "0.2.0"
+
+
+func _version_un_lugar_ok() -> bool:
+	# La versión vive en project.godot y todo el código la lee de ahí, pero el
+	# rótulo de la barra de estado la lleva como literal en la escena para que el
+	# editor y las capturas no muestren la vieja. Son tres sitios y el bump se
+	# olvidaba de uno: aquí se comprueba que no se vuelvan a desincronizar.
+	var v := str(ProjectSettings.get_setting("application/config/version"))
+	return FileAccess.get_file_as_string("res://scenes/Main.tscn").contains("text = \"v%s\"" % v)
 
 
 func _icon_ok() -> bool:
@@ -56,7 +66,7 @@ func _icon_ok() -> bool:
 
 
 func _title_ok() -> bool:
-	return ProjectSettings.get_setting("display/window/title") == "GestorAO v0.1.9"
+	return ProjectSettings.get_setting("display/window/title") == "GestorAO v0.2.0"
 
 
 func _check(condicion: bool, etiqueta: String) -> void:
