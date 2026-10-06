@@ -2,14 +2,16 @@ class_name EstadoStore
 extends RefCounted
 
 var _base: String
+var almacen = null
 var _estados: Dictionary = {}
 var _borrados: Array = []
 var _cargado := false
 var escrituras := 0
 
 
-func _init(base := "user://") -> void:
+func _init(base := "user://", almacen_almacen = null) -> void:
 	_base = base
+	almacen = almacen_almacen
 
 
 func cargar() -> Dictionary:
@@ -50,6 +52,9 @@ func guardar_estado(url: String, valido: Variant, mensaje: String, codigo := 0, 
 
 func volcar() -> bool:
 	_asegurar_cargado()
+	if almacen != null:
+		escrituras += 1
+		return almacen.guardar_estados_y_borrados(_estados, _borrados)
 	return _escribir_json(_ruta("estados.json"), _estados) \
 		and _escribir_json(_ruta("borrados.json"), _borrados)
 
@@ -97,10 +102,16 @@ func _asegurar_cargado() -> void:
 	if _cargado:
 		return
 	_cargado = true
-	var estados: Variant = _leer_json(_ruta("estados.json"))
-	_estados = estados if typeof(estados) == TYPE_DICTIONARY else {}
-	var borrados: Variant = _leer_json(_ruta("borrados.json"))
-	_borrados = borrados if typeof(borrados) == TYPE_ARRAY else []
+	if almacen != null:
+		var estados: Variant = almacen.estados()
+		_estados = estados if typeof(estados) == TYPE_DICTIONARY else {}
+		var borrados: Variant = almacen.borrados()
+		_borrados = borrados if typeof(borrados) == TYPE_ARRAY else []
+		return
+	var leidos: Variant = _leer_json(_ruta("estados.json"))
+	_estados = leidos if typeof(leidos) == TYPE_DICTIONARY else {}
+	var leidos_borrados: Variant = _leer_json(_ruta("borrados.json"))
+	_borrados = leidos_borrados if typeof(leidos_borrados) == TYPE_ARRAY else []
 
 
 func _leer_json(ruta: String) -> Variant:

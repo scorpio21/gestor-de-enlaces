@@ -39,14 +39,16 @@ const ACEPTAR_CERTIFICADOS_DEFAULT := false
 const INSTANTANEAS_DIAS_DEFAULT := InstantaneaStoreScript.LIMITE_DEFAULT
 
 var _base: String
+var almacen = null
 
 
-func _init(base := "user://") -> void:
+func _init(base := "user://", almacen_almacen = null) -> void:
 	_base = base
+	almacen = almacen_almacen
 
 
 func cargar() -> Dictionary:
-	var v: Variant = _leer_json(_ruta("config.json"))
+	var v: Variant = almacen.config() if almacen != null else _leer_json(_ruta("config.json"))
 	if typeof(v) != TYPE_DICTIONARY:
 		return {
 			"paralelismo": PARALELO_DEFAULT,
@@ -122,6 +124,8 @@ func guardar(paralelismo: int, timeout: float, auto_abrir := AUTO_ABRIR_DEFAULT,
 		"aceptar_certificados": _bool_ok(aceptar_certificados, ACEPTAR_CERTIFICADOS_DEFAULT),
 		"instantaneas_dias": InstantaneaStoreScript.limite_ok(instantaneas_dias),
 	}
+	if almacen != null:
+		return almacen.guardar_config(dato)
 	return _escribir_json(_ruta("config.json"), dato)
 
 

@@ -2,10 +2,12 @@ extends RefCounted
 
 const CambiosStoreScript := preload("res://scripts/cambios_store.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
+const AlmacenScript := preload("res://scripts/almacen.gd")
 
 const PENDIENTES := "user://cambios_pendientes.json"
 
 var ruta := PENDIENTES
+var almacen = null
 var _claves := {}
 var _vistos := false
 
@@ -69,6 +71,8 @@ func nuevo_delta(antes: Dictionary, despues: Dictionary) -> Array:
 
 
 func leer_pendientes() -> Array:
+	if almacen != null:
+		return almacen.cambios()
 	if not FileAccess.file_exists(ruta):
 		return []
 	var datos: Variant = JSON.parse_string(FileAccess.get_file_as_string(ruta))
@@ -76,15 +80,17 @@ func leer_pendientes() -> Array:
 
 
 func guardar_pendientes(cambios: Array) -> bool:
-	var archivo := FileAccess.open(ruta, FileAccess.WRITE)
-	if archivo == null:
-		return false
-	archivo.store_string(JSON.stringify(cambios))
-	archivo.close()
-	return true
+	if almacen != null:
+		return almacen.guardar_cambios(cambios)
+	# Esto abria el destino en WRITE y escribia encima: un corte a mitad dejaba
+	# cambios_pendientes.json corrupto y con ello se perdia el aviso de cambios sin
+	# ver de la sesion anterior. Es la misma escritura atomica del resto (#63).
+	return AlmacenScript.escribir_json(ruta, cambios, false)
 
 
 func borrar_pendientes() -> bool:
+	if almacen != null:
+		return almacen.guardar_cambios([])
 	if not FileAccess.file_exists(ruta):
 		return true
 	return DirAccess.remove_absolute(ProjectSettings.globalize_path(ruta)) == OK

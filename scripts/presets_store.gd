@@ -16,14 +16,16 @@ const BUSQUEDA_MODO_DEFAULT := "and"
 const BUSQUEDA_MODOS_VALIDOS := ["and", "or"]
 
 var _base: String
+var almacen = null
 
 
-func _init(base := "user://") -> void:
+func _init(base := "user://", almacen_almacen = null) -> void:
 	_base = base
+	almacen = almacen_almacen
 
 
 func cargar() -> Dictionary:
-	var v: Variant = _leer_json(_ruta("presets_filtros.json"))
+	var v: Variant = almacen.presets() if almacen != null else _leer_json(_ruta("presets_filtros.json"))
 	if typeof(v) != TYPE_DICTIONARY:
 		return {}
 	var presets := {}
@@ -39,6 +41,8 @@ func guardar(presets: Dictionary) -> bool:
 	for nombre in presets:
 		if nombre_ok(str(nombre)):
 			dato[str(nombre)] = normalizar_config(presets[nombre])
+	if almacen != null:
+		return almacen.guardar_presets(dato)
 	return _escribir_json(_ruta("presets_filtros.json"), dato)
 
 

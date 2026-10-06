@@ -1,8 +1,9 @@
 extends RefCounted
 
 const MODO_FICHEROS := "ficheros"
+const MODO_UNICO := "unico"
 const MODO_BASE_DATOS := "base_datos"
-const MODOS := [MODO_FICHEROS, MODO_BASE_DATOS]
+const MODOS := [MODO_FICHEROS, MODO_UNICO, MODO_BASE_DATOS]
 const ESQUEMA_ACTUAL := 1
 const RUTA_BD_POR_DEFECTO := "user://gestorao.db"
 const SECCIONES := ["entradas", "estados", "borrados", "cola", "config", "capturas", "instantaneas"]
@@ -212,8 +213,29 @@ func guardar_borrados(_lista: Array) -> bool:
 	return false
 
 
+func guardar_estados_y_borrados(estados: Dictionary, borrados: Array) -> bool:
+	# El store de estados escribe estas dos cosas juntas porque van de la mano:
+	# borrar una entrada deja su estado y su marca de borrado. Con dos ficheros
+	# sueltos una escritura a medias deja la entrada borrada pero con estado, o al
+	# reves. Por defecto son dos escrituras, que es lo de siempre; los backends que
+	# pueden commitear las dos de golpe (el de fichero unico) lo sobrescriben.
+	return guardar_estados(estados) and guardar_borrados(borrados)
+
+
 func ruta_de_nombre(nombre: String) -> String:
 	return ruta_de(base, nombre)
+
+
+func hay_copia() -> bool:
+	return false
+
+
+func bloqueado() -> bool:
+	return false
+
+
+func restaurar_copia() -> bool:
+	return false
 
 
 func rutas() -> Dictionary:

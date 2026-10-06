@@ -6,14 +6,26 @@ const AlmacenScript := preload("res://scripts/almacen.gd")
 var _base: String
 const _NOMBRE := "colas.json"
 
+var almacen = null
+
 var escrituras := 0
 
 
-func _init(base := "user://") -> void:
+func _init(base := "user://", almacen_almacen = null) -> void:
 	_base = base
+	almacen = almacen_almacen
 
 
 func cargar() -> Dictionary:
+	if almacen != null:
+		var seccion: Variant = almacen.seccion("cola")
+		var fecha := 0
+		if typeof(seccion) == TYPE_DICTIONARY:
+			fecha = int(seccion.get("fecha", 0))
+		return {
+			"urls": almacen.cola(),
+			"fecha": fecha,
+		}
 	return {
 		"urls": _leer_urls(),
 		"fecha": _leer_fecha(),
@@ -21,6 +33,9 @@ func cargar() -> Dictionary:
 
 
 func guardar(urls: Array) -> bool:
+	if almacen != null:
+		escrituras += 1
+		return almacen.guardar_cola(urls)
 	if not _base.ends_with("://"):
 		DirAccess.make_dir_recursive_absolute(_base)
 	var datos := {"urls": urls, "fecha": int(Time.get_unix_time_from_system())}
@@ -28,6 +43,11 @@ func guardar(urls: Array) -> bool:
 
 
 func limpiar() -> bool:
+	# En un backend de fichero unico la cola no es el fichero entero: limpiarla
+	# vacia su seccion, que no es lo mismo que borrar user://.
+	if almacen != null:
+		escrituras += 1
+		return almacen.limpiar_cola()
 	if not FileAccess.file_exists(_ruta()):
 		return true
 	var err := DirAccess.remove_absolute(_ruta())

@@ -152,11 +152,32 @@ layout_mode = 2
 layout_mode = 2
 text = "Almacenamiento"
 
+[node name="FilaModo" type="HBoxContainer" parent="Margen/Columna"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EtiquetaModo" type="Label" parent="Margen/Columna/FilaModo"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cómo se guardan los datos"
+
+[node name="AlmacenModo" type="OptionButton" parent="Margen/Columna/FilaModo"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todavía no."
+item_count = 3
+popup/item_0/text = "Ficheros sueltos"
+popup/item_0/id = 0
+popup/item_1/text = "Un único fichero"
+popup/item_1/id = 1
+popup/item_2/text = "Base de datos"
+popup/item_2/id = 2
+
 [node name="AlmacenBase" type="LineEdit" parent="Margen/Columna"]
 unique_name_in_owner = true
 layout_mode = 2
 editable = false
-tooltip_text = "Carpeta donde viven enlaces.json, estados.json, config.json y las capturas. Se lee de user://almacenamiento.json."
+tooltip_text = "Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json."
 
 [node name="FilaAlmacen" type="HBoxContainer" parent="Margen/Columna"]
 layout_mode = 2

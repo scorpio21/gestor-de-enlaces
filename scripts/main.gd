@@ -166,16 +166,16 @@ func _ready() -> void:
 	_sel.preparar(barra_seleccion, %SelContador, Callable(self, "_ui_filas_visibles"), Callable(self, "_urls_catalogo"))
 	_abrir_almacen()
 	_cargar_datos()
-	_config_store = ConfigStoreScript.new(CONFIG_BASE)
-	_instantanea_store = InstantaneaStoreScript.new(CONFIG_BASE)
-	_cola_store = ColaStoreScript.new()
+	_config_store = ConfigStoreScript.new(CONFIG_BASE, _almacen.para_stores())
+	_instantanea_store = InstantaneaStoreScript.new(CONFIG_BASE, _almacen.para_stores())
+	_cola_store = ColaStoreScript.new("user://", _almacen.para_stores())
 	_scan = ScanControllerScript.new(_cola_store)
 	_scan.configure(_scan_lanzar_item)
 	_scan.tope_por_host = TOPE_POR_HOST
 	_scan.progreso.connect(_scan_progreso)
 	_scan.item_actualizado.connect(_scan_item_actualizado)
 	_scan.terminado.connect(_scan_terminado)
-	_presets_store = PresetsStoreScript.new(CONFIG_BASE)
+	_presets_store = PresetsStoreScript.new(CONFIG_BASE, _almacen.para_stores())
 	_presets = _presets_store.cargar()
 	var cfg: Dictionary = _config_store.cargar()
 	IdiomaScript.cargar_traducciones()
@@ -476,13 +476,14 @@ func _abrir_almacen() -> void:
 	# sin tocar el fichero de configuracion (#63).
 	_almacen = AlmacenControllerScript.new(OS.get_cmdline_user_args())
 	_almacen.aplicar_a(self)
+	_cambios.almacen = _almacen.para_stores()
 	for aviso in _almacen.avisos:
 		push_warning(str(aviso))
 
 
 func _cargar_datos() -> void:
 	var base := GestorDatosScript.cargar(DATA_RES)
-	var usuario := GestorDatosScript.cargar(DATA_USER)
+	var usuario: Array = _almacen.entradas_de(DATA_USER)
 	_entradas = base
 	if not usuario.is_empty():
 		var urls := {}
@@ -498,7 +499,7 @@ func _cargar_datos() -> void:
 			_entradas.append(entrada)
 			urls[GestorCatalogoScript.clave_unica(url)] = true
 
-	_estado_store = EstadoStoreScript.new()
+	_estado_store = EstadoStoreScript.new("user://", _almacen.para_stores())
 	var datos: Dictionary = _estado_store.cargar()
 	_estados = datos.get("estados", {})
 	_borrados = datos.get("borrados", [])
@@ -1427,7 +1428,7 @@ func _on_enlace_editado(datos: Dictionary, url_original: String) -> void:
 func _guardar_datos() -> bool:
 	if not _persistir:
 		return true
-	if not GestorDatosScript.guardar(DATA_USER, _entradas):
+	if not _almacen.guardar_entradas_en(DATA_USER, _entradas):
 		progreso.text = tr("No se pudo guardar el enlace.")
 		return false
 	_guardar_catalogo_base(RutasScript.es_escribible(DATA_RES))
@@ -1484,7 +1485,7 @@ func _tls_aviso() -> int:
 
 func _rutas_captura_referidas() -> Array:
 	var rutas := {}
-	for lista in [GestorDatosScript.cargar(DATA_RES), GestorDatosScript.cargar(DATA_USER), _entradas]:
+	for lista in [GestorDatosScript.cargar(DATA_RES), _almacen.entradas_de(DATA_USER), _entradas]:
 		for entrada in lista:
 			if typeof(entrada) != TYPE_DICTIONARY:
 				continue
@@ -1525,7 +1526,7 @@ func _confirmar_limpieza() -> void:
 
 
 func _on_restaurar_copia() -> void:
-	if not GestorDatosScript.hay_copia(DATA_USER) and not GestorDatosScript.hay_copia(DATA_RES):
+	if not _almacen.hay_copia(DATA_USER) and not GestorDatosScript.hay_copia(DATA_RES):
 		progreso.text = tr("No hay copia de seguridad disponible.")
 		return
 	%ConfirmarRestaurar.popup_centered()
@@ -1533,7 +1534,7 @@ func _on_restaurar_copia() -> void:
 
 func _confirmar_restaurar() -> void:
 	var ok_rest := true
-	if not GestorDatosScript.restaurar_copia(DATA_USER):
+	if not _almacen.restaurar_copia(DATA_USER):
 		ok_rest = false
 	if not GestorDatosScript.restaurar_copia(DATA_RES):
 		ok_rest = false

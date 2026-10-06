@@ -4,6 +4,23 @@ Todos los cambios relevantes de GestorAO por día.
 
 ## [Sin publicar]
 
+### Añadido
+
+- **Un único fichero para todos los datos** (`#63`, fase 2): Preferencias → Almacenamiento suma el selector **Cómo se guardan los datos**, con **Ficheros sueltos** (los ocho JSON de siempre, que siguen siendo el modo por defecto y no cambian un byte de lo que ya tiene el usuario), **Un único fichero** (todo dentro de `gestorao.json`) y **Base de datos** (todavía no, y el tooltip lo dice). El backend nuevo es `scripts/almacen_uno.gd`: las ocho secciones dentro de un solo JSON, escritura atómica como el resto (`.tmp`, `.bak` y rename) y `schema_version` dentro de cada sección, igual que la que lleva `enlaces.json` por dentro. Un fichero escrito por una versión más nueva se marca `_futuro` y **rechaza toda escritura** en vez de dejarse pisar, y el arranque avisa de que esos datos no se tocarán hasta que se abran con esa versión. Elegir un modo **migra**: primero la copia, con los recuentos de sección por el medio, y solo después la preferencia, así que una migración que pierde algo no deja nada escrito ni apunta la app a un sitio al que no llegó nada. `guardar_estados_y_borrados()` convierte estados y borrados en **una** escritura (borrar una entrada deja su estado y su marca juntos; con dos ficheros sueltos un corte a mitad deja una cosa sin la otra), `limpiar_cola()` vacía la sección en vez de borrar el fichero y `hay_copia()`/`restaurar_copia()` se apoyan en el `.bak` del fichero único. Piezas nuevas: `scripts/almacen_uno.gd` y las suites `tests/test_almacen_uno.gd` (26 comprobaciones) y `tests/test_stores_almacen.gd` (16).
+
+### Cambiado
+
+- **Los stores escriben a través de la interfaz** (`#63`): `AlmacenController.para_stores()` devuelve el backend **solo cuando no es el de ficheros**, y con él arrancan ahora `config_store`, `cola_store`, `estado_store`, `instantanea_store`, `presets_store` y los cambios pendientes de `cambios_controller` — que hasta ahora escribían siempre sus JSON en `user://` mientras el catálogo se iba a otra parte. Cada store conserva su lógica y solo decide **dónde** persiste: en modo ficheros se comporta igual que antes, fichero por fichero, y en cualquier otro modo todo va al mismo sitio. `main.gd` pasa a leer y guardar el catálogo del usuario por el mismo camino (`entradas_de()`, `guardar_entradas_en()`, `hay_copia()` y `restaurar_copia()`), que es la única parte de los datos que escribía a pelo. En modo ficheros esos cuatro métodos respetan la ruta que les pasa quien llama, porque `main` y las suites reapuntan `DATA_USER` a su carpeta: ignorándola se leería el catálogo real del usuario y, al limpiar capturas huérfanas, se le borrarían sus imágenes. La preferencia sigue viviendo en `user://almacenamiento.json` en todos los modos, también en el único: si se mudara con los datos no quedaría forma de saber dónde estaban.
+
+### Corregido
+
+- **Elegir destino a mano al cambiar de carpeta o de modo** (`#63`): `_carpeta_elegida()` migraba siempre a `AlmacenJson`, así que en modo único copiaba los datos como ocho ficheros con la preferencia apuntando a `gestorao.json`, y al reiniciar la app abría un fichero que no existía: catálogo vacío. `_modo_elegido()` hacía lo contrario y construía siempre `AlmacenUno`, con lo que pasar de único a ficheros re-copiaba `gestorao.json` sobre sí mismo y dejaba los ocho JSON sin tocar, de modo que la preferencia apuntaba a un catálogo que nadie había escrito. Los dos casos pasan por `AlmacenController.crear_en(modo, base)`, la misma fábrica que usa el arranque, y el cambio de modo admite además `pisar`: en la misma carpeta el «destino con datos» es la otra versión de estos mismos datos, y negarlo dejaba el selector sin poder volver atrás nunca.
+- **`cambios_pendientes.json` se abría en `WRITE` y se escribía encima** (`#63`): un corte a mitad dejaba el fichero corrupto y con él se perdía el aviso de cambios sin ver de la sesión anterior. Pasa a la escritura atómica del resto, igual que los otros stores en los que ya se había hecho.
+
+### Mantenimiento
+
+- **Cobertura de la fase 2** (`#63`): la batería sube de 57 a **59 suites** (`test_almacen_uno`, `test_stores_almacen`) y el estático de 111 a **114 ficheros**. `test_stores_almacen` monta `Main.tscn` en modo único con `GESTORAO_ALMACEN`/`GESTORAO_BASE` para cubrir el cableado de `main.gd` **sin escribir el `user://almacenamiento.json`** de la máquina, y `test_preferencias` re-apunta el fichero de preferencias a su carpeta propia (`config_ruta`) antes de cambiar de modo. Las rutas de destino, el `pisar` de la migración y el guardián de `ruta` se han verificado también en su dirección negativa (mutaciones revertidas y comprobadas una a una).
+
 ## [0.2.0]
 
 ### Cambiado

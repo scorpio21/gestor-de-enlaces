@@ -1,10 +1,12 @@
 extends SceneTree
 
 const AlmacenJson := preload("res://scripts/almacen_json.gd")
+const AlmacenUno := preload("res://scripts/almacen_uno.gd")
 const AlmacenController := preload("res://scripts/almacen_controller.gd")
 
 const BASE_A := "user://__test_migra_a__"
 const BASE_B := "user://__test_migra_b__"
+const FICHERO := "gestorao.json"
 
 var _fallos := 0
 
@@ -32,6 +34,8 @@ func _initialize() -> void:
 	_check(historial_viaja(), "el historial de estados llega entero (#63)")
 	_check(si_se_pierde_algo_se_avisa(), "una migración que pierde datos se marca como fallida (#63)")
 	_check(migra_de_es_inversa(), "migra_de() es migra_a() al revés (#63)")
+	_check(ficheros_a_unico(), "de ocho ficheros a uno solo: todo acaba en gestorao.json (#63)")
+	_check(unico_a_ficheros(), "de uno solo a ocho: los ficheros vuelven y el origen sigue igual (#63)")
 	_check(el_controlador_abre(), "el controlador abre el backend que dice la config (#63)")
 	_check(el_controlador_cae_a_ficheros(), "pedir base de datos sin backend cae a ficheros y avisa (#63)")
 	_check(el_controlador_info(), "info() enseña rutas, tamaños y recuentos (#63)")
@@ -53,7 +57,7 @@ func _preparar() -> void:
 
 func _limpiar() -> void:
 	for base in [BASE_A, BASE_B]:
-		for nombre in AlmacenJson.FICHEROS:
+		for nombre in AlmacenJson.FICHEROS + [FICHERO]:
 			for sufijo in ["", ".tmp", ".bak"]:
 				DirAccess.remove_absolute(ProjectSettings.globalize_path("%s/%s%s" % [base, nombre, sufijo]))
 		_borrar_arbol("%s/Assets" % base)
@@ -200,6 +204,51 @@ func migra_de_es_inversa() -> bool:
 	var res: Dictionary = AlmacenJson.new(BASE_A).migra_de(AlmacenJson.new(BASE_B))
 	return res.get("ok", false) and res.get("invertida", false) \
 		and AlmacenJson.new(BASE_A).entradas().size() == 1
+
+
+func ficheros_a_unico() -> bool:
+	_preparar()
+	var destino := AlmacenUno.new(BASE_B)
+	destino.abrir()
+	var res: Dictionary = AlmacenJson.new(BASE_A).migra_a(destino)
+	if not res.get("ok", false):
+		return false
+	# El destino no puede dejar ni un fichero suelto de los de siempre: si quedara
+	# alguno, la proxima apertura en modo único lo ignoraria y habria dos copias
+	# del mismo dato sin saber cual manda.
+	for nombre in AlmacenJson.FICHEROS:
+		if FileAccess.file_exists("%s/%s" % [BASE_B, nombre]):
+			return false
+	var b := AlmacenUno.new(BASE_B)
+	b.abrir()
+	return FileAccess.file_exists("%s/%s" % [BASE_B, FICHERO]) \
+		and b.entradas().size() == 2 and b.estados().size() == 2 and b.borrados().size() == 1 \
+		and b.cola() == ["https://uno.com"] and str(b.config().get("tema", "")) == "oscuro" \
+		and b.instantaneas().size() == 1 and b.presets().size() == 1 and b.cambios().size() == 1 \
+		and b.capturas().has("png/dos.png")
+
+
+func unico_a_ficheros() -> bool:
+	_preparar()
+	var origen := AlmacenUno.new(BASE_B)
+	origen.abrir()
+	origen.importar(AlmacenJson.new(BASE_A).volcado())
+	# El destino arranca vacio: si no, la migracion escribiria encima de los ocho
+	# ficheros que ya estan ahi y no se distinguiria de un merge.
+	for nombre in AlmacenJson.FICHEROS:
+		for sufijo in ["", ".tmp", ".bak"]:
+			DirAccess.remove_absolute(ProjectSettings.globalize_path("%s/%s%s" % [BASE_A, nombre, sufijo]))
+	_borrar_arbol("%s/Assets" % BASE_A)
+	var antes := FileAccess.get_file_as_string("%s/%s" % [BASE_B, FICHERO])
+	var res: Dictionary = origen.migra_a(AlmacenJson.new(BASE_A))
+	if not res.get("ok", false) or FileAccess.file_exists("%s/%s" % [BASE_A, FICHERO]):
+		return false
+	for nombre in AlmacenJson.FICHEROS:
+		if not FileAccess.file_exists("%s/%s" % [BASE_A, nombre]):
+			return false
+	return FileAccess.get_file_as_string("%s/%s" % [BASE_B, FICHERO]) == antes \
+		and AlmacenJson.new(BASE_A).entradas().size() == 2 \
+		and AlmacenJson.new(BASE_A).capturas().has("png/dos.png")
 
 
 func _ctrl(argumentos := PackedStringArray(), base := BASE_A) -> AlmacenController:

@@ -5,6 +5,7 @@ signal aplicado(paralelismo: int, timeout: float, auto_abrir: bool, intervalo: i
 const AlmacenConfigScript := preload("res://scripts/almacen_config.gd")
 const AlmacenControllerScript := preload("res://scripts/almacen_controller.gd")
 const AlmacenJsonScript := preload("res://scripts/almacen_json.gd")
+const AlmacenUnoScript := preload("res://scripts/almacen_uno.gd")
 
 const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
 
@@ -18,12 +19,17 @@ const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
 @onready var red_sin_comprobar_box: CheckBox = %RedSinComprobar
 @onready var certificados_box: CheckBox = %AceptarCertificados
 @onready var instantaneas_spin: SpinBox = %InstantaneasDias
+@onready var almacen_modo: OptionButton = %AlmacenModo
 @onready var almacen_base: LineEdit = %AlmacenBase
 @onready var almacen_detalle: Label = %AlmacenDetalle
 @onready var almacen_aviso: Label = %AlmacenAviso
 
 var _almacen_actual: RefCounted = null
 var _lector_config: RefCounted = null
+# Donde se escribe la preferencia de almacenamiento. Vacio es el de siempre
+# (user://almacenamiento.json); las pruebas lo re-apuntan a su carpeta para no
+# tocar la configuracion del que este usando la maquina (#63).
+var config_ruta := ""
 
 
 func _ready() -> void:
@@ -32,11 +38,14 @@ func _ready() -> void:
 		if FileAccess.file_exists("res://Assets/banderas/%s.svg" % IDIOMAS[i][2]):
 			icono = load("res://Assets/banderas/%s.svg" % IDIOMAS[i][2])
 		idioma_opcion.add_icon_item(icono, IDIOMAS[i][1], i)
+	for i in AlmacenControllerScript.MODOS_SELECCION.size():
+		almacen_modo.set_item_metadata(i, str(AlmacenControllerScript.MODOS_SELECCION[i]))
 	close_requested.connect(hide)
 	%BotonCancelar.pressed.connect(hide)
 	%BotonGuardar.pressed.connect(_on_guardar)
 	%BotonExaminar.pressed.connect(_examinar_carpeta)
 	%BotonAbrirCarpeta.pressed.connect(_abrir_carpeta)
+	almacen_modo.item_selected.connect(_modo_elegido)
 	%DialogoCarpeta.dir_selected.connect(_carpeta_elegida)
 
 
@@ -56,11 +65,12 @@ func abrir(paralelismo: int, timeout: float, auto_abrir := true, intervalo := 0,
 
 
 func _mostrar_almacen() -> void:
-	_lector_config = AlmacenConfigScript.new()
-	_almacen_actual = AlmacenControllerScript.new()
+	_lector_config = AlmacenConfigScript.new("user://", config_ruta)
+	_almacen_actual = AlmacenControllerScript.new(PackedStringArray(), "user://", {}, config_ruta)
 	var info: Dictionary = _almacen_actual.info()
 	var rec: Dictionary = info.get("recuentos", {})
 	almacen_base.text = str(info.get("base", "user://"))
+	_seleccionar_modo(str(info.get("modo", "ficheros")))
 	almacen_base.tooltip_text = tr("%s\nOrigen: %s") % [str(info.get("base", "")), str(info.get("origen", ""))]
 	almacen_detalle.text = tr("Almacenamiento: %s · %d enlaces · %d estados · %d capturas · %s en disco") % [
 		str(info.get("modo", "ficheros")),
@@ -102,18 +112,61 @@ func _carpeta_elegida(ruta: String) -> void:
 	# ficheros abiertos, y cambiarlos a mitad de sesion es la forma facil de
 	# partir un JSON. Se copia todo al sitio nuevo y se deja escrito el fichero
 	# de configuracion; el cambio entra en vigor al reiniciar.
-	almacen_aviso.text = ""
-	var destino := AlmacenJsonScript.new(ruta)
-	var res: Dictionary = _almacen_actual.migrar_a_otro(destino)
-	if not res.get("ok", false):
-		almacen_aviso.text = tr("No se pudo migrar a la carpeta elegida: %s") % _detalle_migracion(res)
+	var modo := str(_almacen_actual.config.get("modo", "ficheros"))
+	if _migrar_a(AlmacenControllerScript.crear_en(modo, ruta), modo, ruta):
+		almacen_aviso.text = tr("Datos copiados a %s. Reinicia para usarlos.") % ruta
+
+
+func _modo_elegido(indice: int) -> void:
+	var modos: Array = AlmacenControllerScript.MODOS_SELECCION
+	if indice < 0 or indice >= modos.size():
 		return
-	var guardado: Dictionary = _lector_config.guardar(str(_almacen_actual.config.get("modo", "ficheros")), str(_almacen_actual.config.get("ruta_bd", "")), ruta)
+	var modo := str(modos[indice])
+	if modo == str(_almacen_actual.config.get("modo", "ficheros")):
+		almacen_aviso.text = ""
+		return
+	if not AlmacenControllerScript.soporta(modo):
+		almacen_aviso.text = tr("El modo «%s» todavía no está disponible.") % modo
+		return
+	# Cambiar de modo tambien copia: si solo se escribiese la preferencia, el
+	# catalogo se quedaria partido entre el almacenamiento viejo y el nuevo.
+	# El destino es la otra version de estos mismos datos en esta misma carpeta
+	# (los ocho ficheros de antes o el gestorao.json de antes), asi que aqui si
+	# se pisa: negarlo dejaria el selector sin poder volver atras (#63).
+	var base := almacen_base.text
+	if base.is_empty():
+		base = "user://"
+	if _migrar_a(AlmacenControllerScript.crear_en(modo, base), modo, base, true):
+		almacen_aviso.text = tr("Los datos ahora van en %s. Reinicia para usarlos.") % _fichero_de_modo(modo)
+
+
+func _fichero_de_modo(modo: String) -> String:
+	return AlmacenUnoScript.FICHERO if modo == AlmacenUnoScript.MODO_UNICO else str(AlmacenJsonScript.FICHEROS[0])
+
+
+func _seleccionar_modo(modo: String) -> void:
+	for i in almacen_modo.get_item_count():
+		if str(almacen_modo.get_item_metadata(i)) == modo:
+			almacen_modo.select(i)
+			return
+
+
+func _migrar_a(destino, modo: String, base: String, pisar := false) -> bool:
+	# Migrar y guardar la preferencia, en ese orden y con los recuentos de
+	# comprobacion por el medio: si la copia pierde algo, no se cambia nada y el
+	# gestoror sigue leyendo de donde siempre.
+	almacen_aviso.text = ""
+	var res: Dictionary = _almacen_actual.migrar_a_otro(destino, pisar)
+	if not res.get("ok", false):
+		almacen_aviso.text = tr("No se pudo migrar al almacenamiento elegido: %s") % _detalle_migracion(res)
+		return false
+	var ruta_bd := str(_almacen_actual.config.get("ruta_bd", ""))
+	var guardado: Dictionary = _lector_config.guardar(modo, ruta_bd, base)
 	if not guardado.get("ok", false):
 		almacen_aviso.text = tr("Se copiaron los datos, pero no se pudo guardar la preferencia: %s") % str(guardado.get("error", ""))
-		return
+		return false
 	_mostrar_almacen()
-	almacen_aviso.text = tr("Datos copiados a %s. Reinicia para usarlos.") % ruta
+	return true
 
 
 func _detalle_migracion(res: Dictionary) -> String:

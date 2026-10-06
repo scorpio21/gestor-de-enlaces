@@ -197,6 +197,14 @@ func borrar_captura(nombre: String) -> bool:
 	return DirAccess.remove_absolute(ProjectSettings.globalize_path(ruta)) == OK
 
 
+func hay_copia() -> bool:
+	return GestorDatosScript.hay_copia(ruta_de_nombre(F_ENLACES))
+
+
+func restaurar_copia() -> bool:
+	return GestorDatosScript.restaurar_copia(ruta_de_nombre(F_ENLACES))
+
+
 func rutas() -> Dictionary:
 	# La base entera, no los ocho ficheros sueltos: tamano_total() la recorre y
 	# asi los Assets cuelgan de la misma cifra. Los ficheros se listan aparte

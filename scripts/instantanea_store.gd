@@ -9,11 +9,13 @@ const LIMITE_MAX := 3650
 const NOMBRE := "instantaneas.json"
 
 var _base: String
+var almacen = null
 var escrituras := 0
 
 
-func _init(base := "user://") -> void:
+func _init(base := "user://", almacen_almacen = null) -> void:
 	_base = base
+	almacen = almacen_almacen
 
 
 func ruta() -> String:
@@ -69,6 +71,11 @@ func purgar(dias := LIMITE_DEFAULT) -> Dictionary:
 
 
 func limpiar() -> bool:
+	# Como con la cola: en un backend de fichero unico las instantaneas son una
+	# seccion del fichero comun, no un fichero propio que borrar.
+	if almacen != null:
+		escrituras += 1
+		return almacen.guardar_instantaneas([])
 	if not FileAccess.file_exists(ruta()):
 		return true
 	return DirAccess.remove_absolute(ProjectSettings.globalize_path(ruta())) == OK
@@ -144,6 +151,8 @@ func _por_fecha(a: Dictionary, b: Dictionary) -> bool:
 
 
 func _leer_json() -> Variant:
+	if almacen != null:
+		return almacen.instantaneas()
 	if not FileAccess.file_exists(ruta()):
 		return null
 	var archivo := FileAccess.open(ruta(), FileAccess.READ)
@@ -159,6 +168,9 @@ func _escribir_json(lista: Array) -> bool:
 	# Antes abria el destino en WRITE y escribia encima. Perder un dia entero de
 	# instantaneas por un corte a mitad no es grave, pero no cuesta nada que el
 	# fichero anterior quede en .bak (#63).
+	if almacen != null:
+		escrituras += 1
+		return almacen.guardar_instantaneas(lista)
 	if not _base.ends_with("://"):
 		DirAccess.make_dir_recursive_absolute(_base)
 	escrituras += 1
