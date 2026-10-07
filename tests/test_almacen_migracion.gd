@@ -37,7 +37,7 @@ func _initialize() -> void:
 	_check(ficheros_a_unico(), "de ocho ficheros a uno solo: todo acaba en gestorao.json (#63)")
 	_check(unico_a_ficheros(), "de uno solo a ocho: los ficheros vuelven y el origen sigue igual (#63)")
 	_check(el_controlador_abre(), "el controlador abre el backend que dice la config (#63)")
-	_check(el_controlador_cae_a_ficheros(), "pedir base de datos sin backend cae a ficheros y avisa (#63)")
+	_check(el_controlador_abre_base_datos(), "con backend de base de datos el controlador abre el .db (#65)")
 	_check(el_controlador_info(), "info() enseña rutas, tamaños y recuentos (#63)")
 	_limpiar()
 	if _fallos == 0:
@@ -57,7 +57,7 @@ func _preparar() -> void:
 
 func _limpiar() -> void:
 	for base in [BASE_A, BASE_B]:
-		for nombre in AlmacenJson.FICHEROS + [FICHERO]:
+		for nombre in AlmacenJson.FICHEROS + [FICHERO, "gestorao.db"]:
 			for sufijo in ["", ".tmp", ".bak"]:
 				DirAccess.remove_absolute(ProjectSettings.globalize_path("%s/%s%s" % [base, nombre, sufijo]))
 		_borrar_arbol("%s/Assets" % base)
@@ -262,11 +262,11 @@ func el_controlador_abre() -> bool:
 		and str(ctrl.config["base"]) == BASE_A
 
 
-func el_controlador_cae_a_ficheros() -> bool:
+func el_controlador_abre_base_datos() -> bool:
 	_preparar()
-	var ctrl := AlmacenController.new(PackedStringArray(), BASE_A, {"modo": "base_datos", "base": BASE_A, "ruta_bd": "user://prueba.db"})
-	return ctrl.almacen != null and ctrl.almacen.modo() == "ficheros" and not ctrl.avisos.is_empty() \
-		and ctrl.info().get("modo", "") == "ficheros"
+	var ctrl := AlmacenController.new(PackedStringArray(), BASE_A, {"modo": "base_datos", "base": BASE_A, "ruta_bd": "%s/gestorao.db" % BASE_A})
+	return ctrl.almacen != null and ctrl.almacen.modo() == "base_datos" and ctrl.almacen.abierto \
+		and ctrl.avisos.is_empty() and ctrl.info().get("modo", "") == "base_datos"
 
 
 func el_controlador_info() -> bool:

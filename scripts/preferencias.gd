@@ -6,6 +6,7 @@ const AlmacenConfigScript := preload("res://scripts/almacen_config.gd")
 const AlmacenControllerScript := preload("res://scripts/almacen_controller.gd")
 const AlmacenJsonScript := preload("res://scripts/almacen_json.gd")
 const AlmacenUnoScript := preload("res://scripts/almacen_uno.gd")
+const AlmacenBdScript := preload("res://scripts/almacen_bd.gd")
 
 const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
 
@@ -141,6 +142,8 @@ func _modo_elegido(indice: int) -> void:
 
 
 func _fichero_de_modo(modo: String) -> String:
+	if modo == AlmacenBdScript.MODO_BASE_DATOS:
+		return AlmacenBdScript.NOMBRE
 	return AlmacenUnoScript.FICHERO if modo == AlmacenUnoScript.MODO_UNICO else str(AlmacenJsonScript.FICHEROS[0])
 
 
@@ -160,8 +163,10 @@ func _migrar_a(destino, modo: String, base: String, pisar := false) -> bool:
 	if not res.get("ok", false):
 		almacen_aviso.text = tr("No se pudo migrar al almacenamiento elegido: %s") % _detalle_migracion(res)
 		return false
-	var ruta_bd := str(_almacen_actual.config.get("ruta_bd", ""))
-	var guardado: Dictionary = _lector_config.guardar(modo, ruta_bd, base)
+	# La ruta de la base se deriva de la carpeta elegida, no del backend que
+	# tuvieramos: asi el .db nace al lado de los datos y, si mas tarde se cambia
+	# a base de datos en la misma carpeta, apunta al sitio correcto.
+	var guardado: Dictionary = _lector_config.guardar(modo, AlmacenControllerScript.ruta_bd_en(base), base)
 	if not guardado.get("ok", false):
 		almacen_aviso.text = tr("Se copiaron los datos, pero no se pudo guardar la preferencia: %s") % str(guardado.get("error", ""))
 		return false

@@ -2,6 +2,16 @@
 
 Todos los cambios relevantes de GestorAO por día.
 
+## [Sin publicar]
+
+### Añadido
+
+- **Modo Base de datos** (`#65`): el tercer modo del selector de Almacenamiento deja de estar «todavía no» y guarda los datos en un único `gestorao.db` de **SQLite**. El backend es `scripts/almacen_bd.gd` y va contra el addon tercero `addons/godot-sqlite` (godot-sqlite 4.9, SQLite 3.51, MIT) **vendorizado** con los binarios de escritorio — Windows, Linux y macOS, en sus dos variantes de plantilla (19,33 MB en total); iOS quedaría en 262 MB y android/ios/web no se necesitan, así que no se llevan. Es un solo fichero, sin servidor ni dependencia externa, y el `.gdextension` viaja intacto como en `godot_ai`. El esquema es **una tabla por sección y una fila por cosa** (`entradas`, `estados`, `borrados`, `cola`, `config`, `instantaneas`, `presets`, `cambios`) con la carga útil en **JSON** dentro de cada fila: la base no reinterpreta los datos, así que un catálogo, un estado o un preset entran y salen byte a byte como en los otros backends. `meta` guarda el `esquema` y la versión del catálogo, y hay un índice por `url` para poder consultar sin recorrerlo todo; el historial de un estado vive dentro de su propio JSON (una fila por URL, no N×50), que es lo que mantiene la ida y vuelta exacta y el guardado rápido. La base nace en `<carpeta>/gestorao.db`, al lado de los datos: cambiar de carpeta mueve también el `.db` y la preferencia guarda esa ruta, no la del backend que tuviéramos. `guardar_estados_y_borrados()` va en **una transacción** (BEGIN/COMMIT con ROLLBACK si algo falla), la versión previa se guarda con `backup_to` en el `.bak` **justo antes de cada escritura y solo si ya había datos** —la misma semántica de «versión anterior» que el resto—, `hay_copia()`/`restaurar_copia()` se apoyan en él, y una base abierta por una **versión posterior** (`esquema` mayor) se marca `bloqueado()` y **rechaza toda escritura** en vez de dejarse pisar. Un fichero que no sea una base de datos se rechaza sin tocarlo. Elegir el modo **migra**: primero la copia de las ocho secciones (y las capturas, que se copian de verdad), con los recuentos de origen y destino comparados por el medio, y solo después se escribe la preferencia; `migra_a()` solo lee el origen, así que una migración a medias deja los JSON de siempre intactos. La vuelta **Base de datos → Ficheros sueltos** funciona igual, de modo que el cambio es reversible en los dos sentidos. La fábrica (`AlmacenController.crear()`/`crear_en()`/`soporta()`) atiende ya los tres modos y `preferencias.gd` deriva la ruta de la base de la carpeta elegida. Suite nueva `tests/test_almacen_bd.gd` (30 comprobaciones: ida y vuelta de las ocho secciones, `.bak`/restaurar, transacción, esquema futuro, fichero corrupto, capturas y las dos migraciones) y se actualizan las que daban por hecho que el modo no existía.
+
+### Mantenimiento
+
+- **Cobertura de la fase de base de datos** (`#65`): la batería sube de 59 a **60 suites** (`test_almacen_bd`) y el estático de 114 a **116 ficheros** (`almacen_bd.gd` y su suite). El smoke del binario exportado comprueba de paso que el `.dll` de la extensión viaja dentro del export: `--export-release` deja `libgdsqlite.windows.template_release.x86_64.dll` junto al `.exe` y el arranque headless sigue sin soltar ni un `SCRIPT ERROR`.
+
 ## [0.3.0]
 
 ### Cambiado

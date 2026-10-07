@@ -305,4 +305,4 @@ Cambios de estado: %d,Cambios de estado: %d,State changes: %d
 "Ficheros sueltos","Ficheros sueltos","Separate files"
 "Un único fichero","Un único fichero","A single file"
 "Base de datos","Base de datos","Database"
-"Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todavía no.","Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todavía no.","Separate files: one JSON per thing. A single file: everything together, one write. Database: not yet."
+"Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Separate files: one JSON per thing. A single file: everything together, one write. Database: everything in one SQLite file."

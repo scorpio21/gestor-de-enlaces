@@ -176,7 +176,7 @@ text = "Cómo se guardan los datos"
 [node name="AlmacenModo" type="OptionButton" parent="Margen/Columna/Desplazamiento/Opciones/FilaModo"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todavía no."
+tooltip_text = "Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite."
 item_count = 3
 popup/item_0/text = "Ficheros sueltos"
 popup/item_0/id = 0

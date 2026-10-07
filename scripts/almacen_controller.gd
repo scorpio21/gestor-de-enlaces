@@ -4,14 +4,15 @@ const AlmacenScript := preload("res://scripts/almacen.gd")
 const AlmacenConfigScript := preload("res://scripts/almacen_config.gd")
 const AlmacenJsonScript := preload("res://scripts/almacen_json.gd")
 const AlmacenUnoScript := preload("res://scripts/almacen_uno.gd")
+const AlmacenBdScript := preload("res://scripts/almacen_bd.gd")
 const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
 
 var config := {}
 var almacen = null
 var avisos: Array = []
 
-# El orden en que los ofrece Preferencias, que no es el de MODOS: el que se usa
-# es el ultimo, porque todavia no hay backend de base de datos que lo atienda.
+# El orden en que los ofrece Preferencias, que no es el de MODOS. Los tres se
+# atienden: ficheros sueltos, fichero unico y base de datos (SQLite).
 const MODOS_SELECCION := [
 	AlmacenScript.MODO_FICHEROS,
 	AlmacenScript.MODO_UNICO,
@@ -33,7 +34,8 @@ func _init(argumentos := PackedStringArray(), base_config := "user://", config_i
 		almacen = AlmacenJsonScript.new("user://")
 		config["modo"] = AlmacenScript.MODO_FICHEROS
 		return
-	almacen.ruta_bd = str(config.get("ruta_bd", AlmacenScript.RUTA_BD_POR_DEFECTO))
+	if almacen.modo() != AlmacenScript.MODO_BASE_DATOS:
+		almacen.ruta_bd = str(config.get("ruta_bd", AlmacenScript.RUTA_BD_POR_DEFECTO))
 	if not almacen.abrir():
 		avisos.append("No se pudo preparar la carpeta %s." % almacen.rutas().get("base", "?"))
 		almacen = AlmacenJsonScript.new("user://")
@@ -49,7 +51,12 @@ static func crear(cfg: Dictionary):
 	if not AlmacenScript.ruta_ok(base_texto):
 		return null
 	if modo == AlmacenScript.MODO_BASE_DATOS:
-		return null
+		# La base vive en la carpeta elegida salvo que la config traiga una ruta
+		# explicita; asi cambiar de sitio mueve tambien el .db.
+		var ruta_bd := str(cfg.get("ruta_bd", ""))
+		if not AlmacenScript.ruta_ok(ruta_bd):
+			ruta_bd = ruta_bd_en(base_texto)
+		return AlmacenBdScript.new(ruta_bd, base_texto)
 	if modo == AlmacenScript.MODO_UNICO:
 		return AlmacenUnoScript.new(base_texto)
 	var json := AlmacenJsonScript.new(base_texto)
@@ -57,17 +64,24 @@ static func crear(cfg: Dictionary):
 	return json
 
 
+static func ruta_bd_en(base_texto: String) -> String:
+	return AlmacenScript.con_barra(base_texto) + AlmacenBdScript.NOMBRE
+
+
 static func crear_en(modo: String, base_texto: String):
 	# El backend que guarda en esa carpeta en ese modo. Preferencias lo necesita
 	# al cambiar de sitio y al cambiar de modo: si eligiera el backend a mano se
 	# le olvidaria uno de los dos casos y la migracion acabaria escribiendo en un
 	# formato que luego nadie lee, con la preferencia apuntando al otro (#63).
-	return crear({"modo": modo, "base": base_texto})
+	var cfg := {"modo": modo, "base": base_texto}
+	if modo == AlmacenScript.MODO_BASE_DATOS:
+		cfg["ruta_bd"] = ruta_bd_en(base_texto)
+	return crear(cfg)
 
 
 static func soporta(modo: Variant) -> bool:
 	var m := AlmacenScript.modo_valido(modo)
-	return m == AlmacenScript.MODO_FICHEROS or m == AlmacenScript.MODO_UNICO
+	return m == AlmacenScript.MODO_FICHEROS or m == AlmacenScript.MODO_UNICO or m == AlmacenScript.MODO_BASE_DATOS
 
 
 func cerrar() -> void:
@@ -110,7 +124,10 @@ func migrar_a_otro(otro, pisar := false) -> Dictionary:
 	if not pisar and int(destino.get("entradas", 0)) + int(destino.get("estados", 0)) > 0:
 		return {"ok": false, "errores": 1, "detalle": "El destino ya tiene datos; no se toca nada."}
 	if otro.abrir():
-		otro.ruta_bd = str(config.get("ruta_bd", AlmacenScript.RUTA_BD_POR_DEFECTO))
+		# El .db se abre en la ruta que ya trae el destino; pisarsela despues
+		# dejaria la copia de seguridad y los recuentos mirando a otro fichero.
+		if otro.modo() != AlmacenScript.MODO_BASE_DATOS:
+			otro.ruta_bd = str(config.get("ruta_bd", AlmacenScript.RUTA_BD_POR_DEFECTO))
 	return almacen.migra_a(otro)
 
 

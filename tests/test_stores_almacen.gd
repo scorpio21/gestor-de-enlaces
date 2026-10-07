@@ -97,7 +97,8 @@ func para_stores_solo_fuera_de_ficheros() -> bool:
 	var ficheros := _ctrl(base, "ficheros")
 	var base_datos := _ctrl(base, "base_datos")
 	return unico.para_stores() != null and unico.para_stores().modo() == AlmacenScript.MODO_UNICO \
-		and ficheros.para_stores() == null and base_datos.para_stores() == null
+		and ficheros.para_stores() == null \
+		and base_datos.para_stores() != null and base_datos.para_stores().modo() == AlmacenScript.MODO_BASE_DATOS
 
 
 func config_store_escribe_por_interfaz() -> bool:

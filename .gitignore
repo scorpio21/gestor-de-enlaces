@@ -4,6 +4,9 @@
 /data/*.bak
 /data/*.tmp
 
+# Binario exportado para el smoke (lo genera `--export-release`)
+/build/
+
 # Superpowers workspace (SDD/brainstorm sessions)
 .superpowers/
 

@@ -103,9 +103,9 @@ func modo_y_soporte() -> bool:
 	return a.modo() == AlmacenScript.MODO_UNICO \
 		and AlmacenController.soporta(AlmacenScript.MODO_UNICO) \
 		and AlmacenController.soporta(AlmacenScript.MODO_FICHEROS) \
-		and not AlmacenController.soporta(AlmacenScript.MODO_BASE_DATOS) \
+		and AlmacenController.soporta(AlmacenScript.MODO_BASE_DATOS) \
 		and AlmacenController.crear({"modo": "unico", "base": BASE}) != null \
-		and AlmacenController.crear({"modo": "base_datos", "base": BASE}) == null
+		and AlmacenController.crear({"modo": "base_datos", "base": BASE}) != null
 
 
 func rutas_lista_un_solo_fichero() -> bool:

@@ -4,6 +4,7 @@ const PREF := preload("res://scenes/Preferencias.tscn")
 const AlmacenConfigScript := preload("res://scripts/almacen_config.gd")
 const AlmacenJsonScript := preload("res://scripts/almacen_json.gd")
 const AlmacenUnoScript := preload("res://scripts/almacen_uno.gd")
+const AlmacenBdScript := preload("res://scripts/almacen_bd.gd")
 
 const BASE := "user://__test_preferencias_almacen__"
 
@@ -140,9 +141,16 @@ func _cambio_modo() -> void:
 		"cambiar de carpeta no cambia el modo y apunta a la carpeta nueva (#63)")
 
 	ventana._modo_elegido(2)
-	_check(ventana.almacen_aviso.text.contains("base_datos") \
-		and _modo_de(pref) == AlmacenUnoScript.MODO_UNICO,
-		"un modo sin backend no se migra ni se guarda la preferencia (#63)")
+	_check(FileAccess.file_exists("%s/gestorao.db" % mudanza) and _entradas_bd(mudanza) == 2,
+		"pasar a base de datos crea el .db con el catálogo (#65)")
+	_check(_modo_de(pref) == AlmacenBdScript.MODO_BASE_DATOS \
+		and _ruta_bd_de(pref) == "%s/gestorao.db" % mudanza,
+		"la preferencia guarda el modo y la ruta de la base (#65)")
+
+	ventana._modo_elegido(0)
+	_check(AlmacenJsonScript.new(mudanza).entradas().size() == 2 \
+		and _modo_de(pref) == AlmacenJsonScript.MODO_FICHEROS,
+		"volver de la base de datos a ficheros recupera el catálogo (#65)")
 
 	ventana.free()
 	_restaurar_config("user://almacenamiento.json", real)
@@ -153,6 +161,19 @@ func _entradas_unico(base: String) -> int:
 	var uno := AlmacenUnoScript.new(base)
 	uno.abrir()
 	return uno.entradas().size()
+
+
+func _entradas_bd(base: String) -> int:
+	var bd := AlmacenBdScript.new("%s/gestorao.db" % base, base)
+	if not bd.abrir():
+		return -1
+	var n := bd.entradas().size()
+	bd.cerrar()
+	return n
+
+
+func _ruta_bd_de(pref: String) -> String:
+	return str(AlmacenConfigScript.new("user://", pref).cargar().get("ruta_bd", ""))
 
 
 func _modo_de(pref: String) -> String:
