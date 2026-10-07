@@ -2,7 +2,11 @@
 
 Todos los cambios relevantes de GestorAO por día.
 
-## [Sin publicar]
+## [0.3.0]
+
+### Cambiado
+
+- Versión del proyecto a 0.3.0.
 
 ### Añadido
 
@@ -14,6 +18,7 @@ Todos los cambios relevantes de GestorAO por día.
 
 ### Corregido
 
+- **La ventana de Preferencias ya no se sale de la pantalla** (`#64`): al abrirla se estiraba al alto de todo su contenido (`wrap_controls = true`) y, con la sección de Almacenamiento de la fase 2, pasaba de los 1000 px cuando la ventana del juego mide 810: los botones **Guardar** y **Cancelar** quedaban por debajo del borde. La lista de ajustes va ahora dentro de un `ScrollContainer` de alto acotado (420 px), así que la ventana se queda en unos 569 × 526 px y lo que no cabe se desplaza; los botones viven fuera del área que se desplaza, siempre a la vista. `test_preferencias` añade dos comprobaciones —el área se desplaza y la ventana cabe en la pantalla— verificadas en su dirección negativa subiendo el tope.
 - **Elegir destino a mano al cambiar de carpeta o de modo** (`#63`): `_carpeta_elegida()` migraba siempre a `AlmacenJson`, así que en modo único copiaba los datos como ocho ficheros con la preferencia apuntando a `gestorao.json`, y al reiniciar la app abría un fichero que no existía: catálogo vacío. `_modo_elegido()` hacía lo contrario y construía siempre `AlmacenUno`, con lo que pasar de único a ficheros re-copiaba `gestorao.json` sobre sí mismo y dejaba los ocho JSON sin tocar, de modo que la preferencia apuntaba a un catálogo que nadie había escrito. Los dos casos pasan por `AlmacenController.crear_en(modo, base)`, la misma fábrica que usa el arranque, y el cambio de modo admite además `pisar`: en la misma carpeta el «destino con datos» es la otra versión de estos mismos datos, y negarlo dejaba el selector sin poder volver atrás nunca.
 - **`cambios_pendientes.json` se abría en `WRITE` y se escribía encima** (`#63`): un corte a mitad dejaba el fichero corrupto y con él se perdía el aviso de cambios sin ver de la sesión anterior. Pasa a la escritura atómica del resto, igual que los otros stores en los que ya se había hecho.
 

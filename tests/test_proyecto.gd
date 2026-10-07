@@ -4,9 +4,9 @@ var _fallos := 0
 
 
 func _initialize() -> void:
-	_check(_version_ok(), "project.godot tiene config/version=0.2.0")
+	_check(_version_ok(), "project.godot tiene config/version=0.3.0")
 	_check(_icon_ok(), "project.godot apunta a Assets/icon/icon.svg")
-	_check(_title_ok(), "project.godot tiene título GestorAO v0.2.0")
+	_check(_title_ok(), "project.godot tiene título GestorAO v0.3.0")
 	_check(_version_un_lugar_ok(), "el rótulo de Main.tscn lleva la misma versión que project.godot")
 	_rutas()
 	_cache_texturas()
@@ -49,7 +49,7 @@ func _cache_texturas() -> void:
 
 
 func _version_ok() -> bool:
-	return ProjectSettings.get_setting("application/config/version") == "0.2.0"
+	return ProjectSettings.get_setting("application/config/version") == "0.3.0"
 
 
 func _version_un_lugar_ok() -> bool:
@@ -66,7 +66,7 @@ func _icon_ok() -> bool:
 
 
 func _title_ok() -> bool:
-	return ProjectSettings.get_setting("display/window/title") == "GestorAO v0.2.0"
+	return ProjectSettings.get_setting("display/window/title") == "GestorAO v0.3.0"
 
 
 func _check(condicion: bool, etiqueta: String) -> void:

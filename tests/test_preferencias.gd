@@ -35,6 +35,16 @@ func _arrancar() -> void:
 	_check(is_equal_approx(ventana.get_node("%InstantaneasDias").value, 365.0), "abrir deja 365 días de instantáneas por defecto (#60)")
 	_check(ventana.size.y >= ventana.get_node("Margen/Columna").get_combined_minimum_size().y, \
 		"la ventana ajusta su alto al contenido (no desborda ni solapa)")
+	var desplazamiento: ScrollContainer = ventana.get_node("Margen/Columna/Desplazamiento")
+	var opciones: Control = ventana.get_node("Margen/Columna/Desplazamiento/Opciones")
+	var alto_pantalla: int = DisplayServer.screen_get_usable_rect().size.y
+	if alto_pantalla <= 0:
+		alto_pantalla = int(ProjectSettings.get_setting("display/window/size/viewport_height", 810))
+	_check(desplazamiento.get_v_scroll_bar().visible \
+		and opciones.get_combined_minimum_size().y > desplazamiento.size.y, \
+		"las opciones que no caben se desplazan en vez de estirar la ventana hasta salirse de la pantalla (#63)")
+	_check(ventana.size.y <= alto_pantalla, \
+		"la ventana de Preferencias cabe en la pantalla aunque siga sumando ajustes (#63)")
 
 	ventana.get_node("%BotonCancelar").pressed.emit()
 	_check(_aplicado == null and not ventana.visible, "cancelar no emite aplicado y oculta")
