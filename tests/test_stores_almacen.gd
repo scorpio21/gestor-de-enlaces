@@ -332,6 +332,11 @@ func principal_conecta_los_stores_bd() -> void:
 		conectados = conectados and store != null and store.almacen != null
 	_check(modo_bd and conectados and FileAccess.file_exists("%s/gestorao.db" % base),
 		"main arranca en modo base de datos con los seis stores conectados (#65)")
+	var almacen_abierto = s._almacen
 	main.free()
+	# En Windows un .db con la conexion abierta no se puede borrar: se cierra
+	# antes de que la suite limpie su carpeta.
+	if almacen_abierto != null:
+		almacen_abierto.cerrar()
 	OS.set_environment("GESTORAO_ALMACEN", "")
 	OS.set_environment("GESTORAO_BASE", "")
