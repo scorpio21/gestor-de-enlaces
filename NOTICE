@@ -1,0 +1,27 @@
+# Aviso de terceros (NOTICE)
+
+GestorAO redistribuye componentes de terceros con licencias permisivas. Este
+aviso los lista; el texto completo de cada licencia viaja junto al componente.
+
+## Godot AI — `addons/godot_ai`
+
+- Versión: 4.2.3
+- Autor: Godot AI
+- Licencia: MIT (`addons/godot_ai/LICENSE`)
+- Uso: **solo en el editor**. Su `EditorExportPlugin` retira el autoload
+  `_mcp_game_helper` de los builds exportados, así que no llega a la aplicación
+  final.
+
+## Godot SQLite — `addons/godot-sqlite`
+
+- Versión: 4.9 (SQLite 3.51)
+- Autores: Piet Bronders & Jeroen De Geeter
+- Licencia: MIT (`addons/godot-sqlite/LICENSE.md`)
+- SQLite es de dominio público.
+- Uso: backend de almacenamiento **Base de datos**. Se vendorizan los binarios
+  de escritorio (Windows, Linux y macOS, en sus variantes de plantilla debug y
+  release).
+
+## Godot Engine
+
+- GestorAO se ejecuta sobre **Godot Engine 4.7.2** (licencia MIT).

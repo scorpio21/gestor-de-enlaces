@@ -105,6 +105,23 @@ La comprobación es siempre en dos pasos: primero se valida el certificado como 
 
 > `user://` equivale a la carpeta de datos del usuario del sistema según el sistema operativo.
 
+### Modos de almacenamiento
+
+Desde *Preferencias → Almacenamiento* se elige **cómo** se guardan los datos; la tabla anterior
+describe el modo por defecto (**Ficheros sueltos**):
+
+| Modo | Fichero(s) | Notas |
+|---|---|---|
+| **Ficheros sueltos** | los ocho JSON de `user://` | Por defecto; igual que las versiones anteriores. |
+| **Fichero único** | `gestorao.json` en la carpeta de datos | Las ocho secciones dentro de un JSON, con `schema_version` por sección. |
+| **Base de datos** | `gestorao.db` (SQLite) | Una tabla por sección, con la carga útil en JSON; requiere el addon `godot-sqlite`. |
+
+Cambiar de modo o de carpeta **migra** los datos (copia + verificación por recuento) y se aplica
+al reiniciar, porque los stores ya tienen sus rutas abiertas. La preferencia de almacenamiento
+vive siempre en `user://almacenamiento.json`, aunque los datos se muevan. La carpeta también se
+puede elegir por línea de órdenes (`-- --almacen=<ruta>`) o con las variables `GESTORAO_ALMACEN`
+y `GESTORAO_BASE`.
+
 ---
 
 ## Registro de actividad y diagnóstico
@@ -118,7 +135,7 @@ La comprobación es siempre en dos pasos: primero se valida el certificado como 
 
 - **Presets de exportación** (`export_presets.cfg`) — Windows (exe), Linux/X11 (x86_64) y macOS (`.app` universal). La escena principal y los iconos (SVG/PNG/ICO/ICNS) se generan con `scripts/generar_iconos.gd`.
 - **GitHub Actions** (`.github/workflows/ci.yml`) — en cada push a `main`: descarga Godot 4.7.2 y las export templates (versión fija `4.7.2.stable`), importa el proyecto, ejecuta la batería de tests headless y exporta los 3 presets a `build/` (el `.app` de macOS se comprime a ZIP). Los artefactos quedan publicados en la página del run.
-- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 33 suites en orden; local (Windows, pwsh):
+- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 60 suites en orden; local (Windows, pwsh):
 
   ```bash
   & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_<area>.gd
@@ -134,25 +151,38 @@ La comprobación es siempre en dos pasos: primero se valida el certificado como 
 gestor-de-enlaces/
 ├── project.godot            # Configuración del proyecto
 ├── export_presets.cfg       # Presets de exportación Windows/Linux/macOS
+├── LICENSE                  # Licencia del proyecto (MIT)
+├── NOTICE                   # Aviso de componentes de terceros
 ├── CHANGELOG.md             # Histórico de cambios por día
 ├── .github/workflows/ci.yml # CI: tests headless + export de los 3 bundles
-├── scenes/
+├── scenes/                  # 10 escenas
 │   ├── Main.tscn            # Escena principal (UI completa)
-│   ├── AgregarEnlace.tscn   # Ventana para añadir enlaces
-│   └── ListItem.tscn        # Fila individual del listado
-├── scripts/
-│   ├── main.gd              # Lógica de la UI, carga/guardado y escaneo
-│   ├── list_item.gd         # Fila: estado, verificación y apertura
+│   ├── Dashboard.tscn       # Dashboard de estadísticas
+│   ├── Historial.tscn       # Historial de comprobaciones
+│   ├── Cambios.tscn         # Resumen de cambios entre escaneos
+│   ├── AgregarEnlace.tscn   # Ventana para añadir/editar enlaces
+│   ├── Preferencias.tscn    # Preferencias (escaneo, tema, idioma, almacenamiento)
+│   ├── ListItem.tscn        # Fila del listado
+│   ├── GridItem.tscn        # Celda de la grilla
+│   ├── FilaTabla.tscn       # Fila de tabla del dashboard
+│   └── TarjetaKpi.tscn      # Tarjeta de KPI del dashboard
+├── scripts/                 # 54 scripts (Integración + stores + controladores)
+│   ├── main.gd              # Integración: almacén, stores, UI y escaneo
+│   ├── almacen.gd           # Interfaz de almacenamiento + escritura atómica
+│   ├── almacen_json.gd      # Backend: ficheros sueltos (8 JSON)
+│   ├── almacen_uno.gd       # Backend: fichero único (gestorao.json)
+│   ├── almacen_bd.gd        # Backend: base de datos SQLite (gestorao.db)
+│   ├── almacen_controller.gd# Fábrica de backends y migración
 │   ├── link_checker.gd      # Verificador HTTP (redirecciones, timeouts…)
+│   ├── list_item.gd         # Fila: estado, verificación y apertura
+│   ├── *_controller.gd      # scan, lista, catálogo, config, selección, informe, cambios
+│   ├── *_store.gd           # estado, config, cola, presets, instantáneas, cambios, informe, dashboard
 │   ├── agregar_enlace.gd    # Formulario de nuevo enlace (+ captura)
 │   ├── logger.gd            # Logs rotativos app/scan en user://logs
 │   ├── diagnostico.gd       # Exporta ZIP de logs+datos con info.txt
-│   ├── estado_store.gd      # Persistencia de estados y borrados (user://)
-│   ├── gestor_catalogo.gd   # Catálogo base y enlaces de usuario
 │   ├── gestor_datos.gd      # Carga/guardado JSON con backups
+│   ├── gestor_catalogo.gd   # Catálogo base y enlaces de usuario
 │   ├── gestor_contadores.gd # Contadores de la barra de estado
-│   ├── config_store.gd      # Preferencias persistentes (user://)
-│   ├── presets_store.gd     # Presets de filtros persistentes (user://)
 │   ├── historial.gd         # Historial de escaneos del catálogo
 │   ├── preferencias.gd      # Ventana de preferencias
 │   ├── gestor_archivo.gd    # Selección y copia de capturas
@@ -160,12 +190,15 @@ gestor-de-enlaces/
 │   ├── extraer_cadenas.gd   # Scanner de cadenas de la UI
 │   └── generar_iconos.gd    # Regenera Assets/icon (svg/png/ico/icns)
 ├── tests/
-│   ├── run_battery.sh       # Ejecuta las 33 suites headless (Linux/CI)
-│   └── test_<area>.gd       # 33 suites SceneTree (TESTS OK / quit(0))
+│   ├── run_battery.sh       # Ejecuta las 60 suites headless (Linux/Windows/CI)
+│   ├── run_estatico.sh      # --check-only de los .gd antes de la batería
+│   ├── run_smoke.sh         # Arranca el binario exportado (-- --smoke)
+│   └── test_<area>.gd       # 60 suites SceneTree (TESTS OK / quit(0))
 ├── locale/
 │   └── gestor_es_en.csv     # Traducciones ES/EN (clave ES, valor ES, valor EN)
 ├── addons/
-│   └── godot_ai/            # Plugin de editor Godot AI (MCP, tercero MIT)
+│   ├── godot_ai/            # Plugin de editor Godot AI (MCP, tercero MIT)
+│   └── godot-sqlite/        # Backend SQLite (tercero MIT) para el modo Base de datos
 ├── data/
 │   └── data.json            # Catálogo base de enlaces
 ├── Assets/

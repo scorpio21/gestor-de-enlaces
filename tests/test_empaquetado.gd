@@ -5,6 +5,7 @@ var _fallos := 0
 
 func _initialize() -> void:
 	_check(_export_presets_ok(), "export_presets.cfg declara Windows, Linux/X11 y macOS")
+	_check(_macos_version_ok(), "la version del bundle macOS iguala config/version")
 	_check(_ci_ok(), ".github/workflows/ci.yml tiene battery y upload-artifact")
 	_check(_ci_protegida(), "la CI limita el tiempo del job y ejecuta el paso estatico (#61)")
 	_check(_ci_matriz_windows(), "la CI corre la bateria tambien en Windows (#61)")
@@ -52,6 +53,45 @@ func _export_presets_ok() -> bool:
 	return "name=\"Windows\"" in txt and "name=\"Linux/X11\"" in txt \
 		and ("platform=\"Linux/X11\"" in txt or "platform=\"Linux\"" in txt) \
 		and "name=\"macOS\"" in txt
+
+
+func _macos_version_ok() -> bool:
+	# La version del bundle macOS se escribe a mano y el editor reescribe el
+	# preset al guardar: si se queda atras, el .app miente (llego a decir 0.1.0
+	# con el proyecto en 0.3.0). Se exige que las cuatro claves de version del
+	# preset macOS igualen config/version de project.godot.
+	var version := ""
+	for linea in _leer("res://project.godot").split("\n"):
+		var limpia := linea.strip_edges()
+		if limpia.begins_with("config/version="):
+			version = limpia.split("=", true, 1)[1].strip_edges().replace("\"", "")
+	if version.is_empty():
+		return false
+	# Las claves de version estan en [preset.N.options], no en el [preset.N] que
+	# lleva la plataforma: hay que agrupar los dos sub-bloques por numero.
+	var bloques := {}
+	var actual := ""
+	for linea in _leer("res://export_presets.cfg").split("\n"):
+		var limpia := linea.strip_edges()
+		if limpia.begins_with("[preset."):
+			var resto := limpia.trim_prefix("[preset.").trim_suffix("]")
+			var punto := resto.find(".")
+			actual = resto.substr(0, punto) if punto >= 0 else resto
+			if not bloques.has(actual):
+				bloques[actual] = ""
+			continue
+		if actual != "":
+			bloques[actual] = bloques[actual] + limpia + "\n"
+	var macos := ""
+	for id in bloques:
+		if "platform=\"macOS\"" in bloques[id]:
+			macos = bloques[id]
+	if macos.is_empty():
+		return false
+	for clave in ["application/short_version", "application/version", "application/bundle_version", "application/bundle_short_version"]:
+		if not ("%s=\"%s\"" % [clave, version]) in macos:
+			return false
+	return true
 
 
 func _ci_ok() -> bool:
