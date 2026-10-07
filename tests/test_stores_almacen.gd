@@ -43,6 +43,7 @@ func _arrancar() -> void:
 	_check(copia_en_unico_es_del_fichero(), "la copia de seguridad en modo único es la del fichero entero (#63)")
 	_check(fichero_futuro_bloquea_al_controlador(), "un fichero de una versión posterior avisa y no se puede escribir (#63)")
 	await principal_conecta_los_stores()
+	await principal_conecta_los_stores_bd()
 	_borrar_arbol(BASE)
 	if _fallos == 0:
 		print("TESTS OK")
@@ -303,6 +304,34 @@ func principal_conecta_los_stores() -> void:
 	_check(FileAccess.get_file_as_string("user://colas.json") == cola_antes \
 		and FileAccess.get_file_as_string("user://config.json") == config_antes,
 		"en modo único no se escribe nada de la configuración de user:// (#63)")
+	main.free()
+	OS.set_environment("GESTORAO_ALMACEN", "")
+	OS.set_environment("GESTORAO_BASE", "")
+
+
+func principal_conecta_los_stores_bd() -> void:
+	# El arranque en modo base de datos: _ready() revisa la cola pendiente y eso
+	# pasa por cola_store.cargar() -> almacen.seccion("cola"). Aquí se monta la
+	# escena entera para que ese camino no se quede sin cubrir (#65).
+	var base := _fresca("principal_bd")
+	OS.set_environment("GESTORAO_ALMACEN", "base_datos")
+	OS.set_environment("GESTORAO_BASE", base)
+	var main := MAIN_SCENE.instantiate()
+	main.DATA_RES = "%s/data.json" % base
+	main.DATA_USER = "%s/enlaces.json" % base
+	main.CONFIG_BASE = base
+	main.ASSETS_BASE = "%s/Assets" % base
+	root.add_child(main)
+	await process_frame
+	await process_frame
+	var s = main
+	var modo_bd: bool = s._almacen != null and s._almacen.almacen != null \
+		and s._almacen.almacen.modo() == AlmacenScript.MODO_BASE_DATOS
+	var conectados := true
+	for store in [s._config_store, s._instantanea_store, s._cola_store, s._presets_store, s._estado_store, s._cambios]:
+		conectados = conectados and store != null and store.almacen != null
+	_check(modo_bd and conectados and FileAccess.file_exists("%s/gestorao.db" % base),
+		"main arranca en modo base de datos con los seis stores conectados (#65)")
 	main.free()
 	OS.set_environment("GESTORAO_ALMACEN", "")
 	OS.set_environment("GESTORAO_BASE", "")

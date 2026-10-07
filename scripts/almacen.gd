@@ -161,6 +161,13 @@ func limpiar_cola() -> bool:
 	return true
 
 
+func seccion(_nombre: String) -> Variant:
+	# Acceso de solo lectura a una seccion tal cual, para los stores que
+	# necesitan el envoltorio y no solo el dato: la cola guarda su fecha al lado
+	# de las urls. El backend que no lo implemente devuelve vacio, no revienta.
+	return {}
+
+
 func config() -> Dictionary:
 	return {}
 

@@ -34,6 +34,10 @@ func _arrancar() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(BASE))
 	ConfigStoreScript.new(BASE).guardar(3, 10.0, false, 0, "oscuro", "", "", 1, "es")
 	TranslationServer.set_locale("es")
+	# El modo de almacenamiento no se hereda de la maquina: esta suite lee sus
+	# rutas de fichero, asi que se fija a ficheros.
+	OS.set_environment("GESTORAO_ALMACEN", "ficheros")
+	OS.set_environment("GESTORAO_BASE", "")
 	var main := MAIN_SCENE.instantiate()
 	main.DATA_RES = "%s/data.json" % BASE
 	main.DATA_USER = "%s/enlaces.json" % BASE

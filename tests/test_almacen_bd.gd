@@ -12,6 +12,10 @@ const AlmacenController := preload("res://scripts/almacen_controller.gd")
 const GestorDatos := preload("res://scripts/gestor_datos.gd")
 const ConfigStore := preload("res://scripts/config_store.gd")
 const EstadoStore := preload("res://scripts/estado_store.gd")
+const ColaStore := preload("res://scripts/cola_store.gd")
+const InstantaneaStore := preload("res://scripts/instantanea_store.gd")
+const PresetsStore := preload("res://scripts/presets_store.gd")
+const CambiosController := preload("res://scripts/cambios_controller.gd")
 
 const BASE := "user://__test_almacen_bd__"
 const DB := "user://__test_almacen_bd__/gestorao.db"
@@ -50,6 +54,7 @@ func _initialize() -> void:
 	_check(bd_a_json_vuelve(), "migrar de la base a JSON es reversible (#65)")
 	_check(store_config_escribe_por_bd(), "config_store escribe en la base de datos (#65)")
 	_check(store_estados_escribe_por_bd(), "estado_store vuelca en la base de datos (#65)")
+	_check(stores_por_bd(), "los seis stores leen y escriben por la base, y la cola conserva su fecha (#65)")
 	_limpiar()
 	if _fallos == 0:
 		print("TESTS OK")
@@ -470,6 +475,66 @@ func store_estados_escribe_por_bd() -> bool:
 	var b := AlmacenBd.new("%s/gestorao.db" % base, base)
 	b.abrir()
 	var ok: bool = b.estados().has("https://a.com")
+	b.cerrar()
+	_borrar_arbol(base)
+	return ok
+
+
+func stores_por_bd() -> bool:
+	# El fallo de #65 que se coló: la cola lee su seccion cruda (con la fecha al
+	# lado de las urls) y el backend de base de datos no la tenía. Aquí pasan los
+	# seis stores por el backend, no solo los dos que ya se probaban.
+	var base := _fresca_base("stores")
+	var a := AlmacenBd.new("%s/gestorao.db" % base, base)
+	if not a.abrir():
+		return false
+	var cola := ColaStore.new(base, a)
+	if not cola.guardar(["https://a.com/", "https://b.com/"]):
+		return false
+	var leida: Dictionary = cola.cargar()
+	if (leida.get("urls", []) as Array) != ["https://a.com/", "https://b.com/"] or int(leida.get("fecha", 0)) <= 0:
+		return false
+	if not cola.limpiar():
+		return false
+	var vacia: Dictionary = cola.cargar()
+	if not (vacia.get("urls", []) as Array).is_empty() or int(vacia.get("fecha", 0)) != 0:
+		return false
+	if not ConfigStore.new(base, a).guardar(5, 12.0):
+		return false
+	var estado := EstadoStore.new(base, a)
+	if not estado.guardar_estado("https://a.com/", true, "OK (200)", 200):
+		return false
+	if not estado.marcar_borrado("https://muerta.com/"):
+		return false
+	if not PresetsStore.new(base, a).guardar({"mio": {"filtro_dias": 3}}):
+		return false
+	var res: Dictionary = InstantaneaStore.new(base, a).guardar(
+		[{"url": "https://a.com/", "nombre": "A", "cat": "", "tags": []}],
+		{"https://a.com/": {"valido": true}}
+	)
+	if not res.get("ok", false):
+		return false
+	var cambios := CambiosController.new()
+	cambios.ruta = "%s/cambios_pendientes.json" % base
+	cambios.almacen = a
+	if not cambios.guardar_pendientes([{"campo": "nombre", "de": "a", "a": "b"}]):
+		return false
+	for nombre in ["config.json", "colas.json", "estados.json", "borrados.json", "presets_filtros.json", "instantaneas.json", "cambios_pendientes.json"]:
+		if FileAccess.file_exists("%s/%s" % [base, nombre]):
+			return false
+	var b := AlmacenBd.new("%s/gestorao.db" % base, base)
+	if not b.abrir():
+		return false
+	var datos: Dictionary = EstadoStore.new(base, b).cargar()
+	var cambios2 := CambiosController.new()
+	cambios2.ruta = "%s/cambios_pendientes.json" % base
+	cambios2.almacen = b
+	var ok: bool = int(ConfigStore.new(base, b).cargar().get("paralelismo", 0)) == 5 \
+		and int((datos.get("estados", {}) as Dictionary).get("https://a.com/", {}).get("codigo", 0)) == 200 \
+		and (datos.get("borrados", []) as Array) == ["https://muerta.com/"] \
+		and int(PresetsStore.new(base, b).cargar().get("mio", {}).get("filtro_dias", 0)) == 3 \
+		and InstantaneaStore.new(base, b).cargar().size() == 1 \
+		and cambios2.leer_pendientes().size() == 1
 	b.cerrar()
 	_borrar_arbol(base)
 	return ok

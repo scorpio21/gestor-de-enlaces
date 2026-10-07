@@ -28,6 +28,10 @@ func _arrancar() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("user://__test_main_flujos__"))
 	ConfigStoreScript.new("user://__test_main_flujos__").guardar(3, 10.0, false, 0, "oscuro", "", "", 1, "es")
 	TranslationServer.set_locale("es")
+	# El modo de almacenamiento no se hereda de la maquina: esta suite lee sus
+	# rutas de fichero, asi que se fija a ficheros.
+	OS.set_environment("GESTORAO_ALMACEN", "ficheros")
+	OS.set_environment("GESTORAO_BASE", "")
 	var main := MAIN_SCENE.instantiate()
 	main.DATA_RES = "user://__test_main_flujos__/data.json"
 	main.DATA_USER = "user://__test_main_flujos__/enlaces.json"

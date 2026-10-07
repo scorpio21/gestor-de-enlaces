@@ -52,9 +52,11 @@ static func crear(cfg: Dictionary):
 		return null
 	if modo == AlmacenScript.MODO_BASE_DATOS:
 		# La base vive en la carpeta elegida salvo que la config traiga una ruta
-		# explicita; asi cambiar de sitio mueve tambien el .db.
+		# explicita; asi cambiar de sitio mueve tambien el .db. El valor por
+		# defecto (user://gestorao.db) no es una eleccion explicita: si la base
+		# se mudo, la base de datos la sigue.
 		var ruta_bd := str(cfg.get("ruta_bd", ""))
-		if not AlmacenScript.ruta_ok(ruta_bd):
+		if not AlmacenScript.ruta_ok(ruta_bd) or (ruta_bd == AlmacenScript.RUTA_BD_POR_DEFECTO and AlmacenScript.con_barra(base_texto) != "user://"):
 			ruta_bd = ruta_bd_en(base_texto)
 		return AlmacenBdScript.new(ruta_bd, base_texto)
 	if modo == AlmacenScript.MODO_UNICO:

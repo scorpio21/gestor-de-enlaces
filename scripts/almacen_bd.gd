@@ -206,6 +206,27 @@ func limpiar_cola() -> bool:
 	)
 
 
+func seccion(nombre: String) -> Variant:
+	match nombre:
+		"entradas":
+			return {"schema_version": GestorDatosScript.SCHEMA_ACTUAL, "entradas": entradas()}
+		"estados":
+			return estados()
+		"borrados":
+			return borrados()
+		"cola":
+			return {"urls": cola(), "fecha": int(_meta("cola_fecha", "0"))}
+		"config":
+			return config()
+		"instantaneas":
+			return instantaneas()
+		"presets":
+			return presets()
+		"cambios":
+			return cambios()
+	return {}
+
+
 func config() -> Dictionary:
 	return _diccionario("SELECT clave, json FROM config")
 
