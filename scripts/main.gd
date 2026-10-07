@@ -21,6 +21,7 @@ const ConfigStoreScript := preload("res://scripts/config_store.gd")
 const InstantaneaStoreScript := preload("res://scripts/instantanea_store.gd")
 const SmokeScript := preload("res://scripts/smoke.gd")
 const IdiomaScript := preload("res://scripts/idioma.gd")
+const DialogosControllerScript := preload("res://scripts/dialogos_controller.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
 const GestorArchivoScript := preload("res://scripts/gestor_archivo.gd")
@@ -102,15 +103,9 @@ var _aceptar_certificados := false
 var _instantaneas_dias := InstantaneaStoreScript.LIMITE_DEFAULT
 var _estados := {}
 var _borrados: Array = []
-var _borrados_pendientes: Array = []
-var _reubicar_pendientes: Array = []
 var _urls_informe: Array = []
 var _persistir := true
-var _limpieza_resultado: Dictionary = {}
 var _cola_store: RefCounted = null
-var _aviso_url := ""
-var _dialogo_version := ""
-var _dialogo_con_aviso := false
 var _presets_store: RefCounted = null
 var _presets: Dictionary = {}
 var _boton_eliminar_preset: Button = null
@@ -121,6 +116,7 @@ var _filas_visibles := 0
 var _cambios = CambiosControllerScript.new()
 var _estado_previo := {}
 var _sel = SeleccionControllerScript.new()
+var _dialogos = DialogosControllerScript.new()
 
 
 func _ready() -> void:
@@ -975,20 +971,19 @@ func _ui_eliminar_fila(item: Button) -> void:
 
 
 func _ui_pedir_borrado(urls: Array, etiqueta := "") -> void:
-	if urls.is_empty():
+	var texto := _dialogos.pedir_borrado(urls, etiqueta)
+	if texto.is_empty():
 		return
-	_borrados_pendientes = urls
-	%ConfirmarBorrado.dialog_text = SeleccionControllerScript.texto_eliminar(urls.size(), str(urls[0]), etiqueta)
+	%ConfirmarBorrado.dialog_text = texto
 	%ConfirmarBorrado.popup_centered()
 
 
 func _ui_cancelar_borrado() -> void:
-	_borrados_pendientes = []
+	_dialogos.cancelar_borrado()
 
 
 func _ui_confirmar_borrado() -> void:
-	var urls := _borrados_pendientes
-	_borrados_pendientes = []
+	var urls := _dialogos.tomar_borrado()
 	var borradas: Array = []
 	for url in urls:
 		if _borrar_entrada(str(url)):
@@ -1026,20 +1021,19 @@ func _ui_pedir_reubicar_lote(urls: Array) -> void:
 
 
 func _ui_pedir_reubicar(urls: Array) -> void:
-	_reubicar_pendientes = RedireccionesScript.reubicables_de(urls, _estados)
-	if _reubicar_pendientes.is_empty():
+	var texto := _dialogos.pedir_reubicar(urls, _entradas, _estados)
+	if texto.is_empty():
 		return
-	%ConfirmarReubicar.dialog_text = RedireccionesScript.texto_confirmar(_entradas, _estados, _reubicar_pendientes)
+	%ConfirmarReubicar.dialog_text = texto
 	%ConfirmarReubicar.popup_centered()
 
 
 func _ui_cancelar_reubicar() -> void:
-	_reubicar_pendientes = []
+	_dialogos.cancelar_reubicar()
 
 
 func _ui_confirmar_reubicar() -> void:
-	var urls := _reubicar_pendientes
-	_reubicar_pendientes = []
+	var urls := _dialogos.tomar_reubicar()
 	var actualizadas := 0
 	for url in urls:
 		if _actualizar_url_entrada(str(url)):
@@ -1501,7 +1495,6 @@ func _hacer_limpieza_capturas() -> Dictionary:
 
 func _solicitar_limpieza_capturas() -> void:
 	var res := _hacer_limpieza_capturas()
-	_limpieza_resultado = res
 	if not res.get("ok", false):
 		progreso.text = str(res.get("error", "No se pudo limpiar las capturas."))
 		return
@@ -1509,13 +1502,13 @@ func _solicitar_limpieza_capturas() -> void:
 	if borradas == 0:
 		progreso.text = tr("No hay capturas huérfanas.")
 		return
+	_dialogos.guardar_limpieza(res)
 	%ConfirmarLimpieza.dialog_text = tr("¿Borrar %d capturas huérfanas?") % borradas
 	%ConfirmarLimpieza.popup_centered()
 
 
 func _confirmar_limpieza() -> void:
-	var res := _limpieza_resultado
-	_limpieza_resultado = {}
+	var res: Dictionary = _dialogos.tomar_limpieza()
 	CacheTexturasScript.limpiar()
 	var borradas := int(res.get("borradas", 0))
 	var errores := int(res.get("errores", 0))
@@ -1633,7 +1626,7 @@ func _lanzar_comprobacion_auto() -> void:
 func _comprobar_actualizaciones(manual: bool) -> void:
 	if _es_headless():
 		if manual:
-			_mostrar_aviso("error", "", "")
+			_avisar_actualizacion("error", "", "")
 		return
 	var actualizador: Node = ActualizadorScript.new()
 	add_child(actualizador)
@@ -1642,66 +1635,41 @@ func _comprobar_actualizaciones(manual: bool) -> void:
 
 
 func _on_actualizacion_terminado(resultado: Dictionary, manual: bool) -> void:
-	var nueva: bool = resultado.get("nueva") == true
-	var version := str(resultado.get("version", ""))
-	var url := str(resultado.get("url", ""))
-	if nueva and version != str(_config_store.cargar().get("ultima_version_vista", "")):
-		_mostrar_aviso("nueva", version, url)
-	elif manual and not nueva and str(resultado.get("error", "")).is_empty():
-		_mostrar_aviso("al_dia", str(ProjectSettings.get_setting("application/config/version", "0.0.1")), "")
-	elif manual:
-		_mostrar_aviso("error", "", "")
+	var version_actual := str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
+	var aviso: Dictionary = DialogosControllerScript.resultado_actualizacion(
+		resultado, manual, str(_config_store.cargar().get("ultima_version_vista", "")), version_actual)
+	if not aviso.is_empty():
+		_avisar_actualizacion(str(aviso.get("modo", "")), str(aviso.get("version", "")), str(aviso.get("url", "")))
 
 
-func _mostrar_aviso(modo: String, version: String, url: String) -> void:
+func _avisar_actualizacion(modo: String, version: String, url: String) -> void:
 	var dialogo: ConfirmationDialog = %DialogoActualizacion
-	if modo == "nueva":
-		dialogo.title = tr("Nueva versión disponible")
-		dialogo.dialog_text = tr("Hay una nueva versión: %s") % version
-		dialogo.ok_button_text = tr("Ver release")
-		dialogo.get_cancel_button().visible = true
-		_aviso_url = url
-		_dialogo_version = version
-		_dialogo_con_aviso = true
-	elif modo == "al_dia":
-		dialogo.title = tr("Comprobar actualizaciones")
-		dialogo.dialog_text = tr("Estás al día (v%s)") % version
-		dialogo.ok_button_text = tr("Cerrar")
-		dialogo.get_cancel_button().visible = false
-		_dialogo_con_aviso = false
-	else:
-		dialogo.title = tr("Comprobar actualizaciones")
-		dialogo.dialog_text = tr("No se pudo comprobar actualizaciones.")
-		dialogo.ok_button_text = tr("Cerrar")
-		dialogo.get_cancel_button().visible = false
-		_dialogo_con_aviso = false
+	var contenido: Dictionary = _dialogos.aviso_actualizacion(modo, version, url)
+	dialogo.title = str(contenido.get("titulo", ""))
+	dialogo.dialog_text = str(contenido.get("texto", ""))
+	dialogo.ok_button_text = str(contenido.get("ok", ""))
+	dialogo.get_cancel_button().visible = bool(contenido.get("cancelar", false))
 	dialogo.popup_centered()
 
 
 func _on_actualizacion_ver() -> void:
-	if not _aviso_url.is_empty():
-		OS.shell_open(_aviso_url)
+	if not _dialogos.url_aviso().is_empty():
+		OS.shell_open(_dialogos.url_aviso())
 	_persistir_version_vista()
-	_limpiar_aviso()
+	_dialogos.limpiar_aviso()
 
 
 func _on_actualizacion_cerrar() -> void:
-	if _dialogo_con_aviso:
+	if _dialogos.con_aviso():
 		_persistir_version_vista()
-	_limpiar_aviso()
+	_dialogos.limpiar_aviso()
 
 
 func _persistir_version_vista() -> void:
 	_config_ctrl.guardar(_config_store, {
-		"ultima_version_vista": _dialogo_version,
+		"ultima_version_vista": _dialogos.version_aviso(),
 		"orden_columna": _orden_columna,
 		"orden_direccion": _orden_direccion,
 	})
-
-
-func _limpiar_aviso() -> void:
-	_aviso_url = ""
-	_dialogo_version = ""
-	_dialogo_con_aviso = false
 
 

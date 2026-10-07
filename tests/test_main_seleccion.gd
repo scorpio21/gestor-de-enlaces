@@ -230,7 +230,7 @@ func _eliminar(main, s) -> void:
 
 	dialogo.hide()
 	dialogo.canceled.emit()
-	_check(s._borrados_pendientes.is_empty(), "al cancelar se olvida la lista pendiente")
+	_check(s._dialogos.pendientes_borrado().is_empty(), "al cancelar se olvida la lista pendiente")
 
 	s._ui_eliminar_fila(_fila(s, "a.test"))
 	await process_frame

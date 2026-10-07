@@ -24,7 +24,7 @@ func _initialize() -> void:
 	_check(_lista_extraida(), "la logica de filas vive en lista_controller, no en main.gd (#62)")
 	_check(_config_extraida(), "el guardado de la config vive en config_controller, no en main.gd (#62)")
 	_check(_catalogo_extraido(), "el alta, edicion y borrado viven en catalogo_controller, no en main.gd (#62)")
-	_check(_main_no_secha(), "main.gd se ha ido encogiendo con cada entrega de #62 y #57")
+	_check(_main_no_secha(), "main.gd se ha ido encogiendo con cada entrega (#66: dialogos fuera)")
 	_check(_cambios_extraidos(), "el calculo de cambios vive en cambios_controller y cambios_store, no en main.gd (#57)")
 	_check(_seleccion_extraida(), "la seleccion multiple vive en seleccion_controller, no en main.gd (#58)")
 	_check(_informe_extraido(), "el armado del informe vive en informe_controller, no en main.gd (#58)")
@@ -35,6 +35,7 @@ func _initialize() -> void:
 	_check(_almacen_no_preload_circular(), "almacen.gd no preloadea sus backends: seria circular (#63)")
 	_check(_preferencias_enseña_almacen(), "Preferencias tiene seccion de almacenamiento (#63)")
 	_check(_escritura_atomica_compartida(), "config y cola usan la escritura atomica compartida (#63)")
+	_check(_dialogos_extraido(), "la logica de los dialogos vive en dialogos_controller, no en main.gd (#66)")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
@@ -307,12 +308,37 @@ func _preferencias_enseña_almacen() -> bool:
 	return "func _mostrar_almacen() -> void:" in codigo and "migrar_a_otro" in codigo
 
 
-func _main_no_secha() -> bool:
-	# El techo estaba en 1700 y #63 lo subio a 1710: main.gd necesita un
-	# _abrir_almacen() para resolver CONFIG_BASE antes de crear los stores, y
-	# quitando lineas de ahi se tocaria logica que no tiene nada que ver.
+func _dialogos_extraido() -> bool:
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1710
+	if not main.contains("DialogosControllerScript") or not main.contains("_dialogos."):
+		return false
+	var prohibidas := [
+		"_borrados_pendientes",
+		"_reubicar_pendientes",
+		"_limpieza_resultado",
+		"_aviso_url",
+		"_dialogo_version",
+		"_dialogo_con_aviso",
+		"func _mostrar_aviso",
+		"func _limpiar_aviso",
+	]
+	for prohibida in prohibidas:
+		if main.contains(prohibida):
+			return false
+	var dialogos := _leer("res://scripts/dialogos_controller.gd")
+	if not dialogos.contains("static func resultado_actualizacion") \
+		or not dialogos.contains("func aviso_actualizacion") \
+		or not dialogos.contains("func pedir_borrado") \
+		or not dialogos.contains("func pedir_reubicar"):
+		return false
+	return FileAccess.file_exists("res://tests/test_dialogos_controller.gd")
+
+
+func _main_no_secha() -> bool:
+	# #66 saco los dialogos a dialogos_controller.gd: main.gd quedo en 1676 y
+	# este techo (antes 1710) le obliga a seguir encogiendose con cada entrega.
+	var main := _leer("res://scripts/main.gd")
+	return main.split("\n").size() <= 1676
 
 
 func _seleccion_extraida() -> bool:
@@ -331,6 +357,7 @@ func _seleccion_extraida() -> bool:
 		"func texto_copiadas(",
 		"func texto_borrados(",
 		"func texto_eliminar(",
+		"_borrados_pendientes",
 	]
 	for prohibida in prohibidas:
 		if main.contains(prohibida):
@@ -370,11 +397,13 @@ func _reubicar_extraido() -> bool:
 		"func texto_confirmar(",
 		"\"Redirige a: %s\"",
 		"\"¿Actualizar «%s» a %s?\"",
+		"_reubicar_pendientes",
 	]
 	for texto in prohibidas:
 		if main.contains(texto):
 			return false
-	if not main.contains("RedireccionesScript.reubicables_de("):
+	var dialogos := _leer("res://scripts/dialogos_controller.gd")
+	if not dialogos.contains("reubicables_de(") or not dialogos.contains("texto_confirmar("):
 		return false
 	return FileAccess.file_exists("res://scripts/redirecciones.gd") \
 		and FileAccess.file_exists("res://tests/test_redirecciones.gd")
