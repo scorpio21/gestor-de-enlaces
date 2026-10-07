@@ -4,6 +4,10 @@
 /data/*.bak
 /data/*.tmp
 
+# Traducciones generadas por el importador de CSV: el runtime lee el .csv
+# (scripts/idioma.gd), asi que no se versionan.
+/locale/*.translation
+
 # Binario exportado para el smoke (lo genera `--export-release`)
 /build/
 

@@ -97,7 +97,7 @@ Entregables: `scripts/cola_store.gd`, `scripts/informe_store.gd`, `scripts/tema_
 
 ## Próximos pasos
 
-1. Backlog de issues: **ninguno abierto**. `#65` (modo Base de datos, lo que la fase 2 de `#63` dejó fuera) quedó cerrado con el addon `godot-sqlite` vendorizado; `#63` y `#64` también (fase 1 en la 0.2.0; fase 2, SQLite y el arreglo de la ventana de Preferencias en la 0.3.0). De la revisión de `informe.md` se cerraron al vuelo los `.uid` (versionados), `LICENSE`/`NOTICE`, la versión del bundle macOS y estas cifras.
+1. Backlog de issues: **ninguno abierto**. `#65` (modo Base de datos, lo que la fase 2 de `#63` dejó fuera) quedó cerrado con el addon `godot-sqlite` vendorizado; `#63` y `#64` también (fase 1 en la 0.2.0; fase 2, SQLite y el arreglo de la ventana de Preferencias en la 0.3.0). De la revisión de `informe.md` se cerraron al vuelo los `.uid` (versionados), `LICENSE`/`NOTICE`, la versión del bundle macOS y estas cifras; y se limpiaron los residuos (`icon.svg` de raíz, `data/servidores.json`, `locale/*.translation` ignoradas) y la configuración de física 3D muerta.
 2. Si se abre el editor y guarda, `export_presets.cfg` se re-reescribe a su formato; comitear el cambio (AGENTS.md).
 3. `MEMORIA.md` y `README.md`/`CHANGELOG.md` se mantienen al día en cada ronda.
 
