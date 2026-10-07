@@ -1,4 +1,3 @@
-class_name CacheTexturas
 extends RefCounted
 
 const LIMITE := 200

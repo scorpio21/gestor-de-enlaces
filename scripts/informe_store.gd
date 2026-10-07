@@ -1,4 +1,3 @@
-class_name InformeStore
 extends RefCounted
 
 const CAUSAS := [

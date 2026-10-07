@@ -1,4 +1,3 @@
-class_name ColaStore
 extends RefCounted
 
 const AlmacenScript := preload("res://scripts/almacen.gd")

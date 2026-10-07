@@ -1,4 +1,3 @@
-class_name EstadoStore
 extends RefCounted
 
 var _base: String

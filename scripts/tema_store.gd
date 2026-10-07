@@ -1,4 +1,3 @@
-class_name TemaStore
 extends RefCounted
 
 const TemaSistemaScript := preload("res://scripts/tema_sistema.gd")
