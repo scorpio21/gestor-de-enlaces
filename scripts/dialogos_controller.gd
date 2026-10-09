@@ -63,7 +63,9 @@ func tomar_limpieza() -> Dictionary:
 	return resultado
 
 
-static func resultado_actualizacion(resultado: Dictionary, manual: bool, ultima_vista: String, version_actual: String) -> Dictionary:
+static func resultado_actualizacion(
+	resultado: Dictionary, manual: bool, ultima_vista: String, version_actual: String
+) -> Dictionary:
 	var nueva: bool = resultado.get("nueva") == true
 	var version := str(resultado.get("version", ""))
 	if nueva and version != ultima_vista:
