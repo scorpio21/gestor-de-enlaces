@@ -61,3 +61,10 @@ Regenera `Assets/icon/*` (svg/png/ico/icns) desde el SVG incrustado en el script
 - `main.gd` es el punto de integración; los stores viven en `scripts/` con test propio.
 - Los tests usan bases `user://__test_*__` y se limpian.
 - Al terminar un issue o varios, cerrar el/los issue(s) en GitHub al final del trabajo (`gh issue close N --repo scorpio21/gestor-de-enlaces --comment "resumen + commits"`).
+## Cómo cortar una versión
+
+1. Actualizar config/version en project.godot (y el guardián de macOS lo comprueba).
+2. Actualizar CHANGELOG.md (mover lo de [Sin publicar] a una entrada [X.Y.Z] con fecha).
+3. Commit y push a main.
+4. Crear y pushear el tag X.Y.Z: git tag vX.Y.Z && git push origin vX.Y.Z.
+5. El workflow .github/workflows/release.yml exporta los 3 presets, hace smoke test, genera sha256 y publica un GitHub Release con las notas del changelog.

@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Publicar release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Extraer versión de tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "ver=${TAG#v}" >> "$GITHUB_OUTPUT"
+      - name: Comprobar que config/version coincide con el tag
+        run: |
+          V=$(grep -oP '^config/version="\K[^"]+' project.godot)
+          if [ "$V" != "${{ steps.version.outputs.ver }}" ]; then
+            echo "ERROR: project.godot config/version=$V no coincide con tag v${{ steps.version.outputs.ver }}"
+            exit 1
+          fi
+      - name: Descargar Godot
+        id: godot
+        uses: ./.github/actions/godot
+        with:
+          templates: true
+      - name: Cache de la importación
+        uses: actions/cache@v4
+        with:
+          path: |
+            .godot/imported
+            .godot/uid_cache.bin
+          key: import-${{ runner.os }}-${{ hashFiles('project.godot', 'Assets/**', 'data/**') }}
+          restore-keys: |
+            import-${{ runner.os }}-
+      - name: Importar assets
+        shell: bash
+        run: '"${{ steps.godot.outputs.bin }}" --headless --path . --import'
+      - name: Exportar los tres presets
+        shell: bash
+        run: |
+          set -euxo pipefail
+          G="${{ steps.godot.outputs.bin }}"
+          mkdir -p build
+          "$G" --headless --path . --export-release "Windows" build/gestor-de-enlaces.exe
+          "$G" --headless --path . --export-release "Linux/X11" build/gestor-de-enlaces.x86_64
+          "$G" --headless --path . --export-release "macOS" build/gestor-de-enlaces_macos.app
+          (cd build && zip -r gestor-de-enlaces-macos.zip gestor-de-enlaces_macos.app)
+      - name: Smoke test
+        shell: bash
+        run: |
+          export SMOKE_BIN="$PWD/build/gestor-de-enlaces.x86_64"
+          bash tests/run_smoke.sh
+      - name: Calcular checksums SHA256
+        shell: bash
+        run: |
+          cd build
+          sha256sum gestor-de-enlaces.exe > gestor-de-enlaces.exe.sha256
+          sha256sum gestor-de-enlaces.x86_64 > gestor-de-enlaces.x86_64.sha256
+          sha256sum gestor-de-enlaces-macos.zip > gestor-de-enlaces-macos.zip.sha256
+          cd ..
+      - name: Extraer notas desde CHANGELOG
+        id: changelog
+        shell: bash
+        run: |
+          awk '/^## \[/{p++} p==2{if($0 ~ /^## \[/) exit; print}' CHANGELOG.md | sed '/^$/d' > RELEASE_NOTES.md || echo "" > RELEASE_NOTES.md
+          if [ -s RELEASE_NOTES.md ]; then
+            echo "has_notes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_notes=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Crear GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: GestorAO ${{ steps.version.outputs.tag }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            build/gestor-de-enlaces.exe
+            build/gestor-de-enlaces.exe.sha256
+            build/gestor-de-enlaces.x86_64
+            build/gestor-de-enlaces.x86_64.sha256
+            build/gestor-de-enlaces-macos.zip
+            build/gestor-de-enlaces-macos.zip.sha256
