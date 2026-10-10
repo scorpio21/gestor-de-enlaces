@@ -1,5 +1,12 @@
 extends Node
 
+## Actualizador
+##
+## Propósito: consultar la última release de GitHub para saber si hay una
+## versión nueva. **Solo lee metadatos** de la API de releases; **no descarga
+## binarios, no escribe archivos, no ejecuta código ni instala nada**.
+## El resultado se emite vía señal `terminado` con `{"nueva", "version", "url", "error"}`.
+
 signal terminado(resultado: Dictionary)
 
 const VersionesScript := preload("res://scripts/versiones.gd")

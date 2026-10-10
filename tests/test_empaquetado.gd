@@ -36,6 +36,7 @@ func _initialize() -> void:
 	_check(_preferencias_enseña_almacen(), "Preferencias tiene seccion de almacenamiento (#63)")
 	_check(_escritura_atomica_compartida(), "config y cola usan la escritura atomica compartida (#63)")
 	_check(_dialogos_extraido(), "la logica de los dialogos vive en dialogos_controller, no en main.gd (#66)")
+	_check(FileAccess.file_exists("res://tests/test_actualizador.gd"), "existe tests/test_actualizador.gd")
 	if _fallos == 0:
 		print("TESTS OK")
 		quit(0)
