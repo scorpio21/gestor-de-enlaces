@@ -264,12 +264,12 @@ func _arrancar() -> void:
 	], "\t"))
 	f_imp.close()
 	main_script._entradas = [{"nombre": "A", "desc": "", "url": "https://a.test", "img": ""}]
-	main_script._on_importar_elegido(ruta_imp)
+	main_script._imp_exp.importar(ruta_imp)
 	_check(main_script._entradas.size() == 3, "importar fusiona añadiendo solo las nuevas")
 	_check(main.get_node("%Progreso").text == "2 importados, 1 omitidos.", "importar informa importados y omitidos")
 
 	var ruta_exp := "user://__test_import_export_export__.json"
-	main_script._on_exportar_elegido(ruta_exp)
+	main_script._imp_exp.exportar(ruta_exp)
 	_check(FileAccess.file_exists(ruta_exp) and (JSON.parse_string(FileAccess.get_file_as_string(ruta_exp)) as Array).size() == 3, "exportar escribe un JSON con el catálogo")
 
 	# Rutas de escritura (#50)

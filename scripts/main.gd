@@ -24,10 +24,8 @@ const IdiomaScript := preload("res://scripts/idioma.gd")
 const DialogosControllerScript := preload("res://scripts/dialogos_controller.gd")
 const GestorCatalogoScript := preload("res://scripts/gestor_catalogo.gd")
 const GestorImagenesScript := preload("res://scripts/gestor_imagenes.gd")
-const GestorArchivoScript := preload("res://scripts/gestor_archivo.gd")
 const GestorDatosScript := preload("res://scripts/gestor_datos.gd")
 const LoggerScript := preload("res://scripts/logger.gd")
-const DiagnosticoScript := preload("res://scripts/diagnostico.gd")
 const ColaStoreScript := preload("res://scripts/cola_store.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const OrdenadorScript := preload("res://scripts/ordenador.gd")
@@ -41,11 +39,11 @@ const EtiquetasScript := preload("res://scripts/etiquetas.gd")
 const PresetsStoreScript := preload("res://scripts/presets_store.gd")
 const CambiosControllerScript := preload("res://scripts/cambios_controller.gd")
 const SeleccionControllerScript := preload("res://scripts/seleccion_controller.gd")
-const InformeControllerScript := preload("res://scripts/informe_controller.gd")
 const RedireccionesScript := preload("res://scripts/redirecciones.gd")
 const ThemeControllerScript := preload("res://scripts/theme_controller.gd")
 const UpdateControllerScript := preload("res://scripts/update_controller.gd")
 const NavigationControllerScript := preload("res://scripts/navigation_controller.gd")
+const ImportExportControllerScript := preload("res://scripts/import_export_controller.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var grilla: GridContainer = %GridContenedor
@@ -121,6 +119,7 @@ var _dialogos = DialogosControllerScript.new()
 var _tema_ctrl: RefCounted = null
 var _updates: RefCounted = null
 var _nav: RefCounted = null
+var _imp_exp: RefCounted = null
 
 
 func _ready() -> void:
@@ -170,6 +169,7 @@ func _ready() -> void:
 	_updates = UpdateControllerScript.new(self, %DialogoActualizacion, _config_store, _config_ctrl, _dialogos, func() -> Array: return [_orden_columna, _orden_direccion])
 	_instantanea_store = InstantaneaStoreScript.new(CONFIG_BASE, _almacen.para_stores())
 	_nav = NavigationControllerScript.new(boton_vista, lista, grilla, fila_cabeceras, filtro, filtro_cat, busqueda, dashboard, progreso, _estado_store, _instantanea_store, func() -> void: _ui_refrescar(), func() -> bool: return _persistir_config(), func() -> Array: return _entradas)
+	_imp_exp = ImportExportControllerScript.new(progreso, func() -> Array: return _entradas, func() -> Dictionary: return _estados, func() -> Array: return _urls_existentes(), func() -> bool: return _guardar_datos(), func() -> void: _cargar_datos(), func() -> void: _ui_refrescar(), func() -> void: _ui_status(), func() -> Array: return _tomar_urls_informe(), func() -> Dictionary: return _datos_diagnostico(), func(tipo: String, msg: String) -> void: _log_app(tipo, msg))
 	dashboard.navegar.connect(_nav.navegar_dashboard)
 	_cola_store = ColaStoreScript.new("user://", _almacen.para_stores())
 	_scan = ScanControllerScript.new(_cola_store)
@@ -219,13 +219,13 @@ func _ready() -> void:
 	if _orden_columna != "":
 		_ui_aplicar_filtro()
 	preferencias.aplicado.connect(_aplicar_preferencias)
-	%DialogoImportar.file_selected.connect(_on_importar_elegido)
-	%DialogoExportar.file_selected.connect(_on_exportar_elegido)
-	%DialogoInforme.file_selected.connect(_on_informe_elegido)
+	%DialogoImportar.file_selected.connect(_imp_exp.importar)
+	%DialogoExportar.file_selected.connect(_imp_exp.exportar)
+	%DialogoInforme.file_selected.connect(_imp_exp.informe)
 	if not _es_headless():
 		_logger = LoggerScript.new("user://")
 		_log_app("inicio", "aplicación iniciada")
-	%DialogoDiagnostico.file_selected.connect(_on_diag_elegido)
+	%DialogoDiagnostico.file_selected.connect(_imp_exp.diagnostico)
 	%DialogoImportar.access = FileDialog.ACCESS_FILESYSTEM
 	%DialogoExportar.access = FileDialog.ACCESS_FILESYSTEM
 	%DialogoInforme.access = FileDialog.ACCESS_FILESYSTEM
@@ -1248,70 +1248,32 @@ func _log_app(tipo: String, msg: String) -> void:
 		_logger.app(tipo, msg)
 
 
-func _on_importar_elegido(ruta: String) -> void:
-	var res: Dictionary = GestorArchivoScript.importar(ruta, _urls_existentes())
-	if not res.get("ok", false):
-		progreso.text = str(res.get("error", "No se pudo importar el catálogo."))
-		return
-	var entradas: Array = res.get("entradas", [])
-	var omitidas := int(res.get("omitidas", 0))
-	if entradas.is_empty():
-		progreso.text = tr("%d omitidos (ya existían o sin URL válida).") % omitidas
-		return
-	var importados := entradas.size()
-	for entrada in entradas:
-		_entradas.append(entrada)
-	if not _guardar_datos():
-		_cargar_datos()
-		_ui_refrescar()
-		progreso.text = tr("No se pudo guardar el catálogo.")
-		return
-	_ui_refrescar()
-	_ui_status()
-	progreso.text = tr("%d importados, %d omitidos.") % [importados, omitidas]
-
-
-func _on_exportar_elegido(ruta: String) -> void:
-	var res: Dictionary = GestorArchivoScript.exportar(ruta, _entradas)
-	if not res.get("ok", false):
-		progreso.text = str(res.get("error", "No se pudo exportar el catálogo."))
-		return
-	progreso.text = tr("Catálogo exportado (%d enlaces).") % int(res.get("total", 0))
-
-
-func _on_informe_elegido(ruta: String) -> void:
-	var formato := InformeControllerScript.formato_de(ruta)
+func _tomar_urls_informe() -> Array:
 	var solo := _urls_informe.duplicate()
 	_urls_informe = []
-	var filas: Array = InformeControllerScript.filas(_entradas, _estados, solo)
-	var res: Dictionary = InformeControllerScript.exportar(ruta, formato, filas)
-	if not res.get("ok", false):
-		progreso.text = str(res.get("error", "No se pudo guardar el informe."))
-		return
-	progreso.text = tr("Informe %s guardado (%d enlaces).") % [formato.to_upper(), int(res.get("total", 0))]
+	return solo
 
 
-func _on_diag_elegido(ruta: String) -> void:
+func _datos_diagnostico() -> Dictionary:
 	var base := "user://"
 	if _logger != null:
 		base = _logger_base()
-	var res := DiagnosticoScript.exportar(ruta, base, str(ProjectSettings.get_setting("application/config/version", "0.0.1")), _entradas.size(), {
-		"assets_lectura": RutasScript.ASSETS_RES,
-		"assets_escritura": ASSETS_BASE,
-		"catalogo_base": DATA_RES,
-		"enlaces": DATA_USER,
-		"config": CONFIG_BASE,
-		"ui_filas": _filas_visibles,
-		"ui_repaint_ms": "%.1f" % _ultimo_repaint_ms,
-		"ui_cache_texturas": CacheTexturasScript.tamano(),
-		"tls_aceptar_certificados": str(_aceptar_certificados),
-		"tls_aviso": _tls_aviso(),
-	})
-	if not res.get("ok", false):
-		progreso.text = tr("No se pudo exportar el diagnóstico (%d errores).") % int(res.get("errores", 0))
-		return
-	_log_app("diagnostico", "diagnóstico exportado a " + ruta)
-	progreso.text = tr("Diagnóstico guardado en %s.") % ruta
+	return {
+		"base": base,
+		"total": _entradas.size(),
+		"datos": {
+			"assets_lectura": RutasScript.ASSETS_RES,
+			"assets_escritura": ASSETS_BASE,
+			"catalogo_base": DATA_RES,
+			"enlaces": DATA_USER,
+			"config": CONFIG_BASE,
+			"ui_filas": _filas_visibles,
+			"ui_repaint_ms": "%.1f" % _ultimo_repaint_ms,
+			"ui_cache_texturas": CacheTexturasScript.tamano(),
+			"tls_aceptar_certificados": str(_aceptar_certificados),
+			"tls_aviso": _tls_aviso(),
+		},
+	}
 
 
 func _on_enlace_guardado(datos: Dictionary) -> void:

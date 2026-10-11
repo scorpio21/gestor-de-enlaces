@@ -39,6 +39,7 @@ func _initialize() -> void:
 	_check(_tema_extraido(), "el tema vive en theme_controller, no en main.gd (#74)")
 	_check(_actualizacion_extraida(), "la comprobacion de actualizaciones vive en update_controller, no en main.gd (#74)")
 	_check(_navegacion_extraida(), "la navegacion entre vistas y paneles vive en navigation_controller, no en main.gd (#74)")
+	_check(_import_export_extraida(), "importar/exportar/informe/diagnostico viven en import_export_controller, no en main.gd (#74)")
 	_check(FileAccess.file_exists("res://tests/test_actualizador.gd"), "existe tests/test_actualizador.gd")
 	if _fallos == 0:
 		print("TESTS OK")
@@ -405,12 +406,35 @@ func _navegacion_extraida() -> bool:
 		and ctrl.contains("modo_vista") and FileAccess.file_exists("res://tests/test_navigation_controller.gd")
 
 
+func _import_export_extraida() -> bool:
+	# #74: importar, exportar, informe y diagnostico (los handlers de los
+	# FileDialog) viven en import_export_controller; main.gd solo le pasa los
+	# datos que son suyos (getters) y el controller hace el resto.
+	var main := _leer("res://scripts/main.gd")
+	if not main.contains("ImportExportControllerScript") or not main.contains("_imp_exp."):
+		return false
+	var prohibidas := [
+		"func _on_importar_elegido",
+		"func _on_exportar_elegido",
+		"func _on_informe_elegido",
+		"func _on_diag_elegido",
+	]
+	for prohibida in prohibidas:
+		if main.contains(prohibida):
+			return false
+	var ctrl := _leer("res://scripts/import_export_controller.gd")
+	return ctrl.contains("func importar") and ctrl.contains("func exportar") \
+		and ctrl.contains("func informe") and ctrl.contains("func diagnostico") \
+		and FileAccess.file_exists("res://tests/test_import_export_controller.gd")
+
+
 func _main_no_secha() -> bool:
 	# #66 saco los dialogos (main.gd 1676); #74 saca el tema (1675), la
-	# comprobacion de actualizaciones (1618) y la navegacion (1568). El techo
-	# baja a 1568 y obliga a seguir encogiendo main.gd con cada entrega.
+	# comprobacion de actualizaciones (1618), la navegacion (1568) y la
+	# importacion/exportacion (1530). El techo baja a 1530 y obliga a seguir
+	# encogiendo main.gd con cada entrega.
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1568
+	return main.split("\n").size() <= 1530
 
 
 func _seleccion_extraida() -> bool:

@@ -291,7 +291,7 @@ func _exportar(s) -> void:
 	_check(str(s.get_node("%DialogoInforme").current_file) == "seleccion.csv", "y propone un nombre de fichero")
 
 	var ruta := "%s/solo.csv" % BASE
-	s._on_informe_elegido(ruta)
+	s._imp_exp.informe(ruta)
 	var texto := FileAccess.get_file_as_string(ruta)
 	_check(texto.contains("https://b.test"), "el informe lleva la primera seleccionada")
 	_check(texto.contains("https://d.test"), "y la segunda")
@@ -299,7 +299,7 @@ func _exportar(s) -> void:
 	_check(s._urls_informe.is_empty(), "despues de exportar no se recuerda la seleccion para el siguiente guardado")
 
 	var todas := "%s/todas.csv" % BASE
-	s._on_informe_elegido(todas)
+	s._imp_exp.informe(todas)
 	var texto_todas := FileAccess.get_file_as_string(todas)
 	_check(texto_todas.contains("https://b.test"), "sin seleccion previa el informe sale entero")
 	_check(texto_todas.contains("https://d.test"), "con todas las filas del catalogo")
