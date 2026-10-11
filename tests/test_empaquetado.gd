@@ -36,6 +36,7 @@ func _initialize() -> void:
 	_check(_preferencias_enseña_almacen(), "Preferencias tiene seccion de almacenamiento (#63)")
 	_check(_escritura_atomica_compartida(), "config y cola usan la escritura atomica compartida (#63)")
 	_check(_dialogos_extraido(), "la logica de los dialogos vive en dialogos_controller, no en main.gd (#66)")
+	_check(_tema_extraido(), "el tema vive en theme_controller, no en main.gd (#74)")
 	_check(FileAccess.file_exists("res://tests/test_actualizador.gd"), "existe tests/test_actualizador.gd")
 	if _fallos == 0:
 		print("TESTS OK")
@@ -335,11 +336,26 @@ func _dialogos_extraido() -> bool:
 	return FileAccess.file_exists("res://tests/test_dialogos_controller.gd")
 
 
-func _main_no_secha() -> bool:
-	# #66 saco los dialogos a dialogos_controller.gd: main.gd quedo en 1676 y
-	# este techo (antes 1710) le obliga a seguir encogiendose con cada entrega.
+func _tema_extraido() -> bool:
+	# #74: el tema sale de main.gd; el controller aplica la paleta a la raiz y al
+	# dashboard, y main.gd solo le pide que aplique. Si main.gd vuelve a llamar a
+	# TemaStoreScript.aplicar es que la logica ha regresado.
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1676
+	if not main.contains("ThemeControllerScript") or not main.contains("_tema_ctrl."):
+		return false
+	if main.contains("TemaStoreScript.aplicar"):
+		return false
+	var ctrl := _leer("res://scripts/theme_controller.gd")
+	return ctrl.contains("func aplicar_tema") and ctrl.contains("func conectar_cambio_tema") \
+		and FileAccess.file_exists("res://tests/test_theme_controller.gd")
+
+
+func _main_no_secha() -> bool:
+	# #66 saco los dialogos a dialogos_controller.gd (main.gd 1676); #74 saco el
+	# tema a theme_controller.gd. El techo baja a 1675 y obliga a seguir
+	# encogiendo main.gd con cada entrega.
+	var main := _leer("res://scripts/main.gd")
+	return main.split("\n").size() <= 1675
 
 
 func _seleccion_extraida() -> bool:

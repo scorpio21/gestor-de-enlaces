@@ -44,6 +44,7 @@ const CambiosControllerScript := preload("res://scripts/cambios_controller.gd")
 const SeleccionControllerScript := preload("res://scripts/seleccion_controller.gd")
 const InformeControllerScript := preload("res://scripts/informe_controller.gd")
 const RedireccionesScript := preload("res://scripts/redirecciones.gd")
+const ThemeControllerScript := preload("res://scripts/theme_controller.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var grilla: GridContainer = %GridContenedor
@@ -117,12 +118,14 @@ var _cambios = CambiosControllerScript.new()
 var _estado_previo := {}
 var _sel = SeleccionControllerScript.new()
 var _dialogos = DialogosControllerScript.new()
+var _tema_ctrl: RefCounted = null
 
 
 func _ready() -> void:
 	if SmokeScript.arrancar_desde_consola(get_tree()):
 		return
 	_configurar_menus()
+	_tema_ctrl = ThemeControllerScript.new(self, dashboard)
 	_espera_busqueda = Timer.new()
 	_espera_busqueda.one_shot = true
 	_espera_busqueda.wait_time = ESPERA_BUSQUEDA
@@ -188,10 +191,8 @@ func _ready() -> void:
 	_scan.intervalo_auto = _intervalo_auto
 	_scan.auto_abrir = _auto_abrir
 	_scan.es_headless = _es_headless()
-	TemaStoreScript.aplicar(String(cfg.get("tema", "auto")), self)
-	dashboard.aplicar_paleta()
-	if DisplayServer.is_dark_mode_supported():
-		DisplayServer.set_system_theme_change_callback(Callable(self, "_on_tema_sistema_cambio"))
+	_tema_ctrl.aplicar_tema(String(cfg.get("tema", "auto")))
+	_tema_ctrl.conectar_cambio_tema(Callable(self, "_on_tema_sistema_cambio"))
 	_orden_columna = str(cfg.get("orden_columna", ""))
 	_orden_direccion = -1 if int(cfg.get("orden_direccion", 1)) < 0 else 1
 	busqueda.text = str(cfg.get("busqueda", ""))
@@ -1553,8 +1554,7 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 	_scan.paralelismo = _paralelismo
 	_scan.intervalo_auto = _intervalo_auto
 	_scan.auto_abrir = _auto_abrir
-	TemaStoreScript.aplicar(tema, self)
-	dashboard.aplicar_paleta()
+	_tema_ctrl.aplicar_tema(tema)
 	TranslationServer.set_locale(idioma)
 	var cambios := _config_desde_ui()
 	cambios["paralelismo"] = paralelismo
@@ -1582,8 +1582,7 @@ func _aplicar_preferencias(paralelismo: int, timeout: float, auto_abrir := true,
 func _on_tema_sistema_cambio() -> void:
 	var cfg: Dictionary = _config_store.cargar()
 	if str(cfg.get("tema", "auto")) == "auto":
-		TemaStoreScript.aplicar("auto", self)
-		dashboard.aplicar_paleta()
+		_tema_ctrl.aplicar_tema("auto")
 
 
 func _retraducir_ui() -> void:
