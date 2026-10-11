@@ -134,8 +134,12 @@ y `GESTORAO_BASE`.
 ## Empaquetado y CI
 
 - **Presets de exportación** (`export_presets.cfg`) — Windows (exe), Linux/X11 (x86_64) y macOS (`.app` universal). La escena principal y los iconos (SVG/PNG/ICO/ICNS) se generan con `scripts/generar_iconos.gd`.
-- **GitHub Actions** (`.github/workflows/ci.yml`) — en cada push a `main`: descarga Godot 4.7.2 y las export templates (versión fija `4.7.2.stable`), importa el proyecto, ejecuta la batería de tests headless y exporta los 3 presets a `build/` (el `.app` de macOS se comprime a ZIP). Los artefactos quedan publicados en la página del run.
-- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 61 suites en orden; local (Windows, pwsh):
+- **GitHub Actions**:
+  - `.github/workflows/ci.yml` — en cada push a `main`: descarga Godot 4.7.2 y las export templates (versión fija `4.7.2.stable`), importa el proyecto, ejecuta la batería de tests headless y exporta los 3 presets a `build/` (el `.app` de macOS se comprime a ZIP). Los artefactos quedan publicados en la página del run.
+  - `.github/workflows/release.yml` — al publicar un tag `vX.Y.Z` (que debe coincidir con `config/version`): exporta los 3 presets en modo *release*, hace *smoke test* del binario, calcula los `sha256` y crea un **GitHub Release** con las notas extraídas del `CHANGELOG.md`.
+- **Smoke test del binario** (`tests/run_smoke.sh`) — arranca el binario exportado (`--headless -- --smoke`) para cazar lo que solo existe dentro del `.pck` (recursos, escenas o escritura en `user://`); exige la marca `GestorAO smoke OK` y ningún `SCRIPT ERROR`.
+- **Mutation testing** (`tools/mut.py`, `tools/README_mut.md`) — arnés **local** (no corre en CI) que aplica mutaciones conocidas de `tools/mutaciones/` y comprueba que la batería las detecta (*kill rate*); sirve para medir la calidad de los tests, no como puerta de CI.
+- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 66 suites en orden; local (Windows, pwsh):
 
   ```bash
   & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_<area>.gd
@@ -154,7 +158,7 @@ gestor-de-enlaces/
 ├── LICENSE                  # Licencia del proyecto (MIT)
 ├── NOTICE                   # Aviso de componentes de terceros
 ├── CHANGELOG.md             # Histórico de cambios por día
-├── .github/workflows/ci.yml # CI: tests headless + export de los 3 bundles
+├── .github/workflows/       # CI: ci.yml (tests headless + export) y release.yml (release por tag)
 ├── scenes/                  # 10 escenas
 │   ├── Main.tscn            # Escena principal (UI completa)
 │   ├── Dashboard.tscn       # Dashboard de estadísticas
@@ -166,7 +170,7 @@ gestor-de-enlaces/
 │   ├── GridItem.tscn        # Celda de la grilla
 │   ├── FilaTabla.tscn       # Fila de tabla del dashboard
 │   └── TarjetaKpi.tscn      # Tarjeta de KPI del dashboard
-├── scripts/                 # 54 scripts (Integración + stores + controladores)
+├── scripts/                 # 59 scripts (Integración + stores + controladores)
 │   ├── main.gd              # Integración: almacén, stores, UI y escaneo
 │   ├── almacen.gd           # Interfaz de almacenamiento + escritura atómica
 │   ├── almacen_json.gd      # Backend: ficheros sueltos (8 JSON)
@@ -175,7 +179,7 @@ gestor-de-enlaces/
 │   ├── almacen_controller.gd# Fábrica de backends y migración
 │   ├── link_checker.gd      # Verificador HTTP (redirecciones, timeouts…)
 │   ├── list_item.gd         # Fila: estado, verificación y apertura
-│   ├── *_controller.gd      # scan, lista, catálogo, config, selección, informe, cambios
+│   ├── *_controller.gd      # scan, lista, catálogo, config, selección, informe, cambios, diálogos, tema, actualizaciones, navegación, importar/exportar
 │   ├── *_store.gd           # estado, config, cola, presets, instantáneas, cambios, informe, dashboard
 │   ├── agregar_enlace.gd    # Formulario de nuevo enlace (+ captura)
 │   ├── logger.gd            # Logs rotativos app/scan en user://logs
@@ -190,10 +194,10 @@ gestor-de-enlaces/
 │   ├── extraer_cadenas.gd   # Scanner de cadenas de la UI
 │   └── generar_iconos.gd    # Regenera Assets/icon (svg/png/ico/icns)
 ├── tests/
-│   ├── run_battery.sh       # Ejecuta las 61 suites headless (Linux/Windows/CI)
+│   ├── run_battery.sh       # Ejecuta las 66 suites headless (Linux/Windows/CI)
 │   ├── run_estatico.sh      # --check-only de los .gd antes de la batería
 │   ├── run_smoke.sh         # Arranca el binario exportado (-- --smoke)
-│   └── test_<area>.gd       # 61 suites SceneTree (TESTS OK / quit(0))
+│   └── test_<area>.gd       # 66 suites SceneTree (TESTS OK / quit(0))
 ├── locale/
 │   └── gestor_es_en.csv     # Traducciones ES/EN (clave ES, valor ES, valor EN)
 ├── addons/
@@ -201,6 +205,9 @@ gestor-de-enlaces/
 │   └── godot-sqlite/        # Backend SQLite (tercero MIT) para el modo Base de datos
 ├── data/
 │   └── data.json            # Catálogo base de enlaces
+├── tools/
+│   ├── mut.py               # Arnés de mutation testing (local)
+│   └── mutaciones/          # Mutaciones conocidas por área
 ├── Assets/
 │   └── icon/                # Iconos generados (svg/png/ico/icns)
 └── docs/superpowers/        # Specs y planes de diseño
@@ -218,7 +225,7 @@ gestor-de-enlaces/
 - [x] Re-verificación individual por enlace
 - [x] **Captura/imagen por enlace** — al añadir se puede adjuntar una imagen local que se muestra como miniatura (o el marcador `no-disponible`)
 - [x] **Logs rotativos y diagnóstico en ZIP** — logger app/scan en `user://logs/` + *Utilidades → Exportar diagnóstico…* (`#28`)
-- [x] **Icono propio y metadatos 0.1.0** — Assets/icon (svg/png/ico/icns) generado por script (`#29`)
+- [x] **Icono propio y metadatos 0.3.0** — Assets/icon (svg/png/ico/icns) generado por script (`#29`)
 - [x] **Empaquetado y CI** — presets Windows/Linux/macOS + GitHub Actions que testea y exporta los 3 bundles (#26)
 - [x] **Ordenación por columnas** — cabeceras de la lista con criterio persistido (`#17`)
 - [x] **Internacionalización ES/EN** — selector de idioma con banderas y `tr()` en toda la UI (`#30`)
