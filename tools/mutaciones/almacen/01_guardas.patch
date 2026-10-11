@@ -1,0 +1,10 @@
+# Ejemplo: invierte una guarda para verificar que la suite falla
+# Aplicar con cuidado (manual o script), revertir con git.
+# Objetivo: desactivar una comprobación que el test exige.
+--- a/scripts/almacen.gd
++++ b/scripts/almacen.gd
+@@
+-function _asegurar_carpeta
++function _asegurar_carpeta
+     pass
+# Nota: este patch es un ejemplo para ilustrar el arnés. No aplicar automáticamente.
