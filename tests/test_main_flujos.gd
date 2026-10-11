@@ -329,11 +329,11 @@ func _arrancar() -> void:
 	main_script._ui_busqueda_enviada("")
 	await process_frame
 	_check(lista.get_child_count() == 12, "se recuperan las 12 filas (#52): %d" % lista.get_child_count())
-	main_script._ui_toggle_vista()
+	main_script._nav.toggle_vista()
 	await process_frame
 	_check(main.get_node("%GridContenedor").get_child_count() == 12, "la grilla muestra las 12 filas (#52)")
 	_check(main_script._lista.pool_tamano() == 0, "al cambiar de vista se vacía el pool de la anterior (#52)")
-	main_script._ui_toggle_vista()
+	main_script._nav.toggle_vista()
 	await process_frame
 	_check(lista.get_child_count() == 12, "al volver a la lista se restauran las 12 filas (#52): %d" % lista.get_child_count())
 	_check(_instancias(main_script) == 12, "cambiar de vista tampoco crea filas nuevas (#52): %d" % _instancias(main_script))
@@ -478,20 +478,20 @@ func _instantaneas(main: Node, main_script) -> void:
 	main_script._estados = {"foto.test/a": {"valido": true}, "foto.test/b": {"valido": false}}
 	main_script._scan_terminado(3, 1)
 	await process_frame
-	var fotos: Array = main_script._instantaneas()
+	var fotos: Array = main_script._nav.instantaneas()
 	_check(fotos.size() == 1, "terminar el escaneo deja una instantánea diaria (#60)")
 	_check(int(fotos[0].get("total", 0)) == 3 and int(fotos[0].get("validos", 0)) == 1, "la instantánea cuenta el catálogo entero (#60)")
 	_check(int(fotos[0].get("sin_comprobar", 0)) == 1, "la instantánea cuenta también lo sin comprobar (#60)")
 
 	main_script._scan_terminado(3, 0)
 	await process_frame
-	_check(main_script._instantaneas().size() == 1, "comprobar dos veces el mismo día no acumula instantáneas (#60)")
+	_check(main_script._nav.instantaneas().size() == 1, "comprobar dos veces el mismo día no acumula instantáneas (#60)")
 
 	main_script._entradas = []
 	main_script._estados = {}
 	main_script._scan_terminado(0, 0)
 	await process_frame
-	_check(main_script._instantaneas().size() == 1, "un catálogo vacío no pisa la instantánea de hoy (#60)")
+	_check(main_script._nav.instantaneas().size() == 1, "un catálogo vacío no pisa la instantánea de hoy (#60)")
 
 	main_script._on_utilidades_id(7)
 	_check(main.get_node("%Progreso").text == "No hay instantáneas más antiguas de 365 días.", "purgar sin nada viejo lo dice (#60): %s" % main.get_node("%Progreso").text)
@@ -513,7 +513,7 @@ func _instantaneas(main: Node, main_script) -> void:
 		{"nombre": "B", "url": "https://foto.test/b", "cat": "cliente"},
 	]
 	main_script._estados = {"foto.test/a": {"valido": true}, "foto.test/b": {"valido": false}}
-	main_script._abrir_dashboard()
+	main_script._nav.abrir_dashboard()
 	await process_frame
 	var ventana: Node = main.get_node("%VentanaDashboard")
 	var grafico: Control = ventana.get_node("%Grafico")

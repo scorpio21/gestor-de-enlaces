@@ -45,6 +45,7 @@ const InformeControllerScript := preload("res://scripts/informe_controller.gd")
 const RedireccionesScript := preload("res://scripts/redirecciones.gd")
 const ThemeControllerScript := preload("res://scripts/theme_controller.gd")
 const UpdateControllerScript := preload("res://scripts/update_controller.gd")
+const NavigationControllerScript := preload("res://scripts/navigation_controller.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var grilla: GridContainer = %GridContenedor
@@ -92,7 +93,6 @@ var _almacen: RefCounted = null
 var CONFIG_BASE := "user://"
 var _orden_columna := ""
 var _orden_direccion := 1
-var _modo_vista := "lista"
 var _logger = null
 var _paralelismo := 3
 var _timeout := 10.0
@@ -120,6 +120,7 @@ var _sel = SeleccionControllerScript.new()
 var _dialogos = DialogosControllerScript.new()
 var _tema_ctrl: RefCounted = null
 var _updates: RefCounted = null
+var _nav: RefCounted = null
 
 
 func _ready() -> void:
@@ -152,7 +153,6 @@ func _ready() -> void:
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
 	ventana_agregar.lote_guardado.connect(_on_lote_guardado)
 	ventana_agregar.editado.connect(_on_enlace_editado)
-	dashboard.navegar.connect(_on_dashboard_navegar)
 	dashboard.comprobar_ya.connect(_scan_iniciar)
 	dashboard.actualizar_urls.connect(_ui_pedir_reubicar_lote)
 	dialogo_cambios.filtrar_pedido.connect(_cambios_filtrar_lista)
@@ -169,6 +169,8 @@ func _ready() -> void:
 	_config_store = ConfigStoreScript.new(CONFIG_BASE, _almacen.para_stores())
 	_updates = UpdateControllerScript.new(self, %DialogoActualizacion, _config_store, _config_ctrl, _dialogos, func() -> Array: return [_orden_columna, _orden_direccion])
 	_instantanea_store = InstantaneaStoreScript.new(CONFIG_BASE, _almacen.para_stores())
+	_nav = NavigationControllerScript.new(boton_vista, lista, grilla, fila_cabeceras, filtro, filtro_cat, busqueda, dashboard, progreso, _estado_store, _instantanea_store, func() -> void: _ui_refrescar(), func() -> bool: return _persistir_config(), func() -> Array: return _entradas)
+	dashboard.navegar.connect(_nav.navegar_dashboard)
 	_cola_store = ColaStoreScript.new("user://", _almacen.para_stores())
 	_scan = ScanControllerScript.new(_cola_store)
 	_scan.configure(_scan_lanzar_item)
@@ -205,14 +207,14 @@ func _ready() -> void:
 	filtro_codigo.select(_indice_codigo(String(cfg.get("filtro_codigo", ""))))
 	filtro_modo.select(0 if str(cfg.get("busqueda_modo", "and")) == "and" else 1)
 	filtro_dias.value = int(cfg.get("filtro_dias", 0))
-	_modo_vista = "grilla" if str(cfg.get("vista", "lista")) == "grilla" else "lista"
+	_nav.modo_vista = "grilla" if str(cfg.get("vista", "lista")) == "grilla" else "lista"
 	_presets_recargar_ui()
 	boton_preset.pressed.connect(_ui_boton_preset)
 	%DialogoPreset.confirmed.connect(_dialogo_preset_confirmado)
 	_boton_eliminar_preset = %DialogoPreset.add_button(tr("Eliminar"))
 	_boton_eliminar_preset.pressed.connect(_dialogo_preset_eliminar)
-	boton_vista.pressed.connect(_ui_toggle_vista)
-	grilla.resized.connect(_grilla_redimensionada)
+	boton_vista.pressed.connect(_nav.toggle_vista)
+	grilla.resized.connect(_nav.grilla_redimensionada)
 	_ui_pintar_cabeceras()
 	if _orden_columna != "":
 		_ui_aplicar_filtro()
@@ -228,7 +230,7 @@ func _ready() -> void:
 	%DialogoExportar.access = FileDialog.ACCESS_FILESYSTEM
 	%DialogoInforme.access = FileDialog.ACCESS_FILESYSTEM
 	%DialogoDiagnostico.access = FileDialog.ACCESS_FILESYSTEM
-	_aplicar_vista()
+	_nav.aplicar_vista()
 	_ui_refrescar()
 	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
 	_ui_status()
@@ -307,20 +309,11 @@ func _on_utilidades_id(id: int) -> void:
 	elif id == 4:
 		_updates.comprobar(true)
 	elif id == 5:
-		_abrir_dashboard()
+		_nav.abrir_dashboard()
 	elif id == 6:
 		_cambios_ver()
 	elif id == 7:
 		_purgar_instantaneas()
-
-
-func _abrir_dashboard() -> void:
-	_estado_store.volcar()
-	dashboard.abrir(_entradas, _estado_store.cargar().get("estados", {}), _instantaneas())
-
-
-func _instantaneas() -> Array:
-	return [] if _instantanea_store == null else _instantanea_store.cargar()
 
 
 func _purgar_instantaneas() -> void:
@@ -543,10 +536,10 @@ func _ui_refrescar() -> void:
 func _ui_mostrar_lista(entradas: Array) -> void:
 	var inicio := Time.get_ticks_usec()
 	_scan.reiniciar()
-	_lista.cambiar_vista(_modo_vista)
+	_lista.cambiar_vista(_nav.modo_vista)
 	var contenedor := _contenedor_activo()
 	_lista.pool_devolver(contenedor)
-	var escena: PackedScene = GRID_ITEM_SCENE if _modo_vista == "grilla" else LIST_ITEM_SCENE
+	var escena: PackedScene = GRID_ITEM_SCENE if _nav.modo_vista == "grilla" else LIST_ITEM_SCENE
 
 	for entrada in entradas:
 		if typeof(entrada) != TYPE_DICTIONARY:
@@ -622,50 +615,7 @@ func _ui_aplicar_filtro() -> void:
 
 
 func _contenedor_activo() -> Node:
-	return grilla if _modo_vista == "grilla" else lista
-
-
-func _on_dashboard_navegar(tipo: String, valor: String) -> void:
-	if valor.is_empty():
-		return
-	filtro.select(0)
-	filtro_cat.select(0)
-	if tipo == "categoria":
-		var indice := GestorCatalogoScript.CATEGORIAS.find(valor)
-		if indice < 0:
-			return
-		busqueda.text = ""
-		filtro_cat.select(indice + 1)
-	else:
-		busqueda.text = valor
-	dashboard.hide()
-	_ui_refrescar()
-	progreso.text = tr("Filtro aplicado desde el dashboard.")
-
-
-func _ui_toggle_vista() -> void:
-	_modo_vista = "lista" if _modo_vista == "grilla" else "grilla"
-	_aplicar_vista()
-	_ui_refrescar()
-	_persistir_config()
-
-
-func _aplicar_vista() -> void:
-	var es_grilla := _modo_vista == "grilla"
-	lista.visible = not es_grilla
-	grilla.visible = es_grilla
-	fila_cabeceras.visible = not es_grilla
-	boton_vista.text = tr("Vista lista") if es_grilla else tr("Vista grilla")
-	if es_grilla:
-		_grilla_redimensionada()
-
-
-func _grilla_redimensionada() -> void:
-	if not grilla.visible:
-		return
-	var n := clampi(floori(maxf(grilla.size.x, 620.0) / 170.0), 2, 8)
-	if grilla.columns != n:
-		grilla.columns = n
+	return grilla if _nav.modo_vista == "grilla" else lista
 
 
 func _ui_busqueda(_texto: String) -> void:
@@ -1195,7 +1145,7 @@ func _cambios_filtrar_lista() -> void:
 
 
 func _cambios_abrir_dashboard() -> void:
-	_abrir_dashboard()
+	_nav.abrir_dashboard()
 
 
 func _scan_log(url: String, resultado: String, detalle := "") -> void:
@@ -1593,7 +1543,7 @@ func _retraducir_ui() -> void:
 		_boton_eliminar_preset.text = tr("Eliminar")
 	_ui_status()
 	_ui_refrescar()
-	boton_vista.text = tr("Vista lista") if _modo_vista == "grilla" else tr("Vista grilla")
+	_nav.aplicar_vista()
 
 
 func _config_desde_ui() -> Dictionary:
@@ -1607,7 +1557,7 @@ func _config_desde_ui() -> Dictionary:
 		"filtro_codigo": _codigo_seleccionado(),
 		"filtro_dias": int(filtro_dias.value),
 		"busqueda_modo": _modo_busqueda(),
-		"vista": _modo_vista,
+		"vista": _nav.modo_vista,
 	}
 
 

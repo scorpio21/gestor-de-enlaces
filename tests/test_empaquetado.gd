@@ -38,6 +38,7 @@ func _initialize() -> void:
 	_check(_dialogos_extraido(), "la logica de los dialogos vive en dialogos_controller, no en main.gd (#66)")
 	_check(_tema_extraido(), "el tema vive en theme_controller, no en main.gd (#74)")
 	_check(_actualizacion_extraida(), "la comprobacion de actualizaciones vive en update_controller, no en main.gd (#74)")
+	_check(_navegacion_extraida(), "la navegacion entre vistas y paneles vive en navigation_controller, no en main.gd (#74)")
 	_check(FileAccess.file_exists("res://tests/test_actualizador.gd"), "existe tests/test_actualizador.gd")
 	if _fallos == 0:
 		print("TESTS OK")
@@ -377,12 +378,39 @@ func _actualizacion_extraida() -> bool:
 		and FileAccess.file_exists("res://tests/test_update_controller.gd")
 
 
-func _main_no_secha() -> bool:
-	# #66 saco los dialogos (main.gd 1676); #74 saca el tema (1675) y la
-	# comprobacion de actualizaciones (1618). El techo baja a 1618 y obliga a
-	# seguir encogiendo main.gd con cada entrega.
+func _navegacion_extraida() -> bool:
+	# #74: la navegacion (modo de vista lista/grilla, redimension de la grilla y
+	# apertura/navegacion del dashboard) vive en navigation_controller; el estado
+	# modo_vista y los handlers dejan de estar en main.gd.
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1618
+	if not main.contains("NavigationControllerScript") or not main.contains("_nav."):
+		return false
+	var prohibidas := [
+		"func _on_dashboard_navegar",
+		"func _ui_toggle_vista",
+		"func _aplicar_vista",
+		"func _grilla_redimensionada",
+		"func _abrir_dashboard",
+		"func _instantaneas",
+		"var _modo_vista",
+		"_modo_vista",
+	]
+	for prohibida in prohibidas:
+		if main.contains(prohibida):
+			return false
+	var ctrl := _leer("res://scripts/navigation_controller.gd")
+	return ctrl.contains("func aplicar_vista") and ctrl.contains("func toggle_vista") \
+		and ctrl.contains("func grilla_redimensionada") and ctrl.contains("func abrir_dashboard") \
+		and ctrl.contains("func navegar_dashboard") and ctrl.contains("func instantaneas") \
+		and ctrl.contains("modo_vista") and FileAccess.file_exists("res://tests/test_navigation_controller.gd")
+
+
+func _main_no_secha() -> bool:
+	# #66 saco los dialogos (main.gd 1676); #74 saca el tema (1675), la
+	# comprobacion de actualizaciones (1618) y la navegacion (1568). El techo
+	# baja a 1568 y obliga a seguir encogiendo main.gd con cada entrega.
+	var main := _leer("res://scripts/main.gd")
+	return main.split("\n").size() <= 1568
 
 
 func _seleccion_extraida() -> bool:

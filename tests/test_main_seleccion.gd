@@ -330,7 +330,7 @@ func _comprobar(main, s) -> void:
 
 func _grilla(main, s) -> void:
 	s._scan.configure(func(_i) -> void: pass)
-	s._ui_toggle_vista()
+	s._nav.toggle_vista()
 	s._ui_refrescar()
 	await process_frame
 	_check(s._contenedor_activo().name == "GridContenedor", "se puede pasar a la vista de grilla")
