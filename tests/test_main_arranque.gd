@@ -268,7 +268,7 @@ func _arrancar() -> void:
 	main_script._persistir = false
 
 	# Actualización (#27): diálogo y comprobación en headless
-	_check(main_script.has_method("_lanzar_comprobacion_auto"), "main tiene el disparo automático")
+	_check(main_script._updates != null and main_script._updates.has_method("lanzar_auto"), "el disparo automático vive en update_controller")
 	_check(main.has_node("%DialogoActualizacion"), "existe el diálogo DialogoActualizacion")
 	var menu_act: PopupMenu = main.get_node("%Utilidades")
 	var tiene_act := false
@@ -277,21 +277,21 @@ func _arrancar() -> void:
 			tiene_act = true
 	_check(tiene_act, "el menú Utilidades tiene Comprobar actualizaciones… (id 4)")
 
-	main_script._comprobar_actualizaciones(true)
+	main_script._updates.comprobar(true)
 	_check(main.get_node("%DialogoActualizacion").visible, "en headless la comprobación manual abre el diálogo")
 	_check(main.get_node("%DialogoActualizacion").dialog_text == "No se pudo comprobar actualizaciones.", "en headless el diálogo informa del fallo")
 	main.get_node("%DialogoActualizacion").hide()
 
 	main_script._config_store.guardar(3, 10.0, false, 0, "oscuro", "")
-	main_script._on_actualizacion_terminado({"nueva": true, "version": "2.0", "url": "https://github.com/scorpio21/gestor-de-enlaces", "error": ""}, true)
+	main_script._updates.on_terminado({"nueva": true, "version": "2.0", "url": "https://github.com/scorpio21/gestor-de-enlaces", "error": ""}, true)
 	_check(main.get_node("%DialogoActualizacion").visible, "nueva versión abre el diálogo")
 	_check(main.get_node("%DialogoActualizacion").dialog_text == "Hay una nueva versión: 2.0", "el diálogo muestra la versión nueva")
 	_check(main.get_node("%DialogoActualizacion").ok_button_text == "Ver release", "el botón principal es Ver release")
-	main_script._on_actualizacion_cerrar()
+	main_script._updates.on_cerrar()
 	_check(main_script._config_store.cargar().get("ultima_version_vista", "") == "2.0", "cerrar el aviso persiste la versión vista")
 	main.get_node("%DialogoActualizacion").hide()
 
-	main_script._on_actualizacion_terminado({"nueva": false, "version": "0.1.0", "url": "", "error": ""}, true)
+	main_script._updates.on_terminado({"nueva": false, "version": "0.1.0", "url": "", "error": ""}, true)
 	_check(main.get_node("%DialogoActualizacion").visible, "comprobación manual al día abre el diálogo")
 	main.get_node("%DialogoActualizacion").hide()
 	main_script._config_store.guardar(3, 10.0, false, 0, "oscuro", "")

@@ -30,7 +30,6 @@ const LoggerScript := preload("res://scripts/logger.gd")
 const DiagnosticoScript := preload("res://scripts/diagnostico.gd")
 const ColaStoreScript := preload("res://scripts/cola_store.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
-const ActualizadorScript := preload("res://scripts/actualizador.gd")
 const OrdenadorScript := preload("res://scripts/ordenador.gd")
 const FiltrosScript := preload("res://scripts/filtros.gd")
 const CODIGOS_FILTRO := [200, 301, 302, 403, 404, 410, 500, 503]
@@ -45,6 +44,7 @@ const SeleccionControllerScript := preload("res://scripts/seleccion_controller.g
 const InformeControllerScript := preload("res://scripts/informe_controller.gd")
 const RedireccionesScript := preload("res://scripts/redirecciones.gd")
 const ThemeControllerScript := preload("res://scripts/theme_controller.gd")
+const UpdateControllerScript := preload("res://scripts/update_controller.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var grilla: GridContainer = %GridContenedor
@@ -119,6 +119,7 @@ var _estado_previo := {}
 var _sel = SeleccionControllerScript.new()
 var _dialogos = DialogosControllerScript.new()
 var _tema_ctrl: RefCounted = null
+var _updates: RefCounted = null
 
 
 func _ready() -> void:
@@ -166,6 +167,7 @@ func _ready() -> void:
 	_abrir_almacen()
 	_cargar_datos()
 	_config_store = ConfigStoreScript.new(CONFIG_BASE, _almacen.para_stores())
+	_updates = UpdateControllerScript.new(self, %DialogoActualizacion, _config_store, _config_ctrl, _dialogos, func() -> Array: return [_orden_columna, _orden_direccion])
 	_instantanea_store = InstantaneaStoreScript.new(CONFIG_BASE, _almacen.para_stores())
 	_cola_store = ColaStoreScript.new("user://", _almacen.para_stores())
 	_scan = ScanControllerScript.new(_cola_store)
@@ -233,9 +235,7 @@ func _ready() -> void:
 	_scan_revisar_pendientes()
 	_scan_rearmar_auto()
 	_scan_iniciar_auto()
-	%DialogoActualizacion.confirmed.connect(_on_actualizacion_ver)
-	%DialogoActualizacion.canceled.connect(_on_actualizacion_cerrar)
-	_lanzar_comprobacion_auto()
+	_updates.lanzar_auto()
 
 
 func _exit_tree() -> void:
@@ -305,7 +305,7 @@ func _on_utilidades_id(id: int) -> void:
 	elif id == 3:
 		%DialogoDiagnostico.popup_centered()
 	elif id == 4:
-		_comprobar_actualizaciones(true)
+		_updates.comprobar(true)
 	elif id == 5:
 		_abrir_dashboard()
 	elif id == 6:
@@ -1613,62 +1613,5 @@ func _config_desde_ui() -> Dictionary:
 
 func _persistir_config() -> bool:
 	return _config_ctrl.guardar(_config_store, _config_desde_ui())
-
-
-func _lanzar_comprobacion_auto() -> void:
-	if _es_headless():
-		return
-	await get_tree().create_timer(1.0).timeout
-	_comprobar_actualizaciones(false)
-
-
-func _comprobar_actualizaciones(manual: bool) -> void:
-	if _es_headless():
-		if manual:
-			_avisar_actualizacion("error", "", "")
-		return
-	var actualizador: Node = ActualizadorScript.new()
-	add_child(actualizador)
-	actualizador.terminado.connect(func(r: Dictionary) -> void: _on_actualizacion_terminado(r, manual))
-	actualizador.comprobar()
-
-
-func _on_actualizacion_terminado(resultado: Dictionary, manual: bool) -> void:
-	var version_actual := str(ProjectSettings.get_setting("application/config/version", "0.0.1"))
-	var aviso: Dictionary = DialogosControllerScript.resultado_actualizacion(
-		resultado, manual, str(_config_store.cargar().get("ultima_version_vista", "")), version_actual)
-	if not aviso.is_empty():
-		_avisar_actualizacion(str(aviso.get("modo", "")), str(aviso.get("version", "")), str(aviso.get("url", "")))
-
-
-func _avisar_actualizacion(modo: String, version: String, url: String) -> void:
-	var dialogo: ConfirmationDialog = %DialogoActualizacion
-	var contenido: Dictionary = _dialogos.aviso_actualizacion(modo, version, url)
-	dialogo.title = str(contenido.get("titulo", ""))
-	dialogo.dialog_text = str(contenido.get("texto", ""))
-	dialogo.ok_button_text = str(contenido.get("ok", ""))
-	dialogo.get_cancel_button().visible = bool(contenido.get("cancelar", false))
-	dialogo.popup_centered()
-
-
-func _on_actualizacion_ver() -> void:
-	if not _dialogos.url_aviso().is_empty():
-		OS.shell_open(_dialogos.url_aviso())
-	_persistir_version_vista()
-	_dialogos.limpiar_aviso()
-
-
-func _on_actualizacion_cerrar() -> void:
-	if _dialogos.con_aviso():
-		_persistir_version_vista()
-	_dialogos.limpiar_aviso()
-
-
-func _persistir_version_vista() -> void:
-	_config_ctrl.guardar(_config_store, {
-		"ultima_version_vista": _dialogos.version_aviso(),
-		"orden_columna": _orden_columna,
-		"orden_direccion": _orden_direccion,
-	})
 
 

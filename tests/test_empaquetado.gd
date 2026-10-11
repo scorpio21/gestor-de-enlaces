@@ -37,6 +37,7 @@ func _initialize() -> void:
 	_check(_escritura_atomica_compartida(), "config y cola usan la escritura atomica compartida (#63)")
 	_check(_dialogos_extraido(), "la logica de los dialogos vive en dialogos_controller, no en main.gd (#66)")
 	_check(_tema_extraido(), "el tema vive en theme_controller, no en main.gd (#74)")
+	_check(_actualizacion_extraida(), "la comprobacion de actualizaciones vive en update_controller, no en main.gd (#74)")
 	_check(FileAccess.file_exists("res://tests/test_actualizador.gd"), "existe tests/test_actualizador.gd")
 	if _fallos == 0:
 		print("TESTS OK")
@@ -350,12 +351,38 @@ func _tema_extraido() -> bool:
 		and FileAccess.file_exists("res://tests/test_theme_controller.gd")
 
 
-func _main_no_secha() -> bool:
-	# #66 saco los dialogos a dialogos_controller.gd (main.gd 1676); #74 saco el
-	# tema a theme_controller.gd. El techo baja a 1675 y obliga a seguir
-	# encogiendo main.gd con cada entrega.
+func _actualizacion_extraida() -> bool:
+	# #74: la comprobacion de actualizaciones (disparo, resultado, dialogo y
+	# persistencia de la version vista) vive en update_controller; main.gd solo
+	# pide comprobar/lanzar_auto y el controller hace el resto.
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1675
+	if not main.contains("UpdateControllerScript") or not main.contains("_updates."):
+		return false
+	var prohibidas := [
+		"func _comprobar_actualizaciones",
+		"func _on_actualizacion_terminado",
+		"func _on_actualizacion_ver",
+		"func _on_actualizacion_cerrar",
+		"func _persistir_version_vista",
+		"func _avisar_actualizacion",
+		"func _lanzar_comprobacion_auto",
+		"ActualizadorScript",
+	]
+	for prohibida in prohibidas:
+		if main.contains(prohibida):
+			return false
+	var ctrl := _leer("res://scripts/update_controller.gd")
+	return ctrl.contains("func comprobar") and ctrl.contains("func lanzar_auto") \
+		and ctrl.contains("func on_terminado") and ctrl.contains("func persistir_version_vista") \
+		and FileAccess.file_exists("res://tests/test_update_controller.gd")
+
+
+func _main_no_secha() -> bool:
+	# #66 saco los dialogos (main.gd 1676); #74 saca el tema (1675) y la
+	# comprobacion de actualizaciones (1618). El techo baja a 1618 y obliga a
+	# seguir encogiendo main.gd con cada entrega.
+	var main := _leer("res://scripts/main.gd")
+	return main.split("\n").size() <= 1618
 
 
 func _seleccion_extraida() -> bool:

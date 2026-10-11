@@ -244,7 +244,7 @@ func _arrancar() -> void:
 	main_script._ui_cabecera("fecha")
 	var guardado: Dictionary = main_script._config_store.cargar()
 	_check(guardado.get("orden_columna", "") == "fecha" and guardado.get("orden_direccion", 0) == -1, "pulsar una cabecera persiste el criterio")
-	main_script._persistir_version_vista()
+	main_script._updates.persistir_version_vista()
 	var preservado: Dictionary = main_script._config_store.cargar()
 	_check(preservado.get("orden_columna", "") == "fecha", "persistir la versión vista conserva el criterio")
 	main_script._ui_cabecera("fecha")
@@ -260,7 +260,7 @@ func _arrancar() -> void:
 	_check(main_script._config_store.cargar().get("red_sin_comprobar") == false, "ordenar ya no repone red_sin_comprobar a true (#62)")
 	main_script._ui_cabecera("nombre")
 	main_script._ui_cabecera("nombre")
-	main_script._persistir_version_vista()
+	main_script._updates.persistir_version_vista()
 	_check(main_script._config_store.cargar().get("aceptar_certificados") == true, "persistir la version vista ya no borra aceptar_certificados (#62)")
 	main_script._aplicar_preferencias(3, 10.0, false, 0, "oscuro", "es", true, true, false)
 
