@@ -135,7 +135,7 @@ y `GESTORAO_BASE`.
 
 - **Presets de exportación** (`export_presets.cfg`) — Windows (exe), Linux/X11 (x86_64) y macOS (`.app` universal). La escena principal y los iconos (SVG/PNG/ICO/ICNS) se generan con `scripts/generar_iconos.gd`.
 - **GitHub Actions**:
-  - `.github/workflows/ci.yml` — en cada push a `main`: descarga Godot 4.7.2 y las export templates (versión fija `4.7.2.stable`), importa el proyecto, ejecuta la batería de tests headless y exporta los 3 presets a `build/` (el `.app` de macOS se comprime a ZIP). Los artefactos quedan publicados en la página del run.
+  - `.github/workflows/ci.yml` — en cada push a `main`: descarga Godot 4.7.2 y las export templates (versión fija `4.7.2.stable`), importa el proyecto, ejecuta la batería de tests headless y exporta los 3 presets a `build/` (el `.app` de macOS se comprime a ZIP). Un job aparte (`lint`) corre `gdlint` con la configuración tolerante de `.gdlintrc` (ver `tests/run_lint.sh`) sin reformatear nada. Los artefactos quedan publicados en la página del run.
   - `.github/workflows/release.yml` — al publicar un tag `vX.Y.Z` (que debe coincidir con `config/version`): exporta los 3 presets en modo *release*, hace *smoke test* del binario, calcula los `sha256` y crea un **GitHub Release** con las notas extraídas del `CHANGELOG.md`.
 - **Smoke test del binario** (`tests/run_smoke.sh`) — arranca el binario exportado (`--headless -- --smoke`) para cazar lo que solo existe dentro del `.pck` (recursos, escenas o escritura en `user://`); exige la marca `GestorAO smoke OK` y ningún `SCRIPT ERROR`.
 - **Mutation testing** (`tools/mut.py`, `tools/README_mut.md`) — arnés **local** (no corre en CI) que aplica mutaciones conocidas de `tools/mutaciones/` y comprueba que la batería las detecta (*kill rate*); sirve para medir la calidad de los tests, no como puerta de CI.
@@ -158,7 +158,8 @@ gestor-de-enlaces/
 ├── LICENSE                  # Licencia del proyecto (MIT)
 ├── NOTICE                   # Aviso de componentes de terceros
 ├── CHANGELOG.md             # Histórico de cambios por día
-├── .github/workflows/       # CI: ci.yml (tests headless + export) y release.yml (release por tag)
+├── .gdlintrc                # Reglas de gdlint (config tolerante, #78)
+├── .github/workflows/       # CI: ci.yml (tests headless + lint + export) y release.yml (release por tag)
 ├── scenes/                  # 10 escenas
 │   ├── Main.tscn            # Escena principal (UI completa)
 │   ├── Dashboard.tscn       # Dashboard de estadísticas
@@ -196,6 +197,7 @@ gestor-de-enlaces/
 ├── tests/
 │   ├── run_battery.sh       # Ejecuta las 66 suites headless (Linux/Windows/CI)
 │   ├── run_estatico.sh      # --check-only de los .gd antes de la batería
+│   ├── run_lint.sh          # gdlint con la config tolerante de .gdlintrc
 │   ├── run_smoke.sh         # Arranca el binario exportado (-- --smoke)
 │   └── test_<area>.gd       # 66 suites SceneTree (TESTS OK / quit(0))
 ├── locale/

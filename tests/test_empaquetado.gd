@@ -33,7 +33,7 @@ func _initialize() -> void:
 	_check(_url_final_propaga(), "la URL final viaja del checker al estado y se persiste (#59)")
 	_check(_almacen_antes_de_stores(), "el almacenamiento se abre antes de crear los stores (#63)")
 	_check(_almacen_no_preload_circular(), "almacen.gd no preloadea sus backends: seria circular (#63)")
-	_check(_preferencias_enseña_almacen(), "Preferencias tiene seccion de almacenamiento (#63)")
+	_check(_preferencias_muestra_almacen(), "Preferencias tiene seccion de almacenamiento (#63)")
 	_check(_escritura_atomica_compartida(), "config y cola usan la escritura atomica compartida (#63)")
 	_check(_dialogos_extraido(), "la logica de los dialogos vive en dialogos_controller, no en main.gd (#66)")
 	_check(_tema_extraido(), "el tema vive en theme_controller, no en main.gd (#74)")
@@ -304,7 +304,7 @@ func _almacen_no_preload_circular() -> bool:
 	return "extends AlmacenScript" in json and "const AlmacenScript := preload(\"res://scripts/almacen.gd\")" in json
 
 
-func _preferencias_enseña_almacen() -> bool:
+func _preferencias_muestra_almacen() -> bool:
 	var escena := _leer("res://scenes/Preferencias.tscn")
 	var codigo := _leer("res://scripts/preferencias.gd")
 	for nodo in ["AlmacenBase", "BotonExaminar", "BotonAbrirCarpeta", "AlmacenDetalle", "DialogoCarpeta"]:

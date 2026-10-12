@@ -3,7 +3,7 @@ extends SceneTree
 const CacheTexturasScript := preload("res://scripts/cache_texturas.gd")
 const BASE := "user://__test_cache_texturas__"
 const ORIGEN := "res://Assets/png/no-disponible.png"
-const RUTA_Copia := BASE + "/copia.png"
+const RUTA_COPIA := BASE + "/copia.png"
 
 var _fallos := 0
 
@@ -11,8 +11,8 @@ var _fallos := 0
 func _initialize() -> void:
 	DirAccess.make_dir_recursive_absolute(BASE)
 	_cache_texturas(ORIGEN)
-	_copiar(ORIGEN, RUTA_Copia)
-	_cache_texturas(RUTA_Copia)
+	_copiar(ORIGEN, RUTA_COPIA)
+	_cache_texturas(RUTA_COPIA)
 	_invalida_por_contenido()
 	_cache_borrada()
 	_tope_cache()
@@ -34,29 +34,30 @@ func _cache_texturas(ruta: String) -> void:
 	_check(CacheTexturasScript.textura(ruta) == textura, "la segunda llamada devuelve la misma textura (caché)")
 	_check(CacheTexturasScript.tamano() == 1, "la caché guarda una sola entrada")
 	_check(CacheTexturasScript.textura(ORIGEN) != null, "una ruta distinta se carga aparte")
-	_check(CacheTexturasScript.textura(RUTA_Copia) == CacheTexturasScript.textura(RUTA_Copia), "una ruta propia también se cachea")
+	var copia := CacheTexturasScript.textura(RUTA_COPIA)
+	_check(copia == CacheTexturasScript.textura(RUTA_COPIA), "una ruta propia también se cachea")
 
 
 func _invalida_por_contenido() -> void:
-	_copiar(ORIGEN, RUTA_Copia)
+	_copiar(ORIGEN, RUTA_COPIA)
 	CacheTexturasScript.limpiar()
-	var primera := CacheTexturasScript.textura(RUTA_Copia)
+	var primera := CacheTexturasScript.textura(RUTA_COPIA)
 	_check(primera != null, "la copia se carga")
 	var imagen := Image.load_from_file(ORIGEN)
 	imagen.resize(24, 24)
-	imagen.save_png(ProjectSettings.globalize_path(RUTA_Copia))
-	var segunda := CacheTexturasScript.textura(RUTA_Copia)
+	imagen.save_png(ProjectSettings.globalize_path(RUTA_COPIA))
+	var segunda := CacheTexturasScript.textura(RUTA_COPIA)
 	_check(segunda != null, "tras cambiar el fichero sigue habiendo textura")
 	_check(segunda.get_width() == 24, "el cambio de tamaño+mtime invalida la entrada: %d" % segunda.get_width())
 
 
 func _cache_borrada() -> void:
-	_copiar(ORIGEN, RUTA_Copia)
+	_copiar(ORIGEN, RUTA_COPIA)
 	CacheTexturasScript.limpiar()
-	var textura := CacheTexturasScript.textura(RUTA_Copia)
+	var textura := CacheTexturasScript.textura(RUTA_COPIA)
 	_check(textura != null, "la copia se carga antes de borrarla")
-	DirAccess.remove_absolute(RUTA_Copia)
-	_check(CacheTexturasScript.textura(RUTA_Copia) == null, "una ruta borrada devuelve null")
+	DirAccess.remove_absolute(RUTA_COPIA)
+	_check(CacheTexturasScript.textura(RUTA_COPIA) == null, "una ruta borrada devuelve null")
 	_check(CacheTexturasScript.tamano() == 0, "la entrada de la ruta borrada se elimina")
 
 
@@ -95,7 +96,7 @@ func _copiar(desde: String, hasta: String) -> bool:
 func _limpiar() -> void:
 	for i in range(CacheTexturasScript.LIMITE + 20):
 		DirAccess.remove_absolute(BASE + "/img%d.png" % i)
-	DirAccess.remove_absolute(RUTA_Copia)
+	DirAccess.remove_absolute(RUTA_COPIA)
 	DirAccess.remove_absolute(BASE)
 
 

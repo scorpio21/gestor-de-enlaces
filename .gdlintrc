@@ -1,0 +1,34 @@
+# Configuracion de gdlint para GestorAO (#78).
+#
+# Objetivo: adoptar gdtoolkit sin reformatear la base. Se desactivan las reglas
+# que chocarian con lineas/estructuras ya existentes (miles de cambios) y se
+# relajan dos patrones de nombre para reflejar convenciones que el proyecto ya
+# usa. El resto de reglas siguen activas.
+#
+# Uso: `gdlint scripts tests` o `bash tests/run_lint.sh` (ver AGENTS.md).
+
+# Desactivadas por la base actual: activarlas obligaria a reescribir cientos de
+# lineas o a reordenar todos los ficheros.
+disable:
+  - max-line-length
+  - class-definitions-order
+  - unused-argument
+
+# Subidas, no desactivadas: siguen avisando de ficheros/funciones que se pasen
+# de madre, pero por encima de lo que ya hay hoy. La mas larga es main.gd (1530
+# lineas) y el peor caso de argumentos es config_store.guardar (21 opciones
+# posicionales, con defaults; refactorizarlo a Dictionary toca decenas de
+# llamadas y queda fuera de este issue).
+max-file-lines: 2000
+max-public-methods: 60
+max-returns: 20
+function-arguments-number: 25
+
+# El proyecto usa UPPER_SNAKE para globals "tipo constante" que en realidad son
+# `var` configurables (DATA_RES, ASSETS_BASE, CONFIG_BASE...). Se admite ese
+# patron ademas del snake_case normal.
+class-variable-name: (_?[a-z][a-z0-9]*(_[a-z0-9]+)*|_?[A-Z][A-Z0-9]*(_[A-Z0-9]+)*)
+
+# Igual que class-variable-name, se admite un guion bajo inicial en variables de
+# funcion (el proyecto lo usa para descartes).
+function-variable-name: _?[a-z][a-z0-9]*(_[a-z0-9]+)*

@@ -118,3 +118,23 @@ jobs:
         with:
           name: gestor-de-enlaces-builds
           path: build/
+
+  # gdlint con la configuracion tolerante (#78). No reformatea nada: solo
+  # comprueba que los .gd cumplen las reglas de .gdlintrc. Se instala la misma
+  # version que en local para que el resultado sea reproducible.
+  lint:
+    name: gdlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar gdtoolkit
+        run: pip install gdtoolkit==4.5.0
+
+      - name: gdlint (config tolerante)
+        run: bash tests/run_lint.sh

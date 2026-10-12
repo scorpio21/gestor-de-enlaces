@@ -26,6 +26,15 @@ Comprobación estática de parseo, antes de la batería (un segundo por fichero,
 GODOT_BIN=/ruta/a/godot bash tests/run_estatico.sh
 ```
 
+Lint de estilo con gdtoolkit (`gdlint`, config tolerante en `.gdlintrc`; no reformatea nada). Si gdlint no está instalado, avisa y sale con 0:
+
+```bash
+pip install gdtoolkit==4.5.0
+bash tests/run_lint.sh
+```
+
+`.gdlintrc` desactiva solo lo que choca con la base actual (`max-line-length`, `class-definitions-order`, `unused-argument`) y sube los umbrales numéricos por encima de lo existente; el resto de reglas siguen activas. La CI lo corre en el job `lint`.
+
 ## Smoke test del binario exportado
 
 Exporta y arranca el binario de verdad. Caza lo que solo existe dentro del pck: un recurso o una escena que no entra, un script que no compila en release, un `user://` que no se puede escribir.
