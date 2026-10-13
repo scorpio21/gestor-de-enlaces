@@ -170,7 +170,7 @@ func _filtro_y_atajos(main, s) -> void:
 
 	s._sel_limpiar()
 	s.filtro.select(2)
-	s._ui_filtro_estado(2)
+	s._filtros.filtro_estado(2)
 	await process_frame
 	_check(_urls(s) == ["https://b.test", "https://c.test"], "el filtro de caidos deja las dos rotas")
 	s._sel_todo()
@@ -197,7 +197,7 @@ func _filtro_y_atajos(main, s) -> void:
 	s._unhandled_input(InputEventAction.new())
 	s._sel_limpiar()
 	s.filtro.select(0)
-	s._ui_filtro_estado(0)
+	s._filtros.filtro_estado(0)
 	await process_frame
 
 
@@ -341,14 +341,14 @@ func _grilla(main, s) -> void:
 	s._scan.reiniciar()
 
 	s.filtro.select(2)
-	s._ui_filtro_estado(2)
+	s._filtros.filtro_estado(2)
 	await process_frame
 	_check(_urls(s) == ["https://b.test"], "con filtro de caidos solo se ve la fila rota de la grilla")
 	s._scan_ui.iniciar()
 	_check(s._scan.total() == 1, "comprobar en la grilla respeta el filtro")
 	s._scan.reiniciar()
 	s.filtro.select(0)
-	s._ui_filtro_estado(0)
+	s._filtros.filtro_estado(0)
 	await process_frame
 
 

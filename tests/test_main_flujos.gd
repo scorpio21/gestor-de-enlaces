@@ -168,7 +168,7 @@ func _arrancar() -> void:
 		{"nombre": "SCAI", "url": "https://srv2.test", "cat": "servidor", "tags": ["AO 1.4"]},
 		{"nombre": "COK", "url": "https://cli.test", "cat": "cliente", "tags": ["AO 1.6"]},
 	]
-	main_script._cargar_filtros()
+	main_script._filtros.cargar_filtros()
 	main_script._ui_refrescar()
 	var filtro_tag: OptionButton = main.get_node("%FiltroEtiqueta")
 	_check(filtro_tag.item_count == 4 and filtro_tag.get_item_text(0) == "Todas" and filtro_tag.get_item_text(1) == "AO 1.6" and filtro_tag.get_item_text(2) == "AO 1.4" and filtro_tag.get_item_text(3) == "servidor", "el filtro de etiquetas ofrece Todas y las etiquetas por frecuencia")
@@ -180,7 +180,7 @@ func _arrancar() -> void:
 			visibles_tag.append(hijo.url)
 	_check(visibles_tag == ["https://srv.test", "https://cli.test"], "el filtro de etiquetas muestra solo las filas que la tienen")
 	filtro_tag.select(3)
-	main_script._ui_filtro_etiqueta(3)
+	main_script._filtros.filtro_etiqueta(3)
 	var visibles_servidor: Array = []
 	for hijo in main.get_node("%ListaContenedor").get_children():
 		if hijo.visible:
@@ -192,22 +192,22 @@ func _arrancar() -> void:
 
 	# Filtros: persistencia en config (#39)
 	filtro_cat.select(4)
-	main_script._ui_filtro_categoria(4)
+	main_script._filtros.filtro_categoria(4)
 	_check(main_script._config_store.cargar().get("filtro_categoria", -1) == 4, "cambiar el filtro de categoría persiste en config")
 	main.get_node("%FiltroEstado").select(2)
-	main_script._ui_filtro_estado(2)
+	main_script._filtros.filtro_estado(2)
 	_check(main_script._config_store.cargar().get("filtro_estado", -1) == 2, "cambiar el filtro de estado persiste en config")
 	main.get_node("%Busqueda").text = "srv"
 	var busqueda_previa: String = str(main_script._config_store.cargar().get("busqueda", "#"))
-	main_script._ui_busqueda("srv")
+	main_script._filtros.busqueda_cambiada("srv")
 	_check(
 		str(main_script._config_store.cargar().get("busqueda", "#")) == busqueda_previa,
 		"escribir en la búsqueda no reescribe config.json en cada tecla (#52)"
 	)
-	main_script._ui_busqueda_guardar()
+	main_script._filtros.busqueda_guardar()
 	_check(main_script._config_store.cargar().get("busqueda", "#") == "srv", "al salir del buscador se guarda el texto (#52)")
 	main.get_node("%Busqueda").text = ""
-	main_script._ui_busqueda_guardar()
+	main_script._filtros.busqueda_guardar()
 
 	# Importar/Exportar: menú y flujos (#3)
 	main_script._persistir = false
@@ -304,7 +304,7 @@ func _arrancar() -> void:
 	_check(lista.get_child_count() == 12, "la lista muestra las 12 filas (#52): %d" % lista.get_child_count())
 	_check(_instancias(main_script) == 12, "solo hay 12 instancias de fila (#52): %d" % _instancias(main_script))
 	main.get_node("%Busqueda").text = "fila1"
-	main_script._ui_busqueda("fila1")
+	main_script._filtros.busqueda_cambiada("fila1")
 	_check(lista.get_child_count() == 12, "la lista no se repinta en la misma tecla (#52)")
 	await main_script._espera_busqueda.timeout
 	await process_frame
@@ -312,7 +312,7 @@ func _arrancar() -> void:
 	_check(main_script._lista.pool_tamano() == 9, "las 9 filas sobrantes quedan en el pool (#52): %d" % main_script._lista.pool_tamano())
 	for texto in ["fila", "fila1", "fila11", "fila1", "fila", ""]:
 		main.get_node("%Busqueda").text = texto
-		main_script._ui_busqueda(texto)
+		main_script._filtros.busqueda_cambiada(texto)
 		await main_script._espera_busqueda.timeout
 		await process_frame
 	_check(_instancias(main_script) == 12, "escribir 6 caracteres no crea filas nuevas (#52): %d" % _instancias(main_script))
@@ -321,12 +321,12 @@ func _arrancar() -> void:
 	en_vuelo.en_escaneo = true
 	_check(not en_vuelo.reutilizable(), "una fila en vuelo de escaneo no se recicla (#52)")
 	main.get_node("%Busqueda").text = "nada-de-esto"
-	main_script._ui_busqueda_enviada("nada-de-esto")
+	main_script._filtros.busqueda_enviada("nada-de-esto")
 	await process_frame
 	_check(lista.get_child_count() == 0, "una búsqueda sin resultados deja la lista vacía (#52)")
 	_check(main_script._lista.pool_tamano() == 11, "la fila en vuelo se libera en vez de ir al pool (#52): %d" % main_script._lista.pool_tamano())
 	main.get_node("%Busqueda").text = ""
-	main_script._ui_busqueda_enviada("")
+	main_script._filtros.busqueda_enviada("")
 	await process_frame
 	_check(lista.get_child_count() == 12, "se recuperan las 12 filas (#52): %d" % lista.get_child_count())
 	main_script._nav.toggle_vista()

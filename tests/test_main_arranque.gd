@@ -230,19 +230,19 @@ func _arrancar() -> void:
 		if filtro_codigo_ui.get_item_id(i) == 404:
 			indice_404 = i
 	filtro_codigo_ui.select(indice_404)
-	main_script._ui_filtro_codigo(0)
+	main_script._filtros.filtro_codigo(0)
 	_check(fila_es_i18n.visible, "el filtro por código 404 mantiene la fila 404 visible")
 	filtro_codigo_ui.select(0)
-	main_script._ui_filtro_codigo(0)
+	main_script._filtros.filtro_codigo(0)
 	var indice_500 := 0
 	for i in range(filtro_codigo_ui.item_count):
 		if filtro_codigo_ui.get_item_id(i) == 500:
 			indice_500 = i
 	filtro_codigo_ui.select(indice_500)
-	main_script._ui_filtro_codigo(0)
+	main_script._filtros.filtro_codigo(0)
 	_check(not fila_es_i18n.visible, "el filtro por código 500 oculta la fila 404")
 	filtro_codigo_ui.select(0)
-	main_script._ui_filtro_codigo(0)
+	main_script._filtros.filtro_codigo(0)
 
 	# Presets de filtros (#44)
 	var preset_selector: OptionButton = main.get_node("%PresetFiltros")
@@ -251,18 +251,18 @@ func _arrancar() -> void:
 	main.get_node("%Busqueda").text = ""
 	main.get_node("%FiltroEstado").select(1)
 	main.get_node("%FiltroDias").value = 7
-	var guardado_preset: bool = main_script._guardar_preset("Solo válidos recientes")
+	var guardado_preset: bool = main_script._filtros.guardar_preset("Solo válidos recientes")
 	_check(guardado_preset, "guardar un preset devuelve true")
 	_check(main_script._presets.has("Solo válidos recientes"), "el preset queda en memoria")
 	_check(preset_selector.item_count == 2, "el selector lista el preset guardado")
 	main.get_node("%Busqueda").text = "otra"
 	main.get_node("%FiltroEstado").select(0)
 	main.get_node("%FiltroDias").value = 0
-	main_script._aplicar_preset("Solo válidos recientes")
+	main_script._filtros.aplicar_preset("Solo válidos recientes")
 	_check(main.get_node("%Busqueda").text == "" and main.get_node("%FiltroEstado").get_selected_id() == 1 \
 		and main.get_node("%FiltroDias").value == 7, "aplicar un preset restaura búsqueda, estado y días")
 	_check(preset_selector.selected == 0, "tras aplicar el selector vuelve a la opción de menú")
-	var borrado_preset: bool = main_script._borrar_preset("Solo válidos recientes")
+	var borrado_preset: bool = main_script._filtros.borrar_preset("Solo válidos recientes")
 	_check(borrado_preset and not main_script._presets.has("Solo válidos recientes"), "borrar un preset lo elimina")
 	_check(preset_selector.item_count == 1, "tras borrar el selector queda solo la opción de menú")
 	main_script._persistir = false
@@ -325,14 +325,14 @@ func _arrancar() -> void:
 			cartas_visibles += 1
 	_check(cartas_visibles == 3, "sin filtros todas las tarjetas son visibles")
 	main.get_node("%FiltroEstado").select(2)
-	main_script._ui_filtro_estado(0)
+	main_script._filtros.filtro_estado(0)
 	var cartas_caidas := 0
 	for hijo in grilla_ui.get_children():
 		if hijo.visible:
 			cartas_caidas += 1
 	_check(cartas_caidas == 0, "el filtro de estado se aplica en grilla")
 	main.get_node("%FiltroEstado").select(0)
-	main_script._ui_filtro_estado(0)
+	main_script._filtros.filtro_estado(0)
 	main_script._nav.toggle_vista()
 	_check(lista_ui.visible and not grilla_ui.visible, "el toggle vuelve a la vista de lista")
 	_check(cabeceras_ui.visible, "en lista se muestran las cabeceras de columna")

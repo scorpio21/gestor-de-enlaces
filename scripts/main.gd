@@ -30,7 +30,6 @@ const ColaStoreScript := preload("res://scripts/cola_store.gd")
 const TemaStoreScript := preload("res://scripts/tema_store.gd")
 const OrdenadorScript := preload("res://scripts/ordenador.gd")
 const FiltrosScript := preload("res://scripts/filtros.gd")
-const CODIGOS_FILTRO := [200, 301, 302, 403, 404, 410, 500, 503]
 const ScanControllerScript := preload("res://scripts/scan_controller.gd")
 const ListaControllerScript := preload("res://scripts/lista_controller.gd")
 const ConfigControllerScript := preload("res://scripts/config_controller.gd")
@@ -46,6 +45,7 @@ const NavigationControllerScript := preload("res://scripts/navigation_controller
 const ImportExportControllerScript := preload("res://scripts/import_export_controller.gd")
 const ScanUiControllerScript := preload("res://scripts/scan_ui_controller.gd")
 const EdicionControllerScript := preload("res://scripts/edicion_controller.gd")
+const FiltrosPresetsControllerScript := preload("res://scripts/filtros_presets_controller.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var grilla: GridContainer = %GridContenedor
@@ -124,6 +124,7 @@ var _nav: RefCounted = null
 var _imp_exp: RefCounted = null
 var _scan_ui: RefCounted = null
 var _edicion: RefCounted = null
+var _filtros: RefCounted = null
 
 
 func _ready() -> void:
@@ -134,11 +135,7 @@ func _ready() -> void:
 	_espera_busqueda = Timer.new()
 	_espera_busqueda.one_shot = true
 	_espera_busqueda.wait_time = ESPERA_BUSQUEDA
-	_espera_busqueda.timeout.connect(_ui_busqueda_aplicar)
 	add_child(_espera_busqueda)
-	busqueda.text_changed.connect(_ui_busqueda)
-	busqueda.text_submitted.connect(_ui_busqueda_enviada)
-	busqueda.focus_exited.connect(_ui_busqueda_guardar)
 	%ConfirmarLimpieza.confirmed.connect(_confirmar_limpieza)
 	%ConfirmarRestaurar.confirmed.connect(_confirmar_restaurar)
 	cab_nombre.pressed.connect(func() -> void: _ui_cabecera("nombre"))
@@ -235,6 +232,31 @@ func _ready() -> void:
 	dashboard.actualizar_urls.connect(_edicion.pedir_reubicar_lote)
 	_presets_store = PresetsStoreScript.new(CONFIG_BASE, _almacen.para_stores())
 	_presets = _presets_store.cargar()
+	_filtros = FiltrosPresetsControllerScript.new(
+		filtro,
+		filtro_cat,
+		filtro_tag,
+		filtro_codigo,
+		filtro_modo,
+		filtro_dias,
+		busqueda,
+		preset_filtros,
+		%NombrePreset,
+		%DialogoPreset,
+		progreso,
+		_espera_busqueda,
+		func() -> Array: return _entradas,
+		func() -> RefCounted: return _presets_store,
+		func() -> Dictionary: return _presets,
+		func(valor: Dictionary) -> void: _presets = valor,
+		func() -> void: _ui_refrescar(),
+		func() -> void: _persistir_config(),
+		func() -> void: _ui_aplicar_filtro()
+	)
+	_espera_busqueda.timeout.connect(_filtros.busqueda_aplicar)
+	busqueda.text_changed.connect(_filtros.busqueda_cambiada)
+	busqueda.text_submitted.connect(_filtros.busqueda_enviada)
+	busqueda.focus_exited.connect(_filtros.busqueda_guardar)
 	var cfg: Dictionary = _config_store.cargar()
 	IdiomaScript.cargar_traducciones()
 	TranslationServer.set_locale(IdiomaScript.aplicar(String(cfg.get("idioma", "")), OS.get_locale()))
@@ -255,19 +277,19 @@ func _ready() -> void:
 	_orden_columna = str(cfg.get("orden_columna", ""))
 	_orden_direccion = -1 if int(cfg.get("orden_direccion", 1)) < 0 else 1
 	busqueda.text = str(cfg.get("busqueda", ""))
-	_cargar_filtros()
+	_filtros.cargar_filtros()
 	filtro.select(clampi(int(cfg.get("filtro_estado", 0)), 0, 3))
 	filtro_cat.select(clampi(int(cfg.get("filtro_categoria", 0)), 0, GestorCatalogoScript.CATEGORIAS.size()))
-	filtro_tag.select(_indice_etiqueta(String(cfg.get("filtro_etiqueta", ""))))
-	filtro_codigo.select(_indice_codigo(String(cfg.get("filtro_codigo", ""))))
+	filtro_tag.select(_filtros.indice_etiqueta(String(cfg.get("filtro_etiqueta", ""))))
+	filtro_codigo.select(_filtros.indice_codigo(String(cfg.get("filtro_codigo", ""))))
 	filtro_modo.select(0 if str(cfg.get("busqueda_modo", "and")) == "and" else 1)
 	filtro_dias.value = int(cfg.get("filtro_dias", 0))
 	_nav.modo_vista = "grilla" if str(cfg.get("vista", "lista")) == "grilla" else "lista"
-	_presets_recargar_ui()
-	boton_preset.pressed.connect(_ui_boton_preset)
-	%DialogoPreset.confirmed.connect(_dialogo_preset_confirmado)
+	_filtros.presets_recargar_ui()
+	boton_preset.pressed.connect(_filtros.boton_preset)
+	%DialogoPreset.confirmed.connect(_filtros.dialogo_preset_confirmado)
 	_boton_eliminar_preset = %DialogoPreset.add_button(tr("Eliminar"))
-	_boton_eliminar_preset.pressed.connect(_dialogo_preset_eliminar)
+	_boton_eliminar_preset.pressed.connect(_filtros.dialogo_preset_eliminar)
 	boton_vista.pressed.connect(_nav.toggle_vista)
 	grilla.resized.connect(_nav.grilla_redimensionada)
 	_ui_pintar_cabeceras()
@@ -433,87 +455,6 @@ func _sugerir_etiquetas() -> Array:
 	return EtiquetasScript.frecuentes(_entradas, 8)
 
 
-func _cargar_filtros() -> void:
-	var sel_estado := filtro.get_selected()
-	var sel_cat := filtro_cat.get_selected()
-	var sel_tag := _etiqueta_seleccionada()
-	filtro.clear()
-	filtro.add_item(tr("Todos"), 0)
-	filtro.add_item(tr("Válidos"), 1)
-	filtro.add_item(tr("Caídos / no existen"), 2)
-	filtro.add_item(tr("Sin comprobar"), 3)
-	if filtro.item_selected.is_connected(_ui_filtro_estado):
-		filtro.item_selected.disconnect(_ui_filtro_estado)
-	filtro.item_selected.connect(_ui_filtro_estado)
-	filtro.select(maxi(sel_estado, 0))
-	filtro_cat.clear()
-	filtro_cat.add_item(tr("Todas"), 0)
-	for i in range(GestorCatalogoScript.CATEGORIAS.size()):
-		filtro_cat.add_item(GestorCatalogoScript.new().categoria_display(GestorCatalogoScript.CATEGORIAS[i]), i + 1)
-	if filtro_cat.item_selected.is_connected(_ui_filtro_categoria):
-		filtro_cat.item_selected.disconnect(_ui_filtro_categoria)
-	filtro_cat.item_selected.connect(_ui_filtro_categoria)
-	filtro_cat.select(maxi(sel_cat, 0))
-	filtro_tag.clear()
-	filtro_tag.add_item(tr("Todas"), 0)
-	for etiqueta in EtiquetasScript.frecuentes(_entradas, 0):
-		filtro_tag.add_item(str(etiqueta), filtro_tag.item_count)
-	if filtro_tag.item_selected.is_connected(_ui_filtro_etiqueta):
-		filtro_tag.item_selected.disconnect(_ui_filtro_etiqueta)
-	filtro_tag.item_selected.connect(_ui_filtro_etiqueta)
-	filtro_tag.select(_indice_etiqueta(sel_tag))
-	filtro_codigo.clear()
-	filtro_codigo.add_item(tr("Todos"), 0)
-	for codigo in CODIGOS_FILTRO:
-		filtro_codigo.add_item(str(codigo), codigo)
-	if filtro_codigo.item_selected.is_connected(_ui_filtro_codigo):
-		filtro_codigo.item_selected.disconnect(_ui_filtro_codigo)
-	filtro_codigo.item_selected.connect(_ui_filtro_codigo)
-	filtro_modo.clear()
-	filtro_modo.add_item(tr("Todas las palabras"), 0)
-	filtro_modo.add_item(tr("Cualquier palabra"), 1)
-	if filtro_modo.item_selected.is_connected(_ui_filtro_modo):
-		filtro_modo.item_selected.disconnect(_ui_filtro_modo)
-	filtro_modo.item_selected.connect(_ui_filtro_modo)
-	filtro_dias.suffix = " " + tr("días")
-	if filtro_dias.value_changed.is_connected(_ui_filtro_dias):
-		filtro_dias.value_changed.disconnect(_ui_filtro_dias)
-	filtro_dias.value_changed.connect(_ui_filtro_dias)
-
-
-func _etiqueta_seleccionada() -> String:
-	var id := filtro_tag.get_selected_id()
-	if id > 0 and id < filtro_tag.item_count:
-		return filtro_tag.get_item_text(id)
-	return ""
-
-
-func _codigo_seleccionado() -> String:
-	return str(maxi(filtro_codigo.get_selected_id(), 0))
-
-
-func _indice_codigo(clave: String) -> int:
-	if clave.is_empty():
-		return 0
-	var codigo := int(clave)
-	for i in range(1, filtro_codigo.item_count):
-		if filtro_codigo.get_item_id(i) == codigo:
-			return i
-	return 0
-
-
-func _modo_busqueda() -> String:
-	return "or" if filtro_modo.get_selected_id() == 1 else "and"
-
-
-func _indice_etiqueta(etiqueta: String) -> int:
-	var clave := etiqueta.strip_edges().to_lower()
-	for i in range(1, filtro_tag.item_count):
-		if filtro_tag.get_item_text(i).to_lower() == clave:
-			return i
-	return 0
-
-
 func _abrir_almacen() -> void:
 	# El almacenamiento se abre antes que nada: CONFIG_BASE decide de donde salen
 	# enlaces.json, estados.json, config.json y las capturas, y todos los stores
@@ -585,7 +526,7 @@ func _normalizar_categorias() -> void:
 
 
 func _ui_refrescar() -> void:
-	_ui_mostrar_lista(FiltrosScript.filtrar(_entradas, busqueda.text, _modo_busqueda()))
+	_ui_mostrar_lista(FiltrosScript.filtrar(_entradas, busqueda.text, _filtros.modo_busqueda()))
 
 
 func _ui_mostrar_lista(entradas: Array) -> void:
@@ -647,7 +588,7 @@ func _ui_aplicar_filtro() -> void:
 		filtro.get_selected_id(),
 		filtro_cat.get_selected_id(),
 		ListaControllerScript.clave_de_categoria(filtro_cat.get_selected_id()),
-		_etiqueta_seleccionada(),
+		_filtros.etiqueta_seleccionada(),
 		ListaControllerScript.clave_de_codigo(filtro_codigo.get_selected_id()),
 		int(filtro_dias.value),
 		_orden_columna,
@@ -658,145 +599,6 @@ func _ui_aplicar_filtro() -> void:
 
 func _contenedor_activo() -> Node:
 	return grilla if _nav.modo_vista == "grilla" else lista
-
-
-func _ui_busqueda(_texto: String) -> void:
-	_espera_busqueda.start()
-
-
-func _ui_busqueda_aplicar() -> void:
-	_ui_refrescar()
-
-
-func _ui_busqueda_guardar() -> void:
-	_persistir_config()
-
-
-func _ui_busqueda_enviada(_texto: String) -> void:
-	_espera_busqueda.stop()
-	_ui_refrescar()
-	_persistir_config()
-
-
-func _ui_filtro_estado(_indice: int) -> void:
-	_ui_aplicar_filtro()
-	_persistir_config()
-
-
-func _ui_filtro_categoria(_indice: int) -> void:
-	_ui_aplicar_filtro()
-	_persistir_config()
-
-
-func _ui_filtro_etiqueta(_indice: int) -> void:
-	_ui_aplicar_filtro()
-	_persistir_config()
-
-
-func _ui_filtro_codigo(_indice: int) -> void:
-	_ui_aplicar_filtro()
-	_persistir_config()
-
-
-func _ui_filtro_dias(_valor: float) -> void:
-	_ui_aplicar_filtro()
-	_persistir_config()
-
-
-func _ui_filtro_modo(_indice: int) -> void:
-	_ui_refrescar()
-	_persistir_config()
-
-
-func _ui_preset_seleccionado(indice: int) -> void:
-	if indice <= 0:
-		preset_filtros.select(0)
-		return
-	_aplicar_preset(preset_filtros.get_item_text(indice))
-
-
-func _aplicar_preset(nombre: String) -> void:
-	var cfg: Dictionary = _presets_store.aplicar_preset(_presets, nombre)
-	if cfg.is_empty():
-		preset_filtros.select(0)
-		return
-	filtro.select(int(cfg.get("filtro_estado", 0)))
-	filtro_cat.select(int(cfg.get("filtro_categoria", 0)))
-	filtro_tag.select(_indice_etiqueta(str(cfg.get("filtro_etiqueta", ""))))
-	filtro_codigo.select(_indice_codigo(str(cfg.get("filtro_codigo", ""))))
-	filtro_modo.select(0 if str(cfg.get("busqueda_modo", "and")) == "and" else 1)
-	filtro_dias.value = int(cfg.get("filtro_dias", 0))
-	busqueda.text = str(cfg.get("busqueda", ""))
-	_ui_refrescar()
-	_persistir_config()
-	preset_filtros.select(0)
-
-
-func _ui_boton_preset() -> void:
-	%NombrePreset.text = ""
-	%DialogoPreset.popup_centered()
-	%NombrePreset.grab_focus()
-
-
-func _dialogo_preset_confirmado() -> void:
-	var nombre: String = %NombrePreset.text.strip_edges()
-	if not _presets_store.nombre_ok(nombre):
-		progreso.text = tr("El nombre no puede estar vacío.")
-		return
-	_guardar_preset(nombre)
-
-
-func _guardar_preset(nombre: String) -> bool:
-	var presets_nuevos: Dictionary = _presets_store.guardar_preset(_presets, nombre, _config_filtros_actual())
-	if presets_nuevos == _presets:
-		progreso.text = tr("No se pudo guardar la configuración.")
-		return false
-	_presets = presets_nuevos
-	_presets_store.guardar(_presets)
-	_presets_recargar_ui()
-	progreso.text = tr("Filtro guardado: %s") % nombre
-	return true
-
-
-func _dialogo_preset_eliminar() -> void:
-	var nombre: String = %NombrePreset.text.strip_edges()
-	if not _borrar_preset(nombre):
-		progreso.text = tr("No existe ese filtro.")
-		return
-	%DialogoPreset.hide()
-
-
-func _borrar_preset(nombre: String) -> bool:
-	if not _presets.has(nombre):
-		return false
-	_presets = _presets_store.borrar_preset(_presets, nombre)
-	_presets_store.guardar(_presets)
-	_presets_recargar_ui()
-	progreso.text = tr("Filtro eliminado: %s") % nombre
-	return true
-
-
-func _presets_recargar_ui() -> void:
-	preset_filtros.clear()
-	preset_filtros.add_item(tr("Presets…"), -1)
-	for nombre in _presets_store.nombres(_presets):
-		preset_filtros.add_item(str(nombre), preset_filtros.item_count)
-	if preset_filtros.item_selected.is_connected(_ui_preset_seleccionado):
-		preset_filtros.item_selected.disconnect(_ui_preset_seleccionado)
-	preset_filtros.item_selected.connect(_ui_preset_seleccionado)
-	preset_filtros.select(0)
-
-
-func _config_filtros_actual() -> Dictionary:
-	return {
-		"filtro_estado": filtro.get_selected_id(),
-		"filtro_categoria": filtro_cat.get_selected_id(),
-		"filtro_etiqueta": _etiqueta_seleccionada(),
-		"busqueda": busqueda.text,
-		"filtro_codigo": _codigo_seleccionado(),
-		"filtro_dias": int(filtro_dias.value),
-		"busqueda_modo": _modo_busqueda(),
-	}
 
 
 func _ui_status() -> void:
@@ -1212,8 +1014,8 @@ func _on_tema_sistema_cambio() -> void:
 
 func _retraducir_ui() -> void:
 	_configurar_menus()
-	_cargar_filtros()
-	_presets_recargar_ui()
+	_filtros.cargar_filtros()
+	_filtros.presets_recargar_ui()
 	if _boton_eliminar_preset != null:
 		_boton_eliminar_preset.text = tr("Eliminar")
 	_ui_status()
@@ -1227,11 +1029,11 @@ func _config_desde_ui() -> Dictionary:
 		"orden_direccion": _orden_direccion,
 		"filtro_estado": filtro.get_selected_id(),
 		"filtro_categoria": filtro_cat.get_selected_id(),
-		"filtro_etiqueta": _etiqueta_seleccionada(),
+		"filtro_etiqueta": _filtros.etiqueta_seleccionada(),
 		"busqueda": busqueda.text,
-		"filtro_codigo": _codigo_seleccionado(),
+		"filtro_codigo": _filtros.codigo_seleccionado(),
 		"filtro_dias": int(filtro_dias.value),
-		"busqueda_modo": _modo_busqueda(),
+		"busqueda_modo": _filtros.modo_busqueda(),
 		"vista": _nav.modo_vista,
 	}
 

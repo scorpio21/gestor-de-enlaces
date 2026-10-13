@@ -42,6 +42,7 @@ func _initialize() -> void:
 	_check(_import_export_extraida(), "importar/exportar/informe/diagnostico viven en import_export_controller, no en main.gd (#74)")
 	_check(_scan_ui_extraida(), "el flujo de escaneo vive en scan_ui_controller, no en main.gd (#79)")
 	_check(_edicion_extraida(), "la edicion de filas vive en edicion_controller, no en main.gd (#79)")
+	_check(_filtros_extraida(), "los filtros y presets viven en filtros_presets_controller, no en main.gd (#79)")
 	_check(FileAccess.file_exists("res://tests/test_actualizador.gd"), "existe tests/test_actualizador.gd")
 	if _fallos == 0:
 		print("TESTS OK")
@@ -433,11 +434,11 @@ func _import_export_extraida() -> bool:
 func _main_no_secha() -> bool:
 	# #66 saco los dialogos (main.gd 1676); #74 saca el tema (1675), la
 	# comprobacion de actualizaciones (1618), la navegacion (1568) y la
-	# importacion/exportacion (1530); #79 saca el flujo de escaneo (1385) y la
-	# edicion de filas (1207). El techo baja a 1245 y obliga a seguir
-	# encogiendo main.gd con cada entrega.
+	# importacion/exportacion (1530); #79 saca el flujo de escaneo (1385), la
+	# edicion de filas (1207) y los filtros/presets (1042). El techo baja a 1045
+	# y obliga a seguir encogiendo main.gd con cada entrega.
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1245
+	return main.split("\n").size() <= 1045
 
 
 func _edicion_extraida() -> bool:
@@ -473,6 +474,47 @@ func _edicion_extraida() -> bool:
 		and ctrl.contains("func confirmar_borrado()") and ctrl.contains("func confirmar_reubicar()") \
 		and ctrl.contains("func editar_fila(") and ctrl.contains("func historial(") \
 		and FileAccess.file_exists("res://tests/test_edicion_controller.gd")
+
+
+func _filtros_extraida() -> bool:
+	# #79: los filtros, la busqueda y los presets viven en
+	# filtros_presets_controller; main.gd solo cablea los widgets y decide
+	# cuando refrescar.
+	var main := _leer("res://scripts/main.gd")
+	if not main.contains("FiltrosPresetsControllerScript") or not main.contains("_filtros."):
+		return false
+	var prohibidas := [
+		"func _cargar_filtros",
+		"func _ui_busqueda",
+		"func _ui_filtro_estado",
+		"func _ui_filtro_categoria",
+		"func _ui_filtro_etiqueta",
+		"func _ui_filtro_codigo",
+		"func _ui_filtro_dias",
+		"func _ui_filtro_modo",
+		"func _ui_preset_seleccionado",
+		"func _aplicar_preset",
+		"func _ui_boton_preset",
+		"func _dialogo_preset_confirmado",
+		"func _guardar_preset",
+		"func _dialogo_preset_eliminar",
+		"func _borrar_preset",
+		"func _presets_recargar_ui",
+		"func _config_filtros_actual",
+		"func _etiqueta_seleccionada",
+		"func _codigo_seleccionado",
+		"func _indice_codigo",
+		"func _modo_busqueda",
+		"func _indice_etiqueta",
+	]
+	for prohibida in prohibidas:
+		if main.contains(prohibida):
+			return false
+	var ctrl := _leer("res://scripts/filtros_presets_controller.gd")
+	return ctrl.contains("func cargar_filtros(") and ctrl.contains("func aplicar_preset(") \
+		and ctrl.contains("func guardar_preset(") and ctrl.contains("func borrar_preset(") \
+		and ctrl.contains("func busqueda_cambiada(") and ctrl.contains("func config_filtros_actual(") \
+		and FileAccess.file_exists("res://tests/test_filtros_presets_controller.gd")
 
 
 func _scan_ui_extraida() -> bool:
