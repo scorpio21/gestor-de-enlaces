@@ -1,308 +1,308 @@
-keys,es,en,es_AR
-%d enlaces,%d enlaces,%d links
-"%d importados, %d omitidos.","%d importados, %d omitidos.","%d imported, %d skipped."
-%d inválidas ignoradas.,%d inválidas ignoradas.,%d invalid ignored.
-%d omitidos (ya existían o sin URL válida).,%d omitidos (ya existían o sin URL válida).,%d skipped (already existing or no valid URL).
-%d repetidas ignoradas.,%d repetidas ignoradas.,%d duplicates ignored.
-%s %s,%s %s,%s %s
-%s — %s — %s,%s — %s — %s,%s — %s — %s
-(%d errores),(%d errores),(%d errors)
-(%d intentos),(%d intentos),(%d attempts)
-7 días,7 días,7 days
-30 días,30 días,30 days
-90 días,90 días,90 days
-Aceptar los certificados TLS no válidos,Aceptar los certificados TLS no válidos,Accept invalid TLS certificates
-Activos:,Activos:,Working:
-Agregar,Agregar,Add
-Agregar enlace,Agregar enlace,Add link
-Agregar varias URLs,Agregar varias URLs,Add multiple URLs
-Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Add links or import a catalog to see its statistics here.,Agregá enlaces o importá un catálogo para ver acá sus estadísticas.
-Auto-escaneo,Auto-escaneo,Auto-scan
-Automático,Automático,Automatic
-Bajar,Bajar,Move down
-Buscar por nombre o descripción...,Buscar por nombre o descripción...,Search by name or description...
-Cancelar,Cancelar,Cancel
-Captura reutilizada,Captura reutilizada,Capture reused
-Capturas huérfanas eliminadas: %d,Capturas huérfanas eliminadas: %d,Orphaned captures deleted: %d
-Categoría,Categoría,Category
-Catálogo exportado (%d enlaces).,Catálogo exportado (%d enlaces).,Catalogue exported (%d links).
-Catálogo restaurado desde la copia.,Catálogo restaurado desde la copia.,Catalogue restored from backup.
-Caído,Caído,Down
-Caídos,Caídos,Down
-Caídos / no existen,Caídos / no existen,Down / missing
-Caídos: %d,Caídos: %d,Broken: %d
-Cada 1 hora,Cada 1 hora,Every hour
-Cada 15 minutos,Cada 15 minutos,Every 15 minutes
-Cada 30 minutos,Cada 30 minutos,Every 30 minutes
-Código,Código,Code
-Cualquier palabra,Cualquier palabra,Any word
-Cerrar,Cerrar,Close
-Certificado no válido (aceptado),Certificado no válido (aceptado),Invalid certificate (accepted)
-"Certificado no válido (aceptado por preferencia)","Certificado no válido (aceptado por preferencia)","Invalid certificate (accepted by preference)"
-Certificado no válido (rechazado),Certificado no válido (rechazado),Invalid certificate (rejected)
-Claro,Claro,Light
-Cliente,Cliente,Client
-Comprobado: %s,Comprobado: %s,Checked: %s
-Comprobando %d/%d…,Comprobando %d/%d…,Checking %d/%d…
-Comprobando 0/%d…,Comprobando 0/%d…,Checking 0/%d…
-Comprobando…,Comprobando…,Checking…
-Comprobaciones por día,Comprobaciones por día,Checks per day
-Comprobar actualizaciones,Comprobar actualizaciones,Check for updates
-Comprobar actualizaciones…,Comprobar actualizaciones…,Check for updates…
-Comprobar cada,Comprobar cada,Check every
-Comprobar enlaces,Comprobar enlaces,Check links
-Comprobar enlaces al abrir,Comprobar enlaces al abrir,Check links on open
-Conexión cerrada,Conexión cerrada,Connection closed
-Copiar URL,Copiar URL,Copy URL
-Código: %s,Código: %s,Code: %s
-Códigos fuente,Códigos fuente,Source code
-Dashboard de estadísticas,Dashboard de estadísticas,Statistics dashboard
-Dashboard de estadísticas…,Dashboard de estadísticas…,Statistics dashboard…
-Desactivado,Desactivado,Disabled
-Descartar,Descartar,Discard
-Descripción,Descripción,Description
-días,días,days
-Diagnóstico guardado en %s.,Diagnóstico guardado en %s.,Diagnostics saved to %s.
-Disp.,Disp.,Avail.
-Disponible: %s %% (%d comprobados),Disponible: %s %% (%d comprobados),Available: %s %% (%d checked)
-Disponibilidad,Disponibilidad,Availability
-Disponibilidad de %d enlaces comprobados,Disponibilidad de %d enlaces comprobados,Availability of %d checked links
-Disponibles,Disponibles,Available
-Doble clic en una fila para verla en la lista.,Doble clic en una fila para verla en la lista.,Double-click a row to see it in the list.
-Editar…,Editar…,Edit…
-Editar enlace,Editar enlace,Edit link
-Ej. (Cliente + códigos),Ej. (Cliente + códigos),E.g. (Client + code)
-Ej. Mi servidor AO,Ej. Mi servidor AO,E.g. My AO server
-"Ej. AO 1.6, español, servidor PVP","Ej. AO 1.6, español, servidor PVP","E.g. AO 1.6, Spanish, PvP server"
-El catálogo está vacío.,El catálogo está vacío.,The catalog is empty.
-El nombre no puede estar vacío.,El nombre no puede estar vacío.,The name cannot be empty.
-Elegir imagen,Elegir imagen,Choose image
-Elegir imagen…,Elegir imagen…,Choose image…
-Eliminar,Eliminar,Delete
-Eliminar enlace,Eliminar enlace,Delete link
-Enlace,Enlace,Link
-Enlace actualizado: %s,Enlace actualizado: %s,Link updated: %s
-Enlace agregado: %s,Enlace agregado: %s,Link added: %s
-Enlace eliminado,Enlace eliminado,Link deleted
-Enlaces que más han caído,Enlaces que más han caído,Links that have failed the most
-Error HTTP %d,Error HTTP %d,HTTP error %d
-Error TLS/HTTPS,Error TLS/HTTPS,TLS/HTTPS error
-Escaneo,Escaneo,Scanning
-Error de conexión,Error de conexión,Connection error
-Estado,Estado,Status
-Estadísticas del catálogo,Estadísticas del catálogo,Catalog statistics
-Estadísticas exportadas.,Estadísticas exportadas.,Statistics exported.
-Etiquetas,Etiquetas,Tags
-Estás al día (v%s),Estás al día (v%s),You are up to date (v%s)
-"Existe, acceso restringido (%d)","Existe, acceso restringido (%d)","Exists, restricted access (%d)"
-Exportar catálogo JSON,Exportar catálogo JSON,Export JSON catalogue
-Exportar CSV,Exportar CSV,Export CSV
-Exportar diagnóstico,Exportar diagnóstico,Export diagnostics
-Exportar diagnóstico…,Exportar diagnóstico…,Export diagnostics…
-Exportar estadísticas,Exportar estadísticas,Export statistics
-Exportar JSON,Exportar JSON,Export JSON
-Exportar…,Exportar…,Export…
-Fecha,Fecha,Date
-Filtro aplicado desde el dashboard.,Filtro aplicado desde el dashboard.,Filter applied from the dashboard.
-Filtro eliminado: %s,Filtro eliminado: %s,Filter deleted: %s
-Filtro guardado: %s,Filtro guardado: %s,Filter saved: %s
-Gestor de enlaces AO,Gestor de enlaces AO,AO Link Manager
-Guardar,Guardar,Save
-Guardar cambios,Guardar cambios,Save changes
-Guardar filtro…,Guardar filtro…,Save filter…
-Guardar filtro como…,Guardar filtro como…,Save filter as…
-Guardar informe de disponibilidad,Guardar informe de disponibilidad,Save availability report
-Idioma,Idioma,Language
-Hay una comprobación pendiente. ¿Reanudar el escaneo?,Hay una comprobación pendiente. ¿Reanudar el escaneo?,A check is pending. Resume scanning?
-Hay una nueva versión: %s,Hay una nueva versión: %s,A new version is available: %s
-Historial de disponibilidad,Historial de disponibilidad,Availability history
-Historial…,Historial…,History…
-Imagen,Imagen,Image
-Importar…,Importar…,Import…
-Individual,Individual,Single
-Informe %s guardado (%d enlaces).,Informe %s guardado (%d enlaces).,%s report saved (%d links).
-Informe de disponibilidad…,Informe de disponibilidad…,Availability report…
-La URL debe empezar por http:// o https://.,La URL debe empezar por http:// o https://.,The URL must start with http:// or https://.
-La URL no puede estar vacía.,La URL no puede estar vacía.,The URL cannot be empty.
-Limpiar,Limpiar,Clean
-Limpiar capturas huérfanas,Limpiar capturas huérfanas,Clean orphan captures
-Limpiar capturas huérfanas…,Limpiar capturas huérfanas…,Clean orphan captures…
-Listo: %d caídos de %d,Listo: %d caídos de %d,Done: %d down of %d
-"Marcar los fallos de red como «sin comprobar» en vez de «caído»","Marcar los fallos de red como «sin comprobar» en vez de «caído»","Mark network failures as «not checked» instead of «down»"
-Nada que comprobar,Nada que comprobar,Nothing to check
-No existe (%d),No existe (%d),Does not exist (%d)
-No existe el dominio,No existe el dominio,Domain does not exist
-No existe ese filtro.,No existe ese filtro.,That filter does not exist.
-No hay capturas huérfanas.,No hay capturas huérfanas.,No orphan captures.
-No hay copia de seguridad disponible.,No hay copia de seguridad disponible.,No backup available.
-No se añadió ningún enlace.,No se añadió ningún enlace.,No link was added.,No se agregó ningún enlace.
-No se encontró el enlace.,No se encontró el enlace.,Link not found.
-No se pudo cargar la imagen.,No se pudo cargar la imagen.,Could not load the image.
-No se pudo comprobar actualizaciones.,No se pudo comprobar actualizaciones.,Could not check for updates.
-No se pudo conectar,No se pudo conectar,Could not connect
-No se pudo enviar la petición,No se pudo enviar la petición,Could not send the request
-No se pudo exportar el diagnóstico (%d errores).,No se pudo exportar el diagnóstico (%d errores).,Could not export diagnostics (%d errors).
-No se pudo exportar.,No se pudo exportar.,Could not export.
-No se pudo guardar el catálogo.,No se pudo guardar el catálogo.,Could not save the catalogue.
-No se pudo guardar el enlace.,No se pudo guardar el enlace.,Could not save the link.
-No se pudo guardar el lote.,No se pudo guardar el lote.,Could not save the batch.
-No se pudo guardar el orden.,No se pudo guardar el orden.,Could not save the order.
-No se pudo guardar la configuración.,No se pudo guardar la configuración.,Could not save the settings.
-No se pudo iniciar la conexión,No se pudo iniciar la conexión,Could not start the connection
-No se pudo procesar la imagen.,No se pudo procesar la imagen.,Could not process the image.
-No se pudo restaurar la copia.,No se pudo restaurar la copia.,Could not restore the backup.
-No se pudo escribir el catálogo base.,No se pudo escribir el catálogo base.,Could not write the base catalogue.
-Nombre,Nombre,Name
-Nueva versión disponible,Nueva versión disponible,New version available
-OK (%d),OK (%d),OK (%d)
-Oscuro,Oscuro,Dark
-"Ordenar por %s","Ordenar por %s","Sort by %s"
-Otro,Otro,Other
-Parche,Parche,Patch
-Pasa el ratón por una barra para ver el detalle.,Pasa el ratón por una barra para ver el detalle.,Hover a bar for details.,Pasá el mouse por una barra para ver el detalle.
-Pega al menos una URL.,Pega al menos una URL.,Paste at least one URL.,Pegá al menos una URL.
-Por categoría,Por categoría,By category
-Por host (problemáticos),Por host (problemáticos),By host (troubled)
-Preferencias,Preferencias,Preferences
-Preferencias…,Preferencias…,Preferences…
-Presets…,Presets…,Presets…
-Quitar imagen,Quitar imagen,Remove image
-Rango de días incluido en el gráfico,Rango de días incluido en el gráfico,Day range included in the chart
-Re-comprobando %s…,Re-comprobando %s…,Re-checking %s…
-Reintentar los fallos transitorios (2 veces),Reintentar los fallos transitorios (2 veces),Retry transient failures (twice)
-Reanudar,Reanudar,Resume
-Reanudar escaneo,Reanudar escaneo,Resume scan
-Redirección inválida (%d),Redirección inválida (%d),Invalid redirect (%d)
-Restaurar,Restaurar,Restore
-Restaurar copia,Restaurar copia,Restore backup
-Restaurar copia…,Restaurar copia…,Restore backup…
-Rotos:,Rotos:,Broken:
-Salir,Salir,Quit
-Se añadieron %d enlaces.,Se añadieron %d enlaces.,%d links added.,Se agregaron %d enlaces.
-Servidor,Servidor,Server
-Sin comprobaciones todavía,Sin comprobaciones todavía,No checks yet
-Sin comprobar,Sin comprobar,Not checked
-Sin comprobar: %d,Sin comprobar: %d,Not checked: %d
-Sin historial,Sin historial,No history
-Sin conexión segura,Sin conexión segura,No secure connection
-Sin respuesta (tiempo agotado),Sin respuesta (tiempo agotado),No response (timed out)
-"Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído».","Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído».","Only for catalogs with old hosts: the link becomes «valid with a warning» instead of «down»."
-Subir,Subir,Move up
-Tema,Tema,Theme
-Timeout por enlace (segundos),Timeout por enlace (segundos),Per-link timeout (seconds)
-Todas,Todas,All
-Todas las palabras,Todas las palabras,All words
-Todo el histórico,Todo el histórico,All history
-Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,No checks yet. Press Check links to start.,Todavía no hay comprobaciones. Pulsá Comprobar enlaces para empezar.
-Todos,Todos,All
-Total,Total,Total
-Total:,Total:,Total:
-URL,URL,URL
-URL copiada: %s,URL copiada: %s,URL copied: %s
-URL inválida,URL inválida,Invalid URL
-Una URL por línea,Una URL por línea,One URL per line
-Última,Última,Last
-Varias,Varias,Multiple
-Ver release,Ver release,View release
-Verificaciones en paralelo,Verificaciones en paralelo,Parallel checks
-Vista grilla,Vista grilla,Grid view
-Vista lista,Vista lista,List view
-Volver a comprobar,Volver a comprobar,Re-check
-Válido,Válido,Working
-Válidos,Válidos,Valid
-Válidos: %d,Válidos: %d,Valid: %d
-Veces,Veces,Times
-Ya existe: %s,Ya existe: %s,Already exists: %s
-¿Borrar %d capturas huérfanas?,¿Borrar %d capturas huérfanas?,Delete %d orphan captures?
-¿Eliminar «%s» para siempre?,¿Eliminar «%s» para siempre?,Delete “%s” forever?
-¿Reanudar escaneo de %d enlaces?,¿Reanudar escaneo de %d enlaces?,Resume scanning %d links?
-¿Restaurar el catálogo desde la copia de seguridad?,¿Restaurar el catálogo desde la copia de seguridad?,Restore the catalogue from the backup?
-"Abrir el dashboard",Abrir el dashboard,Open the dashboard
-Cambio,Change,Change
-Cambios desde la última vez,Cambios desde la última vez,Changes since last time
-Cambios exportados.,Cambios exportados.,Changes exported.
-cambió,cambió,changed
-"El historial de cambios llega hasta %s.",El historial de cambios llega hasta %s.,The change history goes back to %s.
-Detalle,Detalle,Detail
-Exportar cambios,Exportar cambios,Export changes
-Filtrar en la lista,Filtrar en la lista,Filter in the list
-"Ha cambiado desde la última vez y ahora está caído.",Ha cambiado desde la última vez y ahora está caído.,It changed since last time and is now down.
-"Ha cambiado desde la última vez y ahora está válido.",Ha cambiado desde la última vez y ahora está válido.,It changed since last time and is now up.
-"Ha cambiado desde la última vez.",Ha cambiado desde la última vez.,It changed since last time.
-Sin cambios,Sin cambios,No changes
-"%d nuevos caídos",%d nuevos caídos,%d newly down
-"%d nuevo caído",%d nuevo caído,%d newly down
-%d recuperados,%d recuperados,%d recovered
-"%d recuperado",%d recuperado,%d recovered
-%d reubicados,%d reubicados,%d moved
-"%d reubicado",%d reubicado,%d moved
-"%s → %s",%s → %s,%s → %s
-Sin cambios desde la última vez,Sin cambios desde la última vez,No changes since last time
-Viendo cambios…,Viendo cambios…,Viewing changes…
-No se pudo guardar el historial de cambios.,No se pudo guardar el historial de cambios.,Could not save the change history.
-1 seleccionado,1 seleccionado,1 selected
-%d seleccionados,%d seleccionados,%d selected
-%d URLs copiadas,%d URLs copiadas,%d URLs copied
-%d enlaces eliminados,%d enlaces eliminados,%d links deleted
-¿Eliminar %d enlaces para siempre?,¿Eliminar %d enlaces para siempre?,Delete %d links for good?
-0 seleccionados,0 seleccionados,0 selected
-Seleccionar lo que veo,Seleccionar lo que veo,Select what I see
-Comprobar seleccionados,Comprobar seleccionados,Check selected
-Copiar URLs,Copiar URLs,Copy URLs
-Exportar selección,Exportar selección,Export selection
-Eliminar seleccionados,Eliminar seleccionados,Delete selected
-Quitar selección,Quitar selección,Clear selection
-"Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Selected: Ctrl+C copies, Ctrl+Enter checks, Shift+Delete deletes."
-Actualizar URL,Actualizar URL,Update URL
-Actualizar,Actualizar,Update
-Enlaces reubicados,Enlaces reubicados,Relocated links
-Actualizar todos,Actualizar todos,Update all
-Origen,Origen,Origin
-Destino,Destino,Destination
-Comprobado,Comprobado,Checked
-Actualizar URL a la nueva,Actualizar URL a la nueva,Update URL to the new one
-movido,movido,moved
-No hay una redirección que actualizar.,No hay una redirección que actualizar.,There is no redirect to update.
-La URL nueva es la misma.,La URL nueva es la misma.,The new URL is the same.
-Redirige a: %s,Redirige a: %s,Redirects to: %s
-Solo cambia el dominio o el https: %s,Solo cambia el dominio o el https: %s,Only the domain or https changed: %s
-Cambiar la URL de %s por %s.,Cambiar la URL de %s por %s.,Change the URL of %s to %s.
-¿Actualizar «%s» a %s?,¿Actualizar «%s» a %s?,Update «%s» to %s?
-¿Actualizar la URL de %d enlaces a la nueva?,¿Actualizar la URL de %d enlaces a la nueva?,Update the URL of %d links to the new one?
-1 URL actualizada,1 URL actualizada,1 URL updated
-%d URLs actualizadas,%d URLs actualizadas,%d URLs updated
-Instantáneas diarias,Instantáneas diarias,Daily snapshots
-"Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga.","Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga.","How many days of daily snapshot are kept for the dashboard chart. Anything older is purged."
-Estado del catálogo por día,Estado del catálogo por día,Catalogue state per day
-Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial.,Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial.,No daily snapshots yet: the chart shows the state changes from history.
-Purgar instantáneas antiguas…,Purgar instantáneas antiguas…,Purge old snapshots…
-No se pudieron purgar las instantáneas.,No se pudieron purgar las instantáneas.,Could not purge the snapshots.
-No hay instantáneas más antiguas de %d días.,No hay instantáneas más antiguas de %d días.,There are no snapshots older than %d days.
-Instantáneas antiguas eliminadas: %d,Instantáneas antiguas eliminadas: %d,Old snapshots deleted: %d
-Sin datos: ese día no hubo Instantánea.,Sin datos: ese día no hubo Instantánea.,No data: no snapshot that day.
-Cambios de estado: %d,Cambios de estado: %d,State changes: %d
-"Desde el día anterior: %+d válidos, %+d caídos","Desde el día anterior: %+d válidos, %+d caídos","Since the previous day: %+d valid, %+d broken"
-"Almacenamiento: %s · %d enlaces · %d estados · %d capturas · %s en disco","Almacenamiento: %s · %d enlaces · %d estados · %d capturas · %s en disco","Storage: %s · %d links · %d states · %d screenshots · %s on disk"
-"%d B","%d B","%d B"
-"%.1f KB","%.1f KB","%.1f KB"
-"%.1f MB","%.1f MB","%.1f MB"
-"No se pudo migrar al almacenamiento elegido: %s","No se pudo migrar al almacenamiento elegido: %s","Could not migrate to the chosen storage: %s"
-"%s: %d de %d","%s: %d de %d","%s: %d of %d"
-"recuentos distintos","recuentos distintos","counts differ"
-"Se copiaron los datos, pero no se pudo guardar la preferencia: %s","Se copiaron los datos, pero no se pudo guardar la preferencia: %s","The data was copied, but the preference could not be saved: %s"
-"Datos copiados a %s. Reinicia para usarlos.","Datos copiados a %s. Reinicia para usarlos.","Data copied to %s. Restart to use it.","Datos copiados a %s. Reiniciá para usarlos."
-"Almacenamiento","Almacenamiento","Storage"
-"Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json.","Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json.","Folder holding the data and the screenshots. Read from user://almacenamiento.json."
-"Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Pick another folder and copy everything there. It applies after a restart.","Elegí otra carpeta y copiá todo ahí. Se aplica al reiniciar."
-"Cambiar carpeta...","Cambiar carpeta...","Change folder..."
-"Abrir carpeta","Abrir carpeta","Open folder"
-"Lo que ocupa el almacenamiento ahora mismo.","Lo que ocupa el almacenamiento ahora mismo.","What the storage is using right now."
-"Elige la carpeta de datos","Elige la carpeta de datos","Choose the data folder","Elegí la carpeta de datos"
-"%s\nOrigen: %s","%s\nOrigen: %s","%s\nSource: %s"
-"El modo «%s» todavía no está disponible.","El modo «%s» todavía no está disponible.","The «%s» mode is not available yet."
-"Los datos ahora van en %s. Reinicia para usarlos.","Los datos ahora van en %s. Reinicia para usarlos.","Your data now goes in %s. Restart to use it.","Los datos ahora van en %s. Reiniciá para usarlos."
-"Cómo se guardan los datos","Cómo se guardan los datos","How the data is stored"
-"Ficheros sueltos","Ficheros sueltos","Separate files","Archivos sueltos"
-"Un único fichero","Un único fichero","A single file","Un único archivo"
-"Base de datos","Base de datos","Database"
-"Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Separate files: one JSON per thing. A single file: everything together, one write. Database: everything in one SQLite file.","Archivos sueltos: un JSON por cosa. Un único archivo: todo junto, un solo guardado. Base de datos: todo en un archivo SQLite."
+keys,es,en,it,es_AR
+%d enlaces,%d enlaces,%d links,%d link
+"%d importados, %d omitidos.","%d importados, %d omitidos.","%d imported, %d skipped.","%d importati, %d saltati."
+%d inválidas ignoradas.,%d inválidas ignoradas.,%d invalid ignored.,%d non valide ignorate.
+%d omitidos (ya existían o sin URL válida).,%d omitidos (ya existían o sin URL válida).,%d skipped (already existing or no valid URL).,%d saltati (già esistenti o senza URL valido).
+%d repetidas ignoradas.,%d repetidas ignoradas.,%d duplicates ignored.,%d duplicati ignorati.
+%s %s,%s %s,%s %s,%s %s
+%s — %s — %s,%s — %s — %s,%s — %s — %s,%s — %s — %s
+(%d errores),(%d errores),(%d errors),(%d errori)
+(%d intentos),(%d intentos),(%d attempts),(%d tentativi)
+7 días,7 días,7 days,7 giorni
+30 días,30 días,30 days,30 giorni
+90 días,90 días,90 days,90 giorni
+Aceptar los certificados TLS no válidos,Aceptar los certificados TLS no válidos,Accept invalid TLS certificates,Accetta i certificati TLS non validi
+Activos:,Activos:,Working:,Attivi:
+Agregar,Agregar,Add,Aggiungi
+Agregar enlace,Agregar enlace,Add link,Aggiungi link
+Agregar varias URLs,Agregar varias URLs,Add multiple URLs,Aggiungi più URL
+Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Add links or import a catalog to see its statistics here.,Aggiungi link o importa un catalogo per vedere qui le sue statistiche.,Agregá enlaces o importá un catálogo para ver acá sus estadísticas.
+Auto-escaneo,Auto-escaneo,Auto-scan,Scansione automatica
+Automático,Automático,Automatic,Automatico
+Bajar,Bajar,Move down,Sposta giù
+Buscar por nombre o descripción...,Buscar por nombre o descripción...,Search by name or description...,Cerca per nome o descrizione...
+Cancelar,Cancelar,Cancel,Annulla
+Captura reutilizada,Captura reutilizada,Capture reused,Cattura riutilizzata
+Capturas huérfanas eliminadas: %d,Capturas huérfanas eliminadas: %d,Orphaned captures deleted: %d,Catture orfane eliminate: %d
+Categoría,Categoría,Category,Categoria
+Catálogo exportado (%d enlaces).,Catálogo exportado (%d enlaces).,Catalogue exported (%d links).,Catalogo esportato (%d link).
+Catálogo restaurado desde la copia.,Catálogo restaurado desde la copia.,Catalogue restored from backup.,Catalogo ripristinato dal backup.
+Caído,Caído,Down,Non raggiungibile
+Caídos,Caídos,Down,Non raggiungibili
+Caídos / no existen,Caídos / no existen,Down / missing,Non raggiungibili / mancanti
+Caídos: %d,Caídos: %d,Broken: %d,Non raggiungibili: %d
+Cada 1 hora,Cada 1 hora,Every hour,Ogni ora
+Cada 15 minutos,Cada 15 minutos,Every 15 minutes,Ogni 15 minuti
+Cada 30 minutos,Cada 30 minutos,Every 30 minutes,Ogni 30 minuti
+Código,Código,Code,Codice
+Cualquier palabra,Cualquier palabra,Any word,Qualsiasi parola
+Cerrar,Cerrar,Close,Chiudi
+Certificado no válido (aceptado),Certificado no válido (aceptado),Invalid certificate (accepted),Certificato non valido (accettato)
+"Certificado no válido (aceptado por preferencia)","Certificado no válido (aceptado por preferencia)","Invalid certificate (accepted by preference)",Certificato non valido (accettato per preferenza)
+Certificado no válido (rechazado),Certificado no válido (rechazado),Invalid certificate (rejected),Certificato non valido (rifiutato)
+Claro,Claro,Light,Chiaro
+Cliente,Cliente,Client,Cliente
+Comprobado: %s,Comprobado: %s,Checked: %s,Verificato: %s
+Comprobando %d/%d…,Comprobando %d/%d…,Checking %d/%d…,Verifica %d/%d…
+Comprobando 0/%d…,Comprobando 0/%d…,Checking 0/%d…,Verifica 0/%d…
+Comprobando…,Comprobando…,Checking…,Verifica…
+Comprobaciones por día,Comprobaciones por día,Checks per day,Verifiche al giorno
+Comprobar actualizaciones,Comprobar actualizaciones,Check for updates,Controlla aggiornamenti
+Comprobar actualizaciones…,Comprobar actualizaciones…,Check for updates…,Controlla aggiornamenti…
+Comprobar cada,Comprobar cada,Check every,Controlla ogni
+Comprobar enlaces,Comprobar enlaces,Check links,Verifica link
+Comprobar enlaces al abrir,Comprobar enlaces al abrir,Check links on open,Verifica link all'apertura
+Conexión cerrada,Conexión cerrada,Connection closed,Connessione chiusa
+Copiar URL,Copiar URL,Copy URL,Copia URL
+Código: %s,Código: %s,Code: %s,Codice: %s
+Códigos fuente,Códigos fuente,Source code,Codice sorgente
+Dashboard de estadísticas,Dashboard de estadísticas,Statistics dashboard,Dashboard delle statistiche
+Dashboard de estadísticas…,Dashboard de estadísticas…,Statistics dashboard…,Dashboard delle statistiche…
+Desactivado,Desactivado,Disabled,Disattivato
+Descartar,Descartar,Discard,Scarta
+Descripción,Descripción,Description,Descrizione
+días,días,days,giorni
+Diagnóstico guardado en %s.,Diagnóstico guardado en %s.,Diagnostics saved to %s.,Diagnostica salvata in %s.
+Disp.,Disp.,Avail.,Disp.
+Disponible: %s %% (%d comprobados),Disponible: %s %% (%d comprobados),Available: %s %% (%d checked),Disponibile: %s %% (%d verificati)
+Disponibilidad,Disponibilidad,Availability,Disponibilità
+Disponibilidad de %d enlaces comprobados,Disponibilidad de %d enlaces comprobados,Availability of %d checked links,Disponibilità di %d link verificati
+Disponibles,Disponibles,Available,Disponibili
+Doble clic en una fila para verla en la lista.,Doble clic en una fila para verla en la lista.,Double-click a row to see it in the list.,Fai doppio clic su una riga per vederla nella lista.
+Editar…,Editar…,Edit…,Modifica…
+Editar enlace,Editar enlace,Edit link,Modifica link
+Ej. (Cliente + códigos),Ej. (Cliente + códigos),E.g. (Client + code),Es. (Cliente + codice)
+Ej. Mi servidor AO,Ej. Mi servidor AO,E.g. My AO server,Es. Il mio server AO
+"Ej. AO 1.6, español, servidor PVP","Ej. AO 1.6, español, servidor PVP","E.g. AO 1.6, Spanish, PvP server","Es. AO 1.6, spagnolo, server PvP"
+El catálogo está vacío.,El catálogo está vacío.,The catalog is empty.,Il catalogo è vuoto.
+El nombre no puede estar vacío.,El nombre no puede estar vacío.,The name cannot be empty.,Il nome non può essere vuoto.
+Elegir imagen,Elegir imagen,Choose image,Scegli immagine
+Elegir imagen…,Elegir imagen…,Choose image…,Scegli immagine…
+Eliminar,Eliminar,Delete,Elimina
+Eliminar enlace,Eliminar enlace,Delete link,Elimina link
+Enlace,Enlace,Link,Link
+Enlace actualizado: %s,Enlace actualizado: %s,Link updated: %s,Link aggiornato: %s
+Enlace agregado: %s,Enlace agregado: %s,Link added: %s,Link aggiunto: %s
+Enlace eliminado,Enlace eliminado,Link deleted,Link eliminato
+Enlaces que más han caído,Enlaces que más han caído,Links that have failed the most,Link non raggiungibili più spesso
+Error HTTP %d,Error HTTP %d,HTTP error %d,Errore HTTP %d
+Error TLS/HTTPS,Error TLS/HTTPS,TLS/HTTPS error,Errore TLS/HTTPS
+Escaneo,Escaneo,Scanning,Scansione
+Error de conexión,Error de conexión,Connection error,Errore di connessione
+Estado,Estado,Status,Stato
+Estadísticas del catálogo,Estadísticas del catálogo,Catalog statistics,Statistiche del catalogo
+Estadísticas exportadas.,Estadísticas exportadas.,Statistics exported.,Statistiche esportate.
+Etiquetas,Etiquetas,Tags,Etichette
+Estás al día (v%s),Estás al día (v%s),You are up to date (v%s),Sei aggiornato (v%s)
+"Existe, acceso restringido (%d)","Existe, acceso restringido (%d)","Exists, restricted access (%d)","Esiste, accesso limitato (%d)"
+Exportar catálogo JSON,Exportar catálogo JSON,Export JSON catalogue,Esporta catalogo JSON
+Exportar CSV,Exportar CSV,Export CSV,Esporta CSV
+Exportar diagnóstico,Exportar diagnóstico,Export diagnostics,Esporta diagnostica
+Exportar diagnóstico…,Exportar diagnóstico…,Export diagnostics…,Esporta diagnostica…
+Exportar estadísticas,Exportar estadísticas,Export statistics,Esporta statistiche
+Exportar JSON,Exportar JSON,Export JSON,Esporta JSON
+Exportar…,Exportar…,Export…,Esporta…
+Fecha,Fecha,Date,Data
+Filtro aplicado desde el dashboard.,Filtro aplicado desde el dashboard.,Filter applied from the dashboard.,Filtro applicato dal dashboard.
+Filtro eliminado: %s,Filtro eliminado: %s,Filter deleted: %s,Filtro eliminato: %s
+Filtro guardado: %s,Filtro guardado: %s,Filter saved: %s,Filtro salvato: %s
+Gestor de enlaces AO,Gestor de enlaces AO,AO Link Manager,Gestore di link AO
+Guardar,Guardar,Save,Salva
+Guardar cambios,Guardar cambios,Save changes,Salva modifiche
+Guardar filtro…,Guardar filtro…,Save filter…,Salva filtro…
+Guardar filtro como…,Guardar filtro como…,Save filter as…,Salva filtro come…
+Guardar informe de disponibilidad,Guardar informe de disponibilidad,Save availability report,Salva report di disponibilità
+Idioma,Idioma,Language,Lingua
+Hay una comprobación pendiente. ¿Reanudar el escaneo?,Hay una comprobación pendiente. ¿Reanudar el escaneo?,A check is pending. Resume scanning?,C'è una verifica in sospeso. Riprendere la scansione?
+Hay una nueva versión: %s,Hay una nueva versión: %s,A new version is available: %s,È disponibile una nuova versione: %s
+Historial de disponibilidad,Historial de disponibilidad,Availability history,Cronologia disponibilità
+Historial…,Historial…,History…,Cronologia…
+Imagen,Imagen,Image,Immagine
+Importar…,Importar…,Import…,Importa…
+Individual,Individual,Single,Singolo
+Informe %s guardado (%d enlaces).,Informe %s guardado (%d enlaces).,%s report saved (%d links).,Report %s salvato (%d link).
+Informe de disponibilidad…,Informe de disponibilidad…,Availability report…,Report di disponibilità…
+La URL debe empezar por http:// o https://.,La URL debe empezar por http:// o https://.,The URL must start with http:// or https://.,L'URL deve iniziare con http:// o https://.
+La URL no puede estar vacía.,La URL no puede estar vacía.,The URL cannot be empty.,L'URL non può essere vuoto.
+Limpiar,Limpiar,Clean,Pulisci
+Limpiar capturas huérfanas,Limpiar capturas huérfanas,Clean orphan captures,Pulisci catture orfane
+Limpiar capturas huérfanas…,Limpiar capturas huérfanas…,Clean orphan captures…,Pulisci catture orfane…
+Listo: %d caídos de %d,Listo: %d caídos de %d,Done: %d down of %d,Fatto: %d non raggiungibili su %d
+"Marcar los fallos de red como «sin comprobar» en vez de «caído»","Marcar los fallos de red como «sin comprobar» en vez de «caído»","Mark network failures as «not checked» instead of «down»",Segnare i guasti di rete come «non verificato» invece di «non raggiungibile»
+Nada que comprobar,Nada que comprobar,Nothing to check,Niente da verificare
+No existe (%d),No existe (%d),Does not exist (%d),Non esiste (%d)
+No existe el dominio,No existe el dominio,Domain does not exist,Il dominio non esiste
+No existe ese filtro.,No existe ese filtro.,That filter does not exist.,Quel filtro non esiste.
+No hay capturas huérfanas.,No hay capturas huérfanas.,No orphan captures.,Nessuna cattura orfana.
+No hay copia de seguridad disponible.,No hay copia de seguridad disponible.,No backup available.,Nessun backup disponibile.
+No se añadió ningún enlace.,No se añadió ningún enlace.,No link was added.,Nessun link è stato aggiunto.,No se agregó ningún enlace.
+No se encontró el enlace.,No se encontró el enlace.,Link not found.,Link non trovato.
+No se pudo cargar la imagen.,No se pudo cargar la imagen.,Could not load the image.,Impossibile caricare l'immagine.
+No se pudo comprobar actualizaciones.,No se pudo comprobar actualizaciones.,Could not check for updates.,Impossibile controllare gli aggiornamenti.
+No se pudo conectar,No se pudo conectar,Could not connect,Impossibile connettersi
+No se pudo enviar la petición,No se pudo enviar la petición,Could not send the request,Impossibile inviare la richiesta
+No se pudo exportar el diagnóstico (%d errores).,No se pudo exportar el diagnóstico (%d errores).,Could not export diagnostics (%d errors).,Impossibile esportare la diagnostica (%d errori).
+No se pudo exportar.,No se pudo exportar.,Could not export.,Impossibile esportare.
+No se pudo guardar el catálogo.,No se pudo guardar el catálogo.,Could not save the catalogue.,Impossibile salvare il catalogo.
+No se pudo guardar el enlace.,No se pudo guardar el enlace.,Could not save the link.,Impossibile salvare il link.
+No se pudo guardar el lote.,No se pudo guardar el lote.,Could not save the batch.,Impossibile salvare il lotto.
+No se pudo guardar el orden.,No se pudo guardar el orden.,Could not save the order.,Impossibile salvare l'ordine.
+No se pudo guardar la configuración.,No se pudo guardar la configuración.,Could not save the settings.,Impossibile salvare la configurazione.
+No se pudo iniciar la conexión,No se pudo iniciar la conexión,Could not start the connection,Impossibile avviare la connessione
+No se pudo procesar la imagen.,No se pudo procesar la imagen.,Could not process the image.,Impossibile elaborare l'immagine.
+No se pudo restaurar la copia.,No se pudo restaurar la copia.,Could not restore the backup.,Impossibile ripristinare il backup.
+No se pudo escribir el catálogo base.,No se pudo escribir el catálogo base.,Could not write the base catalogue.,Impossibile scrivere il catalogo di base.
+Nombre,Nombre,Name,Nome
+Nueva versión disponible,Nueva versión disponible,New version available,Nuova versione disponibile
+OK (%d),OK (%d),OK (%d),OK (%d)
+Oscuro,Oscuro,Dark,Scuro
+"Ordenar por %s","Ordenar por %s","Sort by %s",Ordina per %s
+Otro,Otro,Other,Altro
+Parche,Parche,Patch,Patch
+Pasa el ratón por una barra para ver el detalle.,Pasa el ratón por una barra para ver el detalle.,Hover a bar for details.,Passa il mouse su una barra per vedere il dettaglio.,Pasá el mouse por una barra para ver el detalle.
+Pega al menos una URL.,Pega al menos una URL.,Paste at least one URL.,Incolla almeno un URL.,Pegá al menos una URL.
+Por categoría,Por categoría,By category,Per categoria
+Por host (problemáticos),Por host (problemáticos),By host (troubled),Per host (problematici)
+Preferencias,Preferencias,Preferences,Preferenze
+Preferencias…,Preferencias…,Preferences…,Preferenze…
+Presets…,Presets…,Presets…,Preset…
+Quitar imagen,Quitar imagen,Remove image,Rimuovi immagine
+Rango de días incluido en el gráfico,Rango de días incluido en el gráfico,Day range included in the chart,Intervallo di giorni incluso nel grafico
+Re-comprobando %s…,Re-comprobando %s…,Re-checking %s…,Riverifica %s…
+Reintentar los fallos transitorios (2 veces),Reintentar los fallos transitorios (2 veces),Retry transient failures (twice),Riprova i guasti temporanei (2 volte)
+Reanudar,Reanudar,Resume,Riprendi
+Reanudar escaneo,Reanudar escaneo,Resume scan,Riprendi scansione
+Redirección inválida (%d),Redirección inválida (%d),Invalid redirect (%d),Reindirizzamento non valido (%d)
+Restaurar,Restaurar,Restore,Ripristina
+Restaurar copia,Restaurar copia,Restore backup,Ripristina backup
+Restaurar copia…,Restaurar copia…,Restore backup…,Ripristina backup…
+Rotos:,Rotos:,Broken:,Rotti:
+Salir,Salir,Quit,Esci
+Se añadieron %d enlaces.,Se añadieron %d enlaces.,%d links added.,Sono stati aggiunti %d link.,Se agregaron %d enlaces.
+Servidor,Servidor,Server,Server
+Sin comprobaciones todavía,Sin comprobaciones todavía,No checks yet,Ancora nessuna verifica
+Sin comprobar,Sin comprobar,Not checked,Non verificato
+Sin comprobar: %d,Sin comprobar: %d,Not checked: %d,Non verificato: %d
+Sin historial,Sin historial,No history,Nessuna cronologia
+Sin conexión segura,Sin conexión segura,No secure connection,Nessuna connessione sicura
+Sin respuesta (tiempo agotado),Sin respuesta (tiempo agotado),No response (timed out),Nessuna risposta (tempo scaduto)
+"Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído».","Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído».","Only for catalogs with old hosts: the link becomes «valid with a warning» instead of «down».",Solo per cataloghi con host vecchi: il link diventa «valido con avviso» invece di «non raggiungibile».
+Subir,Subir,Move up,Sposta su
+Tema,Tema,Theme,Tema
+Timeout por enlace (segundos),Timeout por enlace (segundos),Per-link timeout (seconds),Timeout per link (secondi)
+Todas,Todas,All,Tutte
+Todas las palabras,Todas las palabras,All words,Tutte le parole
+Todo el histórico,Todo el histórico,All history,Tutta la cronologia
+Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,No checks yet. Press Check links to start.,Ancora nessuna verifica. Premi Verifica link per iniziare.,Todavía no hay comprobaciones. Pulsá Comprobar enlaces para empezar.
+Todos,Todos,All,Tutti
+Total,Total,Total,Totale
+Total:,Total:,Total:,Totale:
+URL,URL,URL,URL
+URL copiada: %s,URL copiada: %s,URL copied: %s,URL copiato: %s
+URL inválida,URL inválida,Invalid URL,URL non valido
+Una URL por línea,Una URL por línea,One URL per line,Un URL per riga
+Última,Última,Last,Ultima
+Varias,Varias,Multiple,Multiple
+Ver release,Ver release,View release,Vedi release
+Verificaciones en paralelo,Verificaciones en paralelo,Parallel checks,Verifiche in parallelo
+Vista grilla,Vista grilla,Grid view,Vista griglia
+Vista lista,Vista lista,List view,Vista elenco
+Volver a comprobar,Volver a comprobar,Re-check,Verifica di nuovo
+Válido,Válido,Working,Funzionante
+Válidos,Válidos,Valid,Validi
+Válidos: %d,Válidos: %d,Valid: %d,Validi: %d
+Veces,Veces,Times,Volte
+Ya existe: %s,Ya existe: %s,Already exists: %s,Esiste già: %s
+¿Borrar %d capturas huérfanas?,¿Borrar %d capturas huérfanas?,Delete %d orphan captures?,Eliminare %d catture orfane?
+¿Eliminar «%s» para siempre?,¿Eliminar «%s» para siempre?,Delete “%s” forever?,Eliminare «%s» per sempre?
+¿Reanudar escaneo de %d enlaces?,¿Reanudar escaneo de %d enlaces?,Resume scanning %d links?,Riprendere la scansione di %d link?
+¿Restaurar el catálogo desde la copia de seguridad?,¿Restaurar el catálogo desde la copia de seguridad?,Restore the catalogue from the backup?,Ripristinare il catalogo dal backup?
+"Abrir el dashboard","Abrir el dashboard","Open the dashboard",Apri il dashboard
+Cambio,Change,Change,Modifica
+Cambios desde la última vez,Cambios desde la última vez,Changes since last time,Modifiche dall'ultima volta
+Cambios exportados.,Cambios exportados.,Changes exported.,Modifiche esportate.
+cambió,cambió,changed,modificato
+"El historial de cambios llega hasta %s.","El historial de cambios llega hasta %s.","The change history goes back to %s.",La cronologia delle modifiche arriva fino a %s.
+Detalle,Detalle,Detail,Dettaglio
+Exportar cambios,Exportar cambios,Export changes,Esporta modifiche
+Filtrar en la lista,Filtrar en la lista,Filter in the list,Filtra nell'elenco
+"Ha cambiado desde la última vez y ahora está caído.","Ha cambiado desde la última vez y ahora está caído.","It changed since last time and is now down.",È cambiato dall'ultima volta e ora non è raggiungibile.
+"Ha cambiado desde la última vez y ahora está válido.","Ha cambiado desde la última vez y ahora está válido.","It changed since last time and is now up.",È cambiato dall'ultima volta e ora è funzionante.
+"Ha cambiado desde la última vez.","Ha cambiado desde la última vez.","It changed since last time.",È cambiato dall'ultima volta.
+Sin cambios,Sin cambios,No changes,Nessuna modifica
+"%d nuevos caídos","%d nuevos caídos","%d newly down",%d nuovi non raggiungibili
+"%d nuevo caído","%d nuevo caído","%d newly down",%d nuovo non raggiungibile
+%d recuperados,%d recuperados,%d recovered,%d recuperati
+"%d recuperado","%d recuperado","%d recovered",%d recuperato
+%d reubicados,%d reubicados,%d moved,%d spostati
+"%d reubicado","%d reubicado","%d moved",%d spostato
+"%s → %s",%s → %s,%s → %s,%s → %s
+Sin cambios desde la última vez,Sin cambios desde la última vez,No changes since last time,Nessuna modifica dall'ultima volta
+Viendo cambios…,Viendo cambios…,Viewing changes…,Visualizzazione modifiche…
+No se pudo guardar el historial de cambios.,No se pudo guardar el historial de cambios.,Could not save the change history.,Impossibile salvare la cronologia delle modifiche.
+1 seleccionado,1 seleccionado,1 selected,1 selezionato
+%d seleccionados,%d seleccionados,%d selected,%d selezionati
+%d URLs copiadas,%d URLs copiadas,%d URLs copied,%d URL copiati
+%d enlaces eliminados,%d enlaces eliminados,%d links deleted,%d link eliminati
+¿Eliminar %d enlaces para siempre?,¿Eliminar %d enlaces para siempre?,Delete %d links for good?,Eliminare %d link per sempre?
+0 seleccionados,0 seleccionados,0 selected,0 selezionati
+Seleccionar lo que veo,Seleccionar lo que veo,Select what I see,Seleziona ciò che vedo
+Comprobar seleccionados,Comprobar seleccionados,Check selected,Verifica selezionati
+Copiar URLs,Copiar URLs,Copy URLs,Copia URL
+Exportar selección,Exportar selección,Export selection,Esporta selezione
+Eliminar seleccionados,Eliminar seleccionados,Delete selected,Elimina selezionati
+Quitar selección,Quitar selección,Clear selection,Annulla selezione
+"Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Selected: Ctrl+C copies, Ctrl+Enter checks, Shift+Delete deletes.","Selezionato: Ctrl+C copia, Ctrl+Invio verifica, Maiusc+Canc elimina."
+Actualizar URL,Actualizar URL,Update URL,Aggiorna URL
+Actualizar,Actualizar,Update,Aggiorna
+Enlaces reubicados,Enlaces reubicados,Relocated links,Link spostati
+Actualizar todos,Actualizar todos,Update all,Aggiorna tutti
+Origen,Origen,Origin,Origine
+Destino,Destino,Destination,Destinazione
+Comprobado,Comprobado,Checked,Verificato
+Actualizar URL a la nueva,Actualizar URL a la nueva,Update URL to the new one,Aggiorna URL a quella nuova
+movido,movido,moved,spostato
+No hay una redirección que actualizar.,No hay una redirección que actualizar.,There is no redirect to update.,Non c'è alcun reindirizzamento da aggiornare.
+La URL nueva es la misma.,La URL nueva es la misma.,The new URL is the same.,Il nuovo URL è lo stesso.
+Redirige a: %s,Redirige a: %s,Redirects to: %s,Reindirizza a: %s
+Solo cambia el dominio o el https: %s,Solo cambia el dominio o el https: %s,Only the domain or https changed: %s,Cambia solo il dominio o https: %s
+Cambiar la URL de %s por %s.,Cambiar la URL de %s por %s.,Change the URL of %s to %s.,Cambiare l'URL di %s in %s.
+¿Actualizar «%s» a %s?,¿Actualizar «%s» a %s?,Update «%s» to %s?,Aggiornare «%s» a %s?
+¿Actualizar la URL de %d enlaces a la nueva?,¿Actualizar la URL de %d enlaces a la nueva?,Update the URL of %d links to the new one?,Aggiornare l'URL di %d link a quella nuova?
+1 URL actualizada,1 URL actualizada,1 URL updated,1 URL aggiornato
+%d URLs actualizadas,%d URLs actualizadas,%d URLs updated,%d URL aggiornati
+Instantáneas diarias,Instantáneas diarias,Daily snapshots,Istantanee giornaliere
+"Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga.","Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga.","How many days of daily snapshot are kept for the dashboard chart. Anything older is purged.","Quanti giorni di istantanea giornaliera vengono conservati per il grafico del dashboard. Ciò che supera questo limite viene eliminato."
+Estado del catálogo por día,Estado del catálogo por día,Catalogue state per day,Stato del catalogo per giorno
+Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial.,Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial.,No daily snapshots yet: the chart shows the state changes from history.,Ancora nessuna istantanea giornaliera: il grafico mostra i cambi di stato della cronologia.
+Purgar instantáneas antiguas…,Purgar instantáneas antiguas…,Purge old snapshots…,Elimina istantanee vecchie…
+No se pudieron purgar las instantáneas.,No se pudieron purgar las instantáneas.,Could not purge the snapshots.,Impossibile eliminare le istantanee.
+No hay instantáneas más antiguas de %d días.,No hay instantáneas más antiguas de %d días.,There are no snapshots older than %d days.,Non ci sono istantanee più vecchie di %d giorni.
+Instantáneas antiguas eliminadas: %d,Instantáneas antiguas eliminadas: %d,Old snapshots deleted: %d,Istantanee vecchie eliminate: %d
+Sin datos: ese día no hubo Instantánea.,Sin datos: ese día no hubo Instantánea.,No data: no snapshot that day.,Nessun dato: quel giorno non c'era alcuna istantanea.
+Cambios de estado: %d,Cambios de estado: %d,State changes: %d,Cambi di stato: %d
+"Desde el día anterior: %+d válidos, %+d caídos","Desde el día anterior: %+d válidos, %+d caídos","Since the previous day: %+d valid, %+d broken","Rispetto al giorno precedente: %+d validi, %+d non raggiungibili"
+"Almacenamiento: %s · %d enlaces · %d estados · %d capturas · %s en disco","Almacenamiento: %s · %d enlaces · %d estados · %d capturas · %s en disco","Storage: %s · %d links · %d states · %d screenshots · %s on disk",Archiviazione: %s · %d link · %d stati · %d catture · %s su disco
+"%d B","%d B","%d B",%d B
+"%.1f KB","%.1f KB","%.1f KB",%.1f KB
+"%.1f MB","%.1f MB","%.1f MB",%.1f MB
+"No se pudo migrar al almacenamiento elegido: %s","No se pudo migrar al almacenamiento elegido: %s","Could not migrate to the chosen storage: %s",Non è stato possibile migrare allo spazio di archiviazione scelto: %s
+"%s: %d de %d","%s: %d de %d","%s: %d of %d","%s: %d di %d"
+"recuentos distintos","recuentos distintos","counts differ",conteggi diversi
+"Se copiaron los datos, pero no se pudo guardar la preferencia: %s","Se copiaron los datos, pero no se pudo guardar la preferencia: %s","The data was copied, but the preference could not be saved: %s","I dati sono stati copiati, ma non è stato possibile salvare la preferenza: %s"
+"Datos copiados a %s. Reinicia para usarlos.","Datos copiados a %s. Reinicia para usarlos.","Data copied to %s. Restart to use it.","Dati copiati in %s. Riavvia per utilizzarli.","Datos copiados a %s. Reiniciá para usarlos."
+"Almacenamiento","Almacenamiento","Storage",Archiviazione
+"Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json.","Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json.","Folder holding the data and the screenshots. Read from user://almacenamiento.json.",Cartella in cui risiedono i dati e le catture. Si legge da user://almacenamiento.json.
+"Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Pick another folder and copy everything there. It applies after a restart.","Scegli un'altra cartella e copia tutto lì. Si applica al riavvio.","Elegí otra carpeta y copiá todo ahí. Se aplica al reiniciar."
+"Cambiar carpeta...","Cambiar carpeta...","Change folder...",Cambia cartella...
+"Abrir carpeta","Abrir carpeta","Open folder",Apri cartella
+"Lo que ocupa el almacenamiento ahora mismo.","Lo que ocupa el almacenamiento ahora mismo.","What the storage is using right now.",Quanto occupa l'archiviazione in questo momento.
+"Elige la carpeta de datos","Elige la carpeta de datos","Choose the data folder","Scegli la cartella dei dati","Elegí la carpeta de datos"
+"%s\nOrigen: %s","%s\nOrigen: %s","%s\nSource: %s","%s\nOrigine: %s"
+"El modo «%s» todavía no está disponible.","El modo «%s» todavía no está disponible.","The «%s» mode is not available yet.",La modalità «%s» non è ancora disponibile.
+"Los datos ahora van en %s. Reinicia para usarlos.","Los datos ahora van en %s. Reinicia para usarlos.","Your data now goes in %s. Restart to use it.","Ora i dati vanno in %s. Riavvia per utilizzarli.","Los datos ahora van en %s. Reiniciá para usarlos."
+"Cómo se guardan los datos","Cómo se guardan los datos","How the data is stored",Come vengono salvati i dati
+"Ficheros sueltos","Ficheros sueltos","Separate files","File separati","Archivos sueltos"
+"Un único fichero","Un único fichero","A single file","Un unico file","Un único archivo"
+"Base de datos","Base de datos","Database",Database
+"Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Separate files: one JSON per thing. A single file: everything together, one write. Database: everything in one SQLite file.","File separati: un JSON per ogni cosa. Un unico file: tutto insieme, un unico salvataggio. Database: tutto in un file SQLite.","Archivos sueltos: un JSON por cosa. Un único archivo: todo junto, un solo guardado. Base de datos: todo en un archivo SQLite."

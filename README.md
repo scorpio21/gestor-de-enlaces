@@ -33,7 +33,7 @@
 - 🖱️ **Apertura directa** — clic en un enlace lo abre en el navegador del sistema.
 - 📊 **Progreso en tiempo real** — contador de verificaciones completadas.
 - 🗂️ **Ordenación por columnas** — pulsa las cabeceras de la lista para ordenar por fecha, nombre, imagen o estado (el criterio queda persistido, `#17`).
-- 🌐 **Internacionalización ES/EN/es-AR** — selector de idioma con banderas en Preferencias (español, inglés y español de Argentina); todos los textos de la UI se traducen al arrancar según tu elección (`#30`, `#80`).
+- 🌐 **Internacionalización ES/EN/es-AR/IT** — selector de idioma con banderas en Preferencias (español, inglés, español de Argentina e italiano); todos los textos de la UI se traducen al arrancar según tu elección (`#30`, `#80`, `#81`).
 - 🎨 **Tema claro/oscuro/automático** — selector en Preferencias; el modo **Automático** detecta el tema del sistema y lo sigue en vivo (`#19`, `#46`).
 - 🗂️ **Diálogos de archivo nativos** — elegir imagen, importar/exportar catálogo, informes y diagnóstico abren el diálogo nativo del sistema (`#38`).
 
@@ -201,7 +201,7 @@ gestor-de-enlaces/
 │   ├── run_smoke.sh         # Arranca el binario exportado (-- --smoke)
 │   └── test_<area>.gd       # 66 suites SceneTree (TESTS OK / quit(0))
 ├── locale/
-│   └── gestor_es_en.csv     # Traducciones ES/EN/es-AR (clave, ES, EN, ES-AR)
+│   └── gestor_es_en.csv     # Traducciones ES/EN/IT/es-AR (clave, ES, EN, IT, +ES-AR)
 ├── addons/
 │   ├── godot_ai/            # Plugin de editor Godot AI (MCP, tercero MIT)
 │   └── godot-sqlite/        # Backend SQLite (tercero MIT) para el modo Base de datos
@@ -230,7 +230,7 @@ gestor-de-enlaces/
 - [x] **Icono propio y metadatos 0.3.0** — Assets/icon (svg/png/ico/icns) generado por script (`#29`)
 - [x] **Empaquetado y CI** — presets Windows/Linux/macOS + GitHub Actions que testea y exporta los 3 bundles (#26)
 - [x] **Ordenación por columnas** — cabeceras de la lista con criterio persistido (`#17`)
-- [x] **Internacionalización ES/EN/es-AR** — selector de idioma con banderas y `tr()` en toda la UI (`#30`, `#80`)
+- [x] **Internacionalización ES/EN/es-AR/IT** — selector de idioma con banderas y `tr()` en toda la UI (`#30`, `#80`, `#81`)
 - [x] **Etiquetas personalizadas** — campo con sugerencias por uso frecuente y filtro combinado por etiqueta (`#42`)
 - [x] **Barra de estado con colores** — contadores Rotos/Activos/Total en rojo, verde y azul
 - [x] **Filtros avanzados** — búsqueda AND/OR, código HTTP y última comprobación por días, combinables; con **presets** guardables y aplicables (`#44`)

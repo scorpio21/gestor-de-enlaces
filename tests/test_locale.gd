@@ -24,8 +24,8 @@ func _initialize() -> void:
 
 func _a_cabecera(filas: Array) -> void:
 	var cab: Array = filas[0]
-	_check(cab.size() == 4 and cab[0] == "keys" and cab[1] == "es" and cab[2] == "en" and cab[3] == "es_AR", \
-		"la cabecera del CSV es keys,es,en,es_AR")
+	_check(cab.size() == 5 and cab[0] == "keys" and cab[1] == "es" and cab[2] == "en" and cab[3] == "it" and cab[4] == "es_AR", \
+		"la cabecera del CSV es keys,es,en,it,es_AR")
 
 
 func _a_integridad(filas: Array) -> void:
@@ -33,19 +33,24 @@ func _a_integridad(filas: Array) -> void:
 	var celdas_vacias := 0
 	var desbordes := 0
 	var redundantes := 0
+	var es_ar_vacias := 0
 	for i in range(1, filas.size()):
 		var f: Array = filas[i]
-		if f.size() < 3 or f[0].is_empty() or f[1].is_empty() or f[2].is_empty():
+		if f.size() < 4 or f[0].is_empty() or f[1].is_empty() or f[2].is_empty() or f[3].is_empty():
 			celdas_vacias += 1
-		if f.size() > 4:
+		if f.size() > 5:
 			desbordes += 1
 		if repetidas.has(f[0]):
 			_check(false, "clave duplicada: %s" % f[0])
 		repetidas[f[0]] = true
-		if f.size() == 4 and not f[3].is_empty() and f[3] == f[1]:
-			redundantes += 1
-	_check(celdas_vacias == 0, "todas las filas tienen keys,es,en no vacías")
+		if f.size() == 5:
+			if f[4].is_empty():
+				es_ar_vacias += 1
+			elif f[4] == f[1]:
+				redundantes += 1
+	_check(celdas_vacias == 0, "todas las filas tienen keys,es,en,it no vacías")
 	_check(desbordes == 0, "ninguna fila supera las columnas de la cabecera")
+	_check(es_ar_vacias == 0, "los overrides es_AR no quedan vacíos (se omiten si no aportan)")
 	_check(redundantes == 0, "todo override es_AR aporta algo distinto al es")
 	_check(filas.size() > 1, "el CSV tiene filas de traducción")
 
@@ -75,6 +80,9 @@ func _c_idioma() -> void:
 	_check(IdiomaScript.aplicar("", "es-ar") == "es_AR", "aplicar autodetecta es-ar con guion")
 	_check(IdiomaScript.aplicar("", "es_MX") == "es", "aplicar deja el resto de LatAm en es")
 	_check(IdiomaScript.aplicar("es_AR", "en_US") == "es_AR", "la config es_AR manda sobre el SO")
+	_check(IdiomaScript.aplicar("", "it_IT") == "it", "aplicar autodetecta it_IT")
+	_check(IdiomaScript.aplicar("", "it-it") == "it", "aplicar autodetecta it-it con guion")
+	_check(IdiomaScript.aplicar("it", "es_ES") == "it", "la config it manda sobre el SO")
 	IdiomaScript.cargar_traducciones()
 	TranslationServer.set_locale("es")
 	_check(tr("Nombre") == "Nombre", "la carga manual registra traducciones es")
@@ -85,6 +93,9 @@ func _c_idioma() -> void:
 	_check(tr("Ficheros sueltos") == "Archivos sueltos", "la carga manual registra overrides es_AR")
 	_check(tr("Nombre") == "Nombre", "es_AR cae a es cuando no hay override")
 	_check(tr("%d enlaces") == "%d enlaces", "el template cae a es, no a en")
+	TranslationServer.set_locale("it")
+	_check(tr("Nombre") == "Nome", "la carga manual registra traducciones it")
+	_check(tr("%d enlaces") == "%d link", "el template %d enlaces se traduce en it")
 	TranslationServer.set_locale("es")
 	TranslationServer.clear()
 	IdiomaScript.cargar_importadas()
@@ -93,6 +104,8 @@ func _c_idioma() -> void:
 	TranslationServer.set_locale("es_AR")
 	_check(tr("Ficheros sueltos") == "Archivos sueltos", "el fallback importado conserva los overrides es_AR")
 	_check(tr("Nombre") == "Nombre", "el fallback importado tambien cae a es")
+	TranslationServer.set_locale("it")
+	_check(tr("Nombre") == "Nome", "el fallback importado registra el italiano completo")
 	TranslationServer.set_locale("es")
 
 

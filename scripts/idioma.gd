@@ -2,7 +2,7 @@ extends RefCounted
 
 const BASE := "res://locale/gestor_es_en"
 const RUTA_CSV := BASE + ".csv"
-const IDIOMAS := ["es", "en", "es_AR"]
+const IDIOMAS := ["es", "en", "es_AR", "it"]
 const IDIOMA_BASE := "es"
 
 
@@ -12,6 +12,8 @@ static func aplicar(guardado: String, locale_so: String) -> String:
 	var locale := locale_so.replace("-", "_").to_lower()
 	if locale.begins_with("en"):
 		return "en"
+	if locale.begins_with("it"):
+		return "it"
 	if locale == "es_ar":
 		return "es_AR"
 	return IDIOMA_BASE
