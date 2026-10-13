@@ -8,7 +8,7 @@ const AlmacenJsonScript := preload("res://scripts/almacen_json.gd")
 const AlmacenUnoScript := preload("res://scripts/almacen_uno.gd")
 const AlmacenBdScript := preload("res://scripts/almacen_bd.gd")
 
-const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"]]
+const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"], ["es_AR", "Español (Argentina)", "ar"]]
 
 @onready var paralelismo_spin: SpinBox = %Paralelismo
 @onready var timeout_spin: SpinBox = %Timeout
@@ -35,9 +35,10 @@ var config_ruta := ""
 
 func _ready() -> void:
 	for i in IDIOMAS.size():
+		var ruta := "res://Assets/banderas/%s.svg" % IDIOMAS[i][2]
 		var icono: Texture2D = null
-		if FileAccess.file_exists("res://Assets/banderas/%s.svg" % IDIOMAS[i][2]):
-			icono = load("res://Assets/banderas/%s.svg" % IDIOMAS[i][2])
+		if ResourceLoader.exists(ruta):
+			icono = load(ruta)
 		idioma_opcion.add_icon_item(icono, IDIOMAS[i][1], i)
 	for i in AlmacenControllerScript.MODOS_SELECCION.size():
 		almacen_modo.set_item_metadata(i, str(AlmacenControllerScript.MODOS_SELECCION[i]))

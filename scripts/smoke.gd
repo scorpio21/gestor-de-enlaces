@@ -9,6 +9,7 @@ const InstantaneaStoreScript := preload("res://scripts/instantanea_store.gd")
 const AlmacenControllerScript := preload("res://scripts/almacen_controller.gd")
 const AlmacenJsonScript := preload("res://scripts/almacen_json.gd")
 const AlmacenScript := preload("res://scripts/almacen.gd")
+const IdiomaScript := preload("res://scripts/idioma.gd")
 
 const MARCA := "GestorAO smoke OK"
 const ARGUMENTO := "--smoke"
@@ -36,6 +37,7 @@ const RECURSOS := [
 	"res://Assets/icon/flag_gb.svg",
 	"res://Assets/banderas/es.svg",
 	"res://Assets/banderas/gb.svg",
+	"res://Assets/banderas/ar.svg",
 ]
 const STORES := [
 	["estado", EstadoStoreScript],
@@ -72,6 +74,7 @@ static func ejecutar(escenas: Array = ESCENAS, recursos: Array = RECURSOS, store
 	fallos.append_array(_escenas(escenas))
 	fallos.append_array(_stores(stores))
 	fallos.append_array(_almacen())
+	fallos.append_array(_idiomas())
 	var lineas: Array = []
 	for fallo in fallos:
 		lineas.append("SMOKE FALLO: %s" % fallo)
@@ -97,6 +100,24 @@ static func _almacen() -> Array:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("%s/colas.json" % BASE_SMOKE_ALMACEN))
 	if not prueba.abrir() or not prueba.guardar_cola(["https://example.com/"]) or prueba.cola() != ["https://example.com/"]:
 		fallos.append("el backend no escribe y relee una cola")
+	return fallos
+
+
+static func _idiomas() -> Array:
+	# El .csv crudo no va en el pck (por eso el fallback a los .translation
+	# importados). Dentro del binario exportado es donde se nota: en el editor
+	# cargar_traducciones() lee el CSV y pasaria siempre. Con un locale sin
+	# traduccion, tr() devuelve la clave en espanol y esto lo caza.
+	var fallos: Array = []
+	var anterior := TranslationServer.get_locale()
+	IdiomaScript.cargar_traducciones()
+	TranslationServer.set_locale("en")
+	if TranslationServer.translate("Nombre") != "Name":
+		fallos.append("las traducciones no cargan dentro del pck (falta el .translation importado)")
+	TranslationServer.set_locale("es_AR")
+	if TranslationServer.translate("Ficheros sueltos") != "Archivos sueltos":
+		fallos.append("falta la traduccion es_AR dentro del pck")
+	TranslationServer.set_locale(anterior)
 	return fallos
 
 

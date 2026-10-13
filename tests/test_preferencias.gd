@@ -30,6 +30,7 @@ func _arrancar() -> void:
 		and ventana.get_node("%IntervaloAuto").get_selected_id() == 15, "abrir precarga auto_abrir e intervalo")
 	_check(ventana.get_node("%Tema").get_selected_id() == 1, "abrir precarga el tema")
 	_check(ventana.get_node("%Idioma").get_selected_id() == 0, "abrir precarga el idioma es")
+	_check(ventana.get_node("%Idioma").get_item_count() == 3, "el selector de idioma ofrece los tres idiomas (#80)")
 	_check(ventana.get_node("%ReintentarTransitorios").button_pressed == true \
 		and ventana.get_node("%RedSinComprobar").button_pressed == true, "abrir deja los reintentos y el «sin comprobar» activados por defecto (#54)")
 	_check(ventana.get_node("%AceptarCertificados").button_pressed == false, "abrir deja los certificados TLS no aceptados por defecto (#56)")
@@ -77,6 +78,12 @@ func _arrancar() -> void:
 	ventana.get_node("%InstantaneasDias").value = 5
 	ventana.get_node("%BotonGuardar").pressed.emit()
 	_check(_aplicado != null and _aplicado[9] == 30, "el spinbox no deja pedir menos de 30 días de instantáneas (#60)")
+
+	ventana.abrir(3, 10.0, true, 0, "oscuro", "es_AR")
+	await process_frame
+	_check(ventana.get_node("%Idioma").get_selected_id() == 2, "abrir precarga el idioma es_AR (#80)")
+	ventana.get_node("%BotonGuardar").pressed.emit()
+	_check(_aplicado != null and _aplicado[5] == "es_AR", "guardar emite el idioma es_AR (#80)")
 
 	ventana.free()
 	await _cambio_modo()

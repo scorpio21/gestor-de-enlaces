@@ -1,32 +1,59 @@
 extends RefCounted
 
-const IDIOMAS := ["es", "en"]
+const BASE := "res://locale/gestor_es_en"
+const RUTA_CSV := BASE + ".csv"
+const IDIOMAS := ["es", "en", "es_AR"]
+const IDIOMA_BASE := "es"
 
 
 static func aplicar(guardado: String, locale_so: String) -> String:
 	if guardado in IDIOMAS:
 		return guardado
-	var prefijo := locale_so.to_lower().substr(0, 2)
-	return "en" if prefijo == "en" else "es"
+	var locale := locale_so.replace("-", "_").to_lower()
+	if locale.begins_with("en"):
+		return "en"
+	if locale == "es_ar":
+		return "es_AR"
+	return IDIOMA_BASE
 
 
 static func cargar_traducciones() -> void:
-	var filas := _leer_csv("res://locale/gestor_es_en.csv")
-	if filas.size() < 2:
+	var filas: Array = []
+	if FileAccess.file_exists(RUTA_CSV):
+		filas = _leer_csv(RUTA_CSV)
+	if filas.size() >= 2:
+		_cargar_columnas(filas)
 		return
-	var es := Translation.new()
-	es.locale = "es"
-	var en := Translation.new()
-	en.locale = "en"
-	for i in range(1, filas.size()):
-		var f: Array = filas[i]
-		if f.size() < 3:
+	cargar_importadas()
+
+
+static func _cargar_columnas(filas: Array) -> void:
+	var cabecera: Array = filas[0]
+	for col in range(1, cabecera.size()):
+		var locale := str(cabecera[col]).strip_edges()
+		if locale.is_empty():
 			continue
-		es.add_message(f[0], f[1])
-		if not f[2].is_empty():
-			en.add_message(f[0], f[2])
-	TranslationServer.add_translation(es)
-	TranslationServer.add_translation(en)
+		var traduccion := Translation.new()
+		traduccion.locale = locale
+		for i in range(1, filas.size()):
+			var f: Array = filas[i]
+			if f.size() <= col:
+				continue
+			var valor := str(f[col])
+			if not valor.is_empty():
+				traduccion.add_message(str(f[0]), valor)
+		TranslationServer.add_translation(traduccion)
+
+
+# El .csv crudo no viaja en el pck: con export_filter="all_resources" solo entran
+# recursos, y del .csv queda unicamente el .translation que genera el importador.
+# En el editor se lee el .csv (fuente de verdad); en el binario exportado se
+# cargan los .translation importados, que si van empaquetados.
+static func cargar_importadas() -> void:
+	for idioma in IDIOMAS:
+		var ruta := "%s.%s.translation" % [BASE, idioma]
+		if ResourceLoader.exists(ruta):
+			TranslationServer.add_translation(load(ruta))
 
 
 static func _leer_csv(path: String) -> Array:

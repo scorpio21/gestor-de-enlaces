@@ -1,4 +1,4 @@
-keys,es,en
+keys,es,en,es_AR
 %d enlaces,%d enlaces,%d links
 "%d importados, %d omitidos.","%d importados, %d omitidos.","%d imported, %d skipped."
 %d inválidas ignoradas.,%d inválidas ignoradas.,%d invalid ignored.
@@ -16,7 +16,7 @@ Activos:,Activos:,Working:
 Agregar,Agregar,Add
 Agregar enlace,Agregar enlace,Add link
 Agregar varias URLs,Agregar varias URLs,Add multiple URLs
-Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Add links or import a catalog to see its statistics here.
+Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Add links or import a catalog to see its statistics here.,Agregá enlaces o importá un catálogo para ver acá sus estadísticas.
 Auto-escaneo,Auto-escaneo,Auto-scan
 Automático,Automático,Automatic
 Bajar,Bajar,Move down
@@ -135,7 +135,7 @@ No existe el dominio,No existe el dominio,Domain does not exist
 No existe ese filtro.,No existe ese filtro.,That filter does not exist.
 No hay capturas huérfanas.,No hay capturas huérfanas.,No orphan captures.
 No hay copia de seguridad disponible.,No hay copia de seguridad disponible.,No backup available.
-No se añadió ningún enlace.,No se añadió ningún enlace.,No link was added.
+No se añadió ningún enlace.,No se añadió ningún enlace.,No link was added.,No se agregó ningún enlace.
 No se encontró el enlace.,No se encontró el enlace.,Link not found.
 No se pudo cargar la imagen.,No se pudo cargar la imagen.,Could not load the image.
 No se pudo comprobar actualizaciones.,No se pudo comprobar actualizaciones.,Could not check for updates.
@@ -159,8 +159,8 @@ Oscuro,Oscuro,Dark
 "Ordenar por %s","Ordenar por %s","Sort by %s"
 Otro,Otro,Other
 Parche,Parche,Patch
-Pasa el ratón por una barra para ver el detalle.,Pasa el ratón por una barra para ver el detalle.,Hover a bar for details.
-Pega al menos una URL.,Pega al menos una URL.,Paste at least one URL.
+Pasa el ratón por una barra para ver el detalle.,Pasa el ratón por una barra para ver el detalle.,Hover a bar for details.,Pasá el mouse por una barra para ver el detalle.
+Pega al menos una URL.,Pega al menos una URL.,Paste at least one URL.,Pegá al menos una URL.
 Por categoría,Por categoría,By category
 Por host (problemáticos),Por host (problemáticos),By host (troubled)
 Preferencias,Preferencias,Preferences
@@ -178,7 +178,7 @@ Restaurar copia,Restaurar copia,Restore backup
 Restaurar copia…,Restaurar copia…,Restore backup…
 Rotos:,Rotos:,Broken:
 Salir,Salir,Quit
-Se añadieron %d enlaces.,Se añadieron %d enlaces.,%d links added.
+Se añadieron %d enlaces.,Se añadieron %d enlaces.,%d links added.,Se agregaron %d enlaces.
 Servidor,Servidor,Server
 Sin comprobaciones todavía,Sin comprobaciones todavía,No checks yet
 Sin comprobar,Sin comprobar,Not checked
@@ -193,7 +193,7 @@ Timeout por enlace (segundos),Timeout por enlace (segundos),Per-link timeout (se
 Todas,Todas,All
 Todas las palabras,Todas las palabras,All words
 Todo el histórico,Todo el histórico,All history
-Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,No checks yet. Press Check links to start.
+Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,No checks yet. Press Check links to start.,Todavía no hay comprobaciones. Pulsá Comprobar enlaces para empezar.
 Todos,Todos,All
 Total,Total,Total
 Total:,Total:,Total:
@@ -290,19 +290,19 @@ Cambios de estado: %d,Cambios de estado: %d,State changes: %d
 "%s: %d de %d","%s: %d de %d","%s: %d of %d"
 "recuentos distintos","recuentos distintos","counts differ"
 "Se copiaron los datos, pero no se pudo guardar la preferencia: %s","Se copiaron los datos, pero no se pudo guardar la preferencia: %s","The data was copied, but the preference could not be saved: %s"
-"Datos copiados a %s. Reinicia para usarlos.","Datos copiados a %s. Reinicia para usarlos.","Data copied to %s. Restart to use it."
+"Datos copiados a %s. Reinicia para usarlos.","Datos copiados a %s. Reinicia para usarlos.","Data copied to %s. Restart to use it.","Datos copiados a %s. Reiniciá para usarlos."
 "Almacenamiento","Almacenamiento","Storage"
 "Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json.","Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json.","Folder holding the data and the screenshots. Read from user://almacenamiento.json."
-"Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Pick another folder and copy everything there. It applies after a restart."
+"Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Pick another folder and copy everything there. It applies after a restart.","Elegí otra carpeta y copiá todo ahí. Se aplica al reiniciar."
 "Cambiar carpeta...","Cambiar carpeta...","Change folder..."
 "Abrir carpeta","Abrir carpeta","Open folder"
 "Lo que ocupa el almacenamiento ahora mismo.","Lo que ocupa el almacenamiento ahora mismo.","What the storage is using right now."
-"Elige la carpeta de datos","Elige la carpeta de datos","Choose the data folder"
+"Elige la carpeta de datos","Elige la carpeta de datos","Choose the data folder","Elegí la carpeta de datos"
 "%s\nOrigen: %s","%s\nOrigen: %s","%s\nSource: %s"
 "El modo «%s» todavía no está disponible.","El modo «%s» todavía no está disponible.","The «%s» mode is not available yet."
-"Los datos ahora van en %s. Reinicia para usarlos.","Los datos ahora van en %s. Reinicia para usarlos.","Your data now goes in %s. Restart to use it."
+"Los datos ahora van en %s. Reinicia para usarlos.","Los datos ahora van en %s. Reinicia para usarlos.","Your data now goes in %s. Restart to use it.","Los datos ahora van en %s. Reiniciá para usarlos."
 "Cómo se guardan los datos","Cómo se guardan los datos","How the data is stored"
-"Ficheros sueltos","Ficheros sueltos","Separate files"
-"Un único fichero","Un único fichero","A single file"
+"Ficheros sueltos","Ficheros sueltos","Separate files","Archivos sueltos"
+"Un único fichero","Un único fichero","A single file","Un único archivo"
 "Base de datos","Base de datos","Database"
-"Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Separate files: one JSON per thing. A single file: everything together, one write. Database: everything in one SQLite file."
+"Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Separate files: one JSON per thing. A single file: everything together, one write. Database: everything in one SQLite file.","Archivos sueltos: un JSON por cosa. Un único archivo: todo junto, un solo guardado. Base de datos: todo en un archivo SQLite."
