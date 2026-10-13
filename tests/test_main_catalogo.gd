@@ -267,14 +267,14 @@ func _arrancar() -> void:
 	main_script._ui_refrescar()
 	await process_frame
 	var fila: Button = main_script._ui_filas_visibles()[0]
-	main_script._ui_eliminar_fila(fila)
-	main_script._ui_confirmar_borrado()
+	main_script._edicion.eliminar_fila(fila)
+	main_script._edicion.confirmar_borrado()
 	_check(main_script._entradas.size() == 1 and str(main_script._entradas[0].get("url")) == "https://b.test", "eliminar quita solo la fila elegida")
 	_check(FileAccess.file_exists(ProjectSettings.globalize_path(compartida)), "eliminar no borra una captura que sigue en uso (#62)")
 	_check(main.get_node("%Progreso").text == "Enlace eliminado", "eliminar informa en la barra")
 	await process_frame
-	main_script._ui_eliminar_fila(main_script._ui_filas_visibles()[0])
-	main_script._ui_confirmar_borrado()
+	main_script._edicion.eliminar_fila(main_script._ui_filas_visibles()[0])
+	main_script._edicion.confirmar_borrado()
 	_check(main_script._entradas.is_empty(), "eliminar la ultima entrada vacia el catalogo")
 	_check(not FileAccess.file_exists(ProjectSettings.globalize_path(compartida)), "eliminar la ultima referencia si borra la captura (#62)")
 

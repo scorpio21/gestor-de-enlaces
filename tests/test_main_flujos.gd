@@ -423,14 +423,14 @@ func _reubicar(main: Node, main_script) -> void:
 		)
 
 		# Cancelar no cambia nada
-		main_script._ui_cancelar_reubicar()
+		main_script._edicion.cancelar_reubicar()
 		main.get_node("%ConfirmarReubicar").hide()
 		_check(str(main_script._entradas[0].get("url")) == "https://viejo.test/foto.png", "cancelar no cambia la URL del catálogo (#59)")
 		_check(main_script._dialogos.pendientes_reubicar().is_empty(), "cancelar vacía la lista de pendientes (#59)")
 
 		# Confirmar actualiza de verdad
-		main_script._ui_pedir_reubicar(["https://viejo.test/foto.png"])
-		main_script._ui_confirmar_reubicar()
+		main_script._edicion.pedir_reubicar(["https://viejo.test/foto.png"])
+		main_script._edicion.confirmar_reubicar()
 		await process_frame
 		_check(str(main_script._entradas[0].get("url")) == "https://nuevo.test/foto.png", "confirmar guarda la URL nueva en el catálogo (#59)")
 		_check(str(main_script._entradas[0].get("nombre")) == "Foto", "confirmar no renombra el enlace (#59)")
@@ -446,10 +446,10 @@ func _reubicar(main: Node, main_script) -> void:
 		"plano.test/pagina.html": {"valido": true, "url_final": "https://final.test/otra.html"},
 		"viejo.test/guia.html": {"valido": true, "url_final": "https://final.test/login.html"},
 	}
-	main_script._ui_pedir_reubicar_lote(["https://nuevo.test/foto.png", "https://plano.test/pagina.html", "https://nieva.test/x.png"])
+	main_script._edicion.pedir_reubicar_lote(["https://nuevo.test/foto.png", "https://plano.test/pagina.html", "https://nieva.test/x.png"])
 	_check(main_script._dialogos.pendientes_reubicar() == ["https://nuevo.test/foto.png", "https://plano.test/pagina.html"], "el lote filtra lo que no se puede actualizar (#59)")
 	_check(str(main.get_node("%ConfirmarReubicar").dialog_text) == "¿Actualizar la URL de 2 enlaces a la nueva?", "el lote avisa del número de enlaces (#59)")
-	main_script._ui_confirmar_reubicar()
+	main_script._edicion.confirmar_reubicar()
 	await process_frame
 	_check(str(main_script._entradas[0].get("url")) == "https://final.test/foto.png", "el lote actualiza el primer enlace (#59)")
 	_check(str(main_script._entradas[1].get("url")) == "https://final.test/otra.html", "el lote actualiza el segundo enlace (#59)")
@@ -457,7 +457,7 @@ func _reubicar(main: Node, main_script) -> void:
 
 	# Una página de login no se ofrece como reubicación
 	main_script._estados = {"viejo.test/guia.html": {"valido": true, "url_final": "https://final.test/login.html"}}
-	main_script._ui_pedir_reubicar(["https://viejo.test/guia.html"])
+	main_script._edicion.pedir_reubicar(["https://viejo.test/guia.html"])
 	_check(main_script._dialogos.pendientes_reubicar().is_empty(), "un destino de login no se ofrece (#59)")
 	main_script._dialogos.cancelar_reubicar()
 

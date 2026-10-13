@@ -232,7 +232,7 @@ func _eliminar(main, s) -> void:
 	dialogo.canceled.emit()
 	_check(s._dialogos.pendientes_borrado().is_empty(), "al cancelar se olvida la lista pendiente")
 
-	s._ui_eliminar_fila(_fila(s, "a.test"))
+	s._edicion.eliminar_fila(_fila(s, "a.test"))
 	await process_frame
 	_check(dialogo.visible, "borrar desde la fila sigue pidiendo confirmacion")
 	_check(str(dialogo.dialog_text) == "¿Eliminar «A» para siempre?", "y en singular nombra la etiqueta de la fila")

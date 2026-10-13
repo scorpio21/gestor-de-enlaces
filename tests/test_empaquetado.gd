@@ -41,6 +41,7 @@ func _initialize() -> void:
 	_check(_navegacion_extraida(), "la navegacion entre vistas y paneles vive en navigation_controller, no en main.gd (#74)")
 	_check(_import_export_extraida(), "importar/exportar/informe/diagnostico viven en import_export_controller, no en main.gd (#74)")
 	_check(_scan_ui_extraida(), "el flujo de escaneo vive en scan_ui_controller, no en main.gd (#79)")
+	_check(_edicion_extraida(), "la edicion de filas vive en edicion_controller, no en main.gd (#79)")
 	_check(FileAccess.file_exists("res://tests/test_actualizador.gd"), "existe tests/test_actualizador.gd")
 	if _fallos == 0:
 		print("TESTS OK")
@@ -432,10 +433,46 @@ func _import_export_extraida() -> bool:
 func _main_no_secha() -> bool:
 	# #66 saco los dialogos (main.gd 1676); #74 saca el tema (1675), la
 	# comprobacion de actualizaciones (1618), la navegacion (1568) y la
-	# importacion/exportacion (1530); #79 saca el flujo de escaneo (1385).
-	# El techo baja a 1390 y obliga a seguir encogiendo main.gd con cada entrega.
+	# importacion/exportacion (1530); #79 saca el flujo de escaneo (1385) y la
+	# edicion de filas (1207). El techo baja a 1245 y obliga a seguir
+	# encogiendo main.gd con cada entrega.
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1390
+	return main.split("\n").size() <= 1245
+
+
+func _edicion_extraida() -> bool:
+	# #79: la edicion de filas (menu, reorden, historial, borrado, reubicacion,
+	# copiar y editar) vive en edicion_controller; main.gd solo cablea la fila y
+	# habla con el catalogo y los dialogos.
+	var main := _leer("res://scripts/main.gd")
+	if not main.contains("EdicionControllerScript") or not main.contains("_edicion."):
+		return false
+	var prohibidas := [
+		"func _ui_menu_fila",
+		"func _ui_mover_fila",
+		"func _ui_historial",
+		"func _ui_eliminar_fila",
+		"func _ui_pedir_borrado",
+		"func _ui_cancelar_borrado",
+		"func _ui_confirmar_borrado",
+		"func _borrar_entrada",
+		"func _ui_actualizar_url",
+		"func _ui_pedir_reubicar",
+		"func _ui_cancelar_reubicar",
+		"func _ui_confirmar_reubicar",
+		"func _actualizar_url_entrada",
+		"func _ui_copiar_url",
+		"func _ui_editar_fila",
+		"func _conectar_fila",
+	]
+	for prohibida in prohibidas:
+		if main.contains(prohibida):
+			return false
+	var ctrl := _leer("res://scripts/edicion_controller.gd")
+	return ctrl.contains("func conectar_fila(") and ctrl.contains("func mover_fila(") \
+		and ctrl.contains("func confirmar_borrado()") and ctrl.contains("func confirmar_reubicar()") \
+		and ctrl.contains("func editar_fila(") and ctrl.contains("func historial(") \
+		and FileAccess.file_exists("res://tests/test_edicion_controller.gd")
 
 
 func _scan_ui_extraida() -> bool:

@@ -45,6 +45,7 @@ const UpdateControllerScript := preload("res://scripts/update_controller.gd")
 const NavigationControllerScript := preload("res://scripts/navigation_controller.gd")
 const ImportExportControllerScript := preload("res://scripts/import_export_controller.gd")
 const ScanUiControllerScript := preload("res://scripts/scan_ui_controller.gd")
+const EdicionControllerScript := preload("res://scripts/edicion_controller.gd")
 
 @onready var lista: VBoxContainer = %ListaContenedor
 @onready var grilla: GridContainer = %GridContenedor
@@ -122,6 +123,7 @@ var _updates: RefCounted = null
 var _nav: RefCounted = null
 var _imp_exp: RefCounted = null
 var _scan_ui: RefCounted = null
+var _edicion: RefCounted = null
 
 
 func _ready() -> void:
@@ -137,10 +139,6 @@ func _ready() -> void:
 	busqueda.text_changed.connect(_ui_busqueda)
 	busqueda.text_submitted.connect(_ui_busqueda_enviada)
 	busqueda.focus_exited.connect(_ui_busqueda_guardar)
-	%ConfirmarBorrado.confirmed.connect(_ui_confirmar_borrado)
-	%ConfirmarBorrado.canceled.connect(_ui_cancelar_borrado)
-	%ConfirmarReubicar.confirmed.connect(_ui_confirmar_reubicar)
-	%ConfirmarReubicar.canceled.connect(_ui_cancelar_reubicar)
 	%ConfirmarLimpieza.confirmed.connect(_confirmar_limpieza)
 	%ConfirmarRestaurar.confirmed.connect(_confirmar_restaurar)
 	cab_nombre.pressed.connect(func() -> void: _ui_cabecera("nombre"))
@@ -150,7 +148,6 @@ func _ready() -> void:
 	ventana_agregar.guardado.connect(_on_enlace_guardado)
 	ventana_agregar.lote_guardado.connect(_on_lote_guardado)
 	ventana_agregar.editado.connect(_on_enlace_editado)
-	dashboard.actualizar_urls.connect(_ui_pedir_reubicar_lote)
 	dialogo_cambios.filtrar_pedido.connect(_cambios_filtrar_lista)
 	dialogo_cambios.dashboard_pedido.connect(_cambios_abrir_dashboard)
 	%BotonSelTodos.pressed.connect(_sel_todo)
@@ -205,6 +202,37 @@ func _ready() -> void:
 	timer_auto.timeout.connect(_scan_ui.auto_timer)
 	%BotonComprobar.pressed.connect(_scan_ui.iniciar)
 	dashboard.comprobar_ya.connect(_scan_ui.iniciar)
+	_edicion = EdicionControllerScript.new(
+		func() -> String: return _orden_columna,
+		func() -> Array: return _ui_filas_visibles(),
+		func() -> Array: return _entradas,
+		func() -> bool: return _guardar_datos(),
+		func() -> void: _cargar_datos(),
+		func() -> void: _ui_refrescar(),
+		func() -> void: _ui_aplicar_filtro(),
+		func() -> void: _ui_status(),
+		func() -> void: _seleccion_conservar(),
+		func(item) -> bool: return _fila_en_lista(item),
+		func() -> Array: return _sugerir_etiquetas(),
+		func() -> String: return ASSETS_BASE,
+		func() -> RefCounted: return _catalogo,
+		func() -> RefCounted: return _estado_store,
+		func() -> Dictionary: return _estados,
+		func() -> Array: return _borrados,
+		func() -> RefCounted: return _dialogos,
+		progreso,
+		dialogo_historial,
+		ventana_agregar,
+		%ConfirmarBorrado,
+		%ConfirmarReubicar,
+		Callable(self, "_sel_al_clic"),
+		Callable(_scan_ui, "recomprobar")
+	)
+	%ConfirmarBorrado.confirmed.connect(_edicion.confirmar_borrado)
+	%ConfirmarBorrado.canceled.connect(_edicion.cancelar_borrado)
+	%ConfirmarReubicar.confirmed.connect(_edicion.confirmar_reubicar)
+	%ConfirmarReubicar.canceled.connect(_edicion.cancelar_reubicar)
+	dashboard.actualizar_urls.connect(_edicion.pedir_reubicar_lote)
 	_presets_store = PresetsStoreScript.new(CONFIG_BASE, _almacen.para_stores())
 	_presets = _presets_store.cargar()
 	var cfg: Dictionary = _config_store.cargar()
@@ -574,7 +602,7 @@ func _ui_mostrar_lista(entradas: Array) -> void:
 		var item: Button = _lista.pool_tomar()
 		if item == null:
 			item = escena.instantiate()
-			_conectar_fila(item)
+			_edicion.conectar_fila(item)
 		item.setup(
 			str(entrada.get("nombre", "")),
 			str(entrada.get("desc", "")),
@@ -608,19 +636,6 @@ func _ui_mostrar_lista(entradas: Array) -> void:
 	progreso.text = tr("%d enlaces") % contenedor.get_child_count()
 	_ultimo_repaint_ms = float(Time.get_ticks_usec() - inicio) / 1000.0
 	_filas_visibles = contenedor.get_child_count()
-
-
-func _conectar_fila(item: Button) -> void:
-	item.seleccion_pedido.connect(_sel_al_clic.bind(item))
-	item.eliminar_pedido.connect(_ui_eliminar_fila.bind(item))
-	item.recomprobar_pedido.connect(_scan_ui.recomprobar.bind(item))
-	item.copiar_pedido.connect(_ui_copiar_url.bind(item))
-	item.editar_pedido.connect(_ui_editar_fila.bind(item))
-	item.historial_pedido.connect(_ui_historial.bind(item))
-	item.subir_pedido.connect(_ui_mover_fila.bind(item, -1))
-	item.bajar_pedido.connect(_ui_mover_fila.bind(item, 1))
-	item.menu_solicitado.connect(_ui_menu_fila.bind(item))
-	item.actualizar_url_pedido.connect(_ui_actualizar_url.bind(item))
 
 
 func _fila_en_lista(item) -> bool:
@@ -891,167 +906,7 @@ func _sel_exportar() -> void:
 
 
 func _sel_eliminar() -> void:
-	_ui_pedir_borrado(_sel_urls())
-
-
-func _ui_menu_fila(item: Button) -> void:
-	if _orden_columna != "":
-		item.fijar_estado_reorden(false, false)
-		return
-	var visibles := _ui_filas_visibles()
-	var idx := visibles.find(item)
-	item.fijar_estado_reorden(idx > 0, idx >= 0 and idx < visibles.size() - 1)
-
-
-func _ui_mover_fila(item: Button, delta: int) -> void:
-	if _orden_columna != "":
-		return
-	var visibles := _ui_filas_visibles()
-	var idx := visibles.find(item)
-	if idx < 0:
-		return
-	var vecino_idx := idx + delta
-	if vecino_idx < 0 or vecino_idx >= visibles.size():
-		return
-	var i := _indice_entrada(item.url)
-	var j := _indice_entrada(visibles[vecino_idx].url)
-	if i < 0 or j < 0:
-		return
-	var tmp = _entradas[i]
-	_entradas[i] = _entradas[j]
-	_entradas[j] = tmp
-	if not _guardar_datos():
-		_entradas[j] = _entradas[i]
-		_entradas[i] = tmp
-		progreso.text = tr("No se pudo guardar el orden.")
-		return
-	_ui_refrescar()
-func _ui_historial(item: Button) -> void:
-	if not is_instance_valid(item):
-		return
-	var clave_estado := GestorCatalogoScript.clave_unica(item.url)
-	dialogo_historial.abrir(_estado_store.historial_de(clave_estado), str(item.url))
-
-
-func _ui_eliminar_fila(item: Button) -> void:
-	if not _fila_en_lista(item):
-		return
-	_ui_pedir_borrado([str(item.url)], str(item.get_node("%NombreLabel").text))
-
-
-func _ui_pedir_borrado(urls: Array, etiqueta := "") -> void:
-	var texto := _dialogos.pedir_borrado(urls, etiqueta)
-	if texto.is_empty():
-		return
-	%ConfirmarBorrado.dialog_text = texto
-	%ConfirmarBorrado.popup_centered()
-
-
-func _ui_cancelar_borrado() -> void:
-	_dialogos.cancelar_borrado()
-
-
-func _ui_confirmar_borrado() -> void:
-	var urls := _dialogos.tomar_borrado()
-	var borradas: Array = []
-	for url in urls:
-		if _borrar_entrada(str(url)):
-			borradas.append(url)
-	if borradas.is_empty():
-		return
-	for fila in _ui_filas_visibles():
-		if borradas.has(str(fila.url)):
-			fila.queue_free()
-	_seleccion_conservar()
-	progreso.text = SeleccionControllerScript.texto_borrados(borradas.size())
-	_ui_aplicar_filtro()
-	_ui_status()
-
-
-func _borrar_entrada(url: String) -> bool:
-	var res: Dictionary = _catalogo.eliminar(_entradas, url)
-	if not res.get("ok", false):
-		return false
-	var clave_estado := GestorCatalogoScript.clave_unica(url)
-	_estado_store.marcar_borrado(clave_estado)
-	_estado_store.borrar_estado(clave_estado)
-	_estados.erase(clave_estado)
-	_borrar_captura_si_huerfana(str(res.get("img", "")))
-	return true
-
-
-func _ui_actualizar_url(item: Button) -> void:
-	if _fila_en_lista(item):
-		_ui_pedir_reubicar([str(item.url)])
-
-
-func _ui_pedir_reubicar_lote(urls: Array) -> void:
-	_ui_pedir_reubicar(urls)
-
-
-func _ui_pedir_reubicar(urls: Array) -> void:
-	var texto := _dialogos.pedir_reubicar(urls, _entradas, _estados)
-	if texto.is_empty():
-		return
-	%ConfirmarReubicar.dialog_text = texto
-	%ConfirmarReubicar.popup_centered()
-
-
-func _ui_cancelar_reubicar() -> void:
-	_dialogos.cancelar_reubicar()
-
-
-func _ui_confirmar_reubicar() -> void:
-	var urls := _dialogos.tomar_reubicar()
-	var actualizadas := 0
-	for url in urls:
-		if _actualizar_url_entrada(str(url)):
-			actualizadas += 1
-	if actualizadas == 0:
-		return
-	_ui_refrescar()
-	_ui_status()
-	progreso.text = RedireccionesScript.texto_actualizadas(actualizadas)
-
-
-func _actualizar_url_entrada(url_original: String) -> bool:
-	var url_nueva := RedireccionesScript.destino_de(_estados, url_original)
-	if url_nueva.is_empty() or url_nueva == url_original:
-		return false
-	var res: Dictionary = _catalogo.actualizar_url(_entradas, _estados, _borrados, url_original, url_nueva)
-	if not res.get("ok", false):
-		progreso.text = str(res.get("mensaje", ""))
-		return false
-	if not _guardar_datos():
-		_cargar_datos()
-		_ui_refrescar()
-		progreso.text = tr("No se pudo guardar el enlace.")
-		return false
-	var clave_vieja := GestorCatalogoScript.clave_unica(url_original)
-	var clave_nueva := GestorCatalogoScript.clave_unica(url_nueva)
-	_estado_store.renombrar(clave_vieja, clave_nueva)
-	if _estados.has(clave_nueva):
-		var estado: Dictionary = _estados[clave_nueva]
-		estado["url_final"] = ""
-	_estado_store.volcar()
-	return true
-
-
-func _ui_copiar_url(url: String, item: Button) -> void:
-	if not is_instance_valid(item):
-		return
-	DisplayServer.clipboard_set(url)
-	progreso.text = tr("URL copiada: %s") % url
-
-
-func _ui_editar_fila(item: Button) -> void:
-	if not is_instance_valid(item):
-		return
-	var datos := _buscar_entrada(item.url)
-	if datos.is_empty():
-		progreso.text = tr("No se encontró el enlace.")
-		return
-	ventana_agregar.abrir_edicion(datos, item.url, _sugerir_etiquetas())
+	_edicion.pedir_borrado(_sel_urls())
 
 
 func _instantanea_guardar() -> void:

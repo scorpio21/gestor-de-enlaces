@@ -126,7 +126,7 @@ func _arrancar() -> void:
 	await process_frame
 	main_script._estado_store = _FakeHistorial.new()
 	var fila_hist: Button = main.get_node("%ListaContenedor").get_child(0)
-	main_script._ui_historial(fila_hist)
+	main_script._edicion.historial(fila_hist)
 	_check(main.has_node("%DialogoHistorial") and main.get_node("%DialogoHistorial").visible, "el historial de la fila abre el diálogo")
 	_check(main.get_node("%DialogoHistorial").get_node("%ListaHistorial").get_child_count() == 1, "el diálogo muestra una fila por entrada del historial")
 	main.get_node("%DialogoHistorial").hide()

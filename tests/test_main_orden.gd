@@ -163,17 +163,17 @@ func _arrancar() -> void:
 	var menu_ctx_c: PopupMenu = fila_c.get_node("%MenuContexto")
 
 	# en la primera fila Subir deshabilitada y Bajar habilitada
-	main_script._ui_menu_fila(fila_a)
+	main_script._edicion.menu_fila(fila_a)
 	_check(menu_ctx_a.is_item_disabled(menu_ctx_a.get_item_index(5)), "primera fila: Subir deshabilitada")
 	_check(not menu_ctx_a.is_item_disabled(menu_ctx_a.get_item_index(6)), "primera fila: Bajar habilitada")
 
 	# fila central: ambas habilitadas
-	main_script._ui_menu_fila(fila_b)
+	main_script._edicion.menu_fila(fila_b)
 	_check(not menu_ctx_b.is_item_disabled(menu_ctx_b.get_item_index(5)), "fila central: Subir habilitada")
 	_check(not menu_ctx_b.is_item_disabled(menu_ctx_b.get_item_index(6)), "fila central: Bajar habilitada")
 
 	# última fila: Subir habilitada y Bajar deshabilitada
-	main_script._ui_menu_fila(fila_c)
+	main_script._edicion.menu_fila(fila_c)
 	_check(not menu_ctx_c.is_item_disabled(menu_ctx_c.get_item_index(5)), "última fila: Subir habilitada")
 	_check(menu_ctx_c.is_item_disabled(menu_ctx_c.get_item_index(6)), "última fila: Bajar deshabilitada")
 
@@ -190,7 +190,7 @@ func _arrancar() -> void:
 	var visibles_t3: Array = main_script._ui_filas_visibles()
 	var item_b_real: Button = visibles_t3[1]
 	main_script._persistir = true
-	main_script._ui_mover_fila(item_b_real, -1)
+	main_script._edicion.mover_fila(item_b_real, -1)
 	main_script._persistir = false
 	_check(main_script._indice_entrada("https://a.test") == 1 and main_script._indice_entrada("https://b.test") == 0, "Subir B la coloca antes de A en _entradas")
 
@@ -206,7 +206,7 @@ func _arrancar() -> void:
 	_check(orden_persistido == ["https://b.test", "https://a.test", "https://c.test"], "tras guardar el orden B,A,C queda en el archivo de usuario")
 
 	var item_b_rest: Button = main_script._ui_filas_visibles()[0]
-	main_script._ui_mover_fila(item_b_rest, 1)
+	main_script._edicion.mover_fila(item_b_rest, 1)
 	_check(main_script._indice_entrada("https://b.test") == 1, "Bajar devuelve B a su posición original")
 
 	main_script._entradas = [
@@ -223,17 +223,17 @@ func _arrancar() -> void:
 	_check(visibles_filtradas.size() == 2, "el filtro Cliente oculta la fila A (otro)")
 
 	var item_c2: Button = visibles_filtradas[1]
-	main_script._ui_mover_fila(item_c2, -1)
+	main_script._edicion.mover_fila(item_c2, -1)
 	_check(main_script._indice_entrada("https://b.test") == 2 and main_script._indice_entrada("https://c.test") == 0, "Subir C la cruza con B saltando la fila oculta A")
 	main_script.filtro_cat.select(0)
 
 	main_script._ui_cabecera("imagen")
-	main_script._ui_mover_fila(main_script._ui_filas_visibles()[0], -1)
+	main_script._edicion.mover_fila(main_script._ui_filas_visibles()[0], -1)
 	var antes: Array = []
 	for e in main_script._entradas:
 		antes.append(str(e.get("url", "")))
-	_check(antes == ["https://c.test", "https://a.test", "https://b.test"], "con columna activa _ui_mover_fila no modifica _entradas")
-	main_script._ui_menu_fila(main_script._ui_filas_visibles()[0])
+	_check(antes == ["https://c.test", "https://a.test", "https://b.test"], "con columna activa mover_fila no modifica _entradas")
+	main_script._edicion.menu_fila(main_script._ui_filas_visibles()[0])
 	_check(main_script._ui_filas_visibles()[0].get_node("%MenuContexto").is_item_disabled(
 		main_script._ui_filas_visibles()[0].get_node("%MenuContexto").get_item_index(5)), "con columna activa Subir queda deshabilitada")
 	main_script._ui_cabecera("imagen")
