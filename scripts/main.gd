@@ -1525,5 +1525,3 @@ func _config_desde_ui() -> Dictionary:
 
 func _persistir_config() -> bool:
 	return _config_ctrl.guardar(_config_store, _config_desde_ui())
-
-
