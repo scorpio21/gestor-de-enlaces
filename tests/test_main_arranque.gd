@@ -66,14 +66,14 @@ func _arrancar() -> void:
 	_check(not main.get_node("%TotalValor").text.is_empty(), "TotalValor muestra un valor")
 
 	var main_script = main.get_node(".")
-	if main_script.has_method("_scan_recompra"):
+	if main_script._scan_ui != null:
 		main_script._estados.clear()
 		var item = LIST_ITEM_SCENE.instantiate()
 		item.url = "https://prueba-ejemplo.test"
 		item.valido = false
 		item.mensaje = "No existe"
 		main_script._entradas.append({"nombre": "Prueba", "url": "https://prueba-ejemplo.test"})
-		main_script._scan_recompra(item)
+		main_script._scan_ui._recompra(item)
 		var estado_memoria: Dictionary = main_script._estados.get(GestorCatalogoScript.clave_unica(item.url), {})
 		_check(estado_memoria.has("codigo") and int(estado_memoria.get("codigo", -1)) == 0, "el estado en memoria conserva el código tras re-comprobar")
 		_check(int(estado_memoria.get("fecha", 0)) > 0, "el estado en memoria conserva la fecha tras re-comprobar")
@@ -134,11 +134,11 @@ func _arrancar() -> void:
 	# Disponibilidad: auto-escaneo desactivado en headless/intervalo 0 (#8)
 	main_script._intervalo_auto = 0
 	main_script._scan.intervalo_auto = 0
-	main_script._scan_rearmar_auto()
+	main_script._scan_ui.rearmar_auto()
 	_check(main.get_node("%AutoEscaneo").is_stopped(), "intervalo 0 deja el Timer detenido")
 	main_script._intervalo_auto = 15
 	main_script._scan.intervalo_auto = 15
-	main_script._scan_rearmar_auto()
+	main_script._scan_ui.rearmar_auto()
 	_check(main.get_node("%AutoEscaneo").is_stopped(), "en headless el intervalo no arranca el Timer")
 
 	var ev_esc := InputEventKey.new()
@@ -389,7 +389,7 @@ func _arrancar() -> void:
 	_check(dash_ui.get_node("%Grafico").serie.size() == 1, "volver a todo el histórico recupera el gráfico")
 	dash_ui.abrir([], {})
 	_check(dash_ui.get_node("%EstadoVacio").visible and not dash_ui.get_node("%Datos").visible, "sin enlaces el dashboard muestra el estado vacío")
-	_check(dash_ui.comprobar_ya.is_connected(Callable(main_script, "_scan_iniciar")), "el estado vacío ofrece comprobar enlaces (#49)")
+	_check(dash_ui.comprobar_ya.is_connected(Callable(main_script._scan_ui, "iniciar")), "el estado vacío ofrece comprobar enlaces (#49)")
 	dash_ui.abrir(main_script._entradas, {})
 	_check(dash_ui.get_node("%AvisoSinComprobar").visible, "sin comprobaciones se avisa para empezar a comprobar")
 	dash_ui.abrir(main_script._entradas, estados_dash)

@@ -40,6 +40,7 @@ func _initialize() -> void:
 	_check(_actualizacion_extraida(), "la comprobacion de actualizaciones vive en update_controller, no en main.gd (#74)")
 	_check(_navegacion_extraida(), "la navegacion entre vistas y paneles vive en navigation_controller, no en main.gd (#74)")
 	_check(_import_export_extraida(), "importar/exportar/informe/diagnostico viven en import_export_controller, no en main.gd (#74)")
+	_check(_scan_ui_extraida(), "el flujo de escaneo vive en scan_ui_controller, no en main.gd (#79)")
 	_check(FileAccess.file_exists("res://tests/test_actualizador.gd"), "existe tests/test_actualizador.gd")
 	if _fallos == 0:
 		print("TESTS OK")
@@ -431,10 +432,38 @@ func _import_export_extraida() -> bool:
 func _main_no_secha() -> bool:
 	# #66 saco los dialogos (main.gd 1676); #74 saca el tema (1675), la
 	# comprobacion de actualizaciones (1618), la navegacion (1568) y la
-	# importacion/exportacion (1530). El techo baja a 1530 y obliga a seguir
-	# encogiendo main.gd con cada entrega.
+	# importacion/exportacion (1530); #79 saca el flujo de escaneo (1385).
+	# El techo baja a 1390 y obliga a seguir encogiendo main.gd con cada entrega.
 	var main := _leer("res://scripts/main.gd")
-	return main.split("\n").size() <= 1530
+	return main.split("\n").size() <= 1390
+
+
+func _scan_ui_extraida() -> bool:
+	# #79: el flujo de escaneo (arranque, resultado por item, reanudacion,
+	# auto-escaneo y barra de progreso) vive en scan_ui_controller; main.gd solo
+	# cablea nodos y habla con el motor scan_controller.
+	var main := _leer("res://scripts/main.gd")
+	if not main.contains("ScanUiControllerScript") or not main.contains("_scan_ui."):
+		return false
+	var prohibidas := [
+		"func _scan_iniciar",
+		"func _scan_arrancar",
+		"func _scan_lanzar_item",
+		"func _scan_item_actualizado",
+		"func _scan_terminado",
+		"func _scan_reanudar",
+		"func _scan_rearmar_auto",
+		"func _scan_iniciar_auto",
+		"func _ui_barra",
+	]
+	for prohibida in prohibidas:
+		if main.contains(prohibida):
+			return false
+	var ctrl := _leer("res://scripts/scan_ui_controller.gd")
+	return ctrl.contains("func iniciar()") and ctrl.contains("func arrancar(") \
+		and ctrl.contains("func item_actualizado(") and ctrl.contains("func terminado(") \
+		and ctrl.contains("func reanudar()") and ctrl.contains("func iniciar_auto()") \
+		and FileAccess.file_exists("res://tests/test_scan_ui_controller.gd")
 
 
 func _seleccion_extraida() -> bool:
@@ -512,7 +541,9 @@ func _url_final_propaga() -> bool:
 	var store := _leer("res://scripts/estado_store.gd")
 	if not store.contains("\"url_final\": url_final"):
 		return false
-	return _leer("res://scripts/main.gd").contains("item.url_final")
+	var propaga := _leer("res://scripts/main.gd").contains("item.url_final") \
+		or _leer("res://scripts/scan_ui_controller.gd").contains("item.url_final")
+	return propaga
 
 
 func _cambios_extraidos() -> bool:

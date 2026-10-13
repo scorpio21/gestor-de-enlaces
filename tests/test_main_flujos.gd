@@ -13,11 +13,11 @@ var _fallos := 0
 
 func _scan_controller_nuevo(store, main_script) -> RefCounted:
 	var ctrl = ScanControllerScript.new(store)
-	ctrl.configure(Callable(main_script, "_scan_lanzar_item"))
+	ctrl.configure(Callable(main_script._scan_ui, "lanzar_item"))
 	ctrl.tope_por_host = main_script.TOPE_POR_HOST
-	ctrl.progreso.connect(Callable(main_script, "_scan_progreso"))
-	ctrl.item_actualizado.connect(Callable(main_script, "_scan_item_actualizado"))
-	ctrl.terminado.connect(Callable(main_script, "_scan_terminado"))
+	ctrl.progreso.connect(Callable(main_script._scan_ui, "progreso_actualizado"))
+	ctrl.item_actualizado.connect(Callable(main_script._scan_ui, "item_actualizado"))
+	ctrl.terminado.connect(Callable(main_script._scan_ui, "terminado"))
 	return ctrl
 
 
@@ -67,18 +67,18 @@ func _arrancar() -> void:
 	_check(main.get_node("%Progreso").text == "URL copiada: https://copiar.test", "copiar desde la fila informa en la barra")
 
 	_check(not main.get_node("%BarraProgreso").visible, "la barra de progreso nace oculta")
-	main_script._ui_barra(3, 5)
+	main_script._scan_ui.barra_actualizar(3, 5)
 	_check(main.get_node("%BarraProgreso").value == 3, "la barra refleja los enlaces comprobados")
 	_check(main.get_node("%BarraProgreso").max_value == 5, "la barra usa el total de enlaces como máximo")
-	main_script._ui_barra_final(0)
+	main_script._scan_ui.barra_final(0)
 	var verde: StyleBoxFlat = main.get_node("%BarraProgreso").get_theme_stylebox("fill")
 	_check(verde.bg_color.is_equal_approx(Color(0.35, 0.85, 0.45, 1)), "con 0 caídos la barra se pone verde")
-	main_script._ui_barra_final(2)
+	main_script._scan_ui.barra_final(2)
 	var rojo: StyleBoxFlat = main.get_node("%BarraProgreso").get_theme_stylebox("fill")
 	_check(rojo.bg_color.is_equal_approx(Color(0.95, 0.35, 0.35, 1)), "con caídos la barra se pone roja")
 	for hijo in main.get_node("%ListaContenedor").get_children():
 		hijo.visible = false
-	main_script._scan_iniciar()
+	main_script._scan_ui.iniciar()
 	_check(not main.get_node("%BarraProgreso").visible, "sin enlaces visibles la barra se oculta")
 	_check(main.get_node("%Progreso").text == "Nada que comprobar", "sin enlaces visibles se muestra el aviso")
 
@@ -114,7 +114,7 @@ func _arrancar() -> void:
 	store_cola.guardar(["https://nope.test"])
 	main_script._entradas = []
 	main_script._scan.preparar([], filas.get_children())
-	main_script._scan_reanudar()
+	main_script._scan_ui.reanudar()
 	_check((main_script._scan.cola() as Array).is_empty() and (store_cola.cargar().get("urls", []) as Array).is_empty(), "reanudar con urls inexistentes descarta y limpia")
 	DirAccess.remove_absolute("user://__test_main__")
 
@@ -357,7 +357,7 @@ func _arrancar() -> void:
 	var escrituras_iniciales: int = store.escrituras
 	for i in range(enlaces):
 		var item = items.get_child(i)
-		item.verificacion_terminada.connect(main_script._scan_item_terminado.bind(item), CONNECT_ONE_SHOT)
+		item.verificacion_terminada.connect(main_script._scan_ui.item_terminado.bind(item), CONNECT_ONE_SHOT)
 		item.valido = true
 		item.mensaje = "OK (200)"
 		item.codigo = 200
@@ -476,20 +476,20 @@ func _instantaneas(main: Node, main_script) -> void:
 		{"nombre": "C", "url": "https://foto.test/c", "cat": "otro"},
 	]
 	main_script._estados = {"foto.test/a": {"valido": true}, "foto.test/b": {"valido": false}}
-	main_script._scan_terminado(3, 1)
+	main_script._scan_ui.terminado(3, 1)
 	await process_frame
 	var fotos: Array = main_script._nav.instantaneas()
 	_check(fotos.size() == 1, "terminar el escaneo deja una instantánea diaria (#60)")
 	_check(int(fotos[0].get("total", 0)) == 3 and int(fotos[0].get("validos", 0)) == 1, "la instantánea cuenta el catálogo entero (#60)")
 	_check(int(fotos[0].get("sin_comprobar", 0)) == 1, "la instantánea cuenta también lo sin comprobar (#60)")
 
-	main_script._scan_terminado(3, 0)
+	main_script._scan_ui.terminado(3, 0)
 	await process_frame
 	_check(main_script._nav.instantaneas().size() == 1, "comprobar dos veces el mismo día no acumula instantáneas (#60)")
 
 	main_script._entradas = []
 	main_script._estados = {}
-	main_script._scan_terminado(0, 0)
+	main_script._scan_ui.terminado(0, 0)
 	await process_frame
 	_check(main_script._nav.instantaneas().size() == 1, "un catálogo vacío no pisa la instantánea de hoy (#60)")
 

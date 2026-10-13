@@ -122,7 +122,7 @@ func _marca_tras_cambios(s) -> void:
 func _recomprobar_limpia_la_marca(s) -> void:
 	for fila in s._ui_filas_visibles():
 		if str(fila.url) == "https://a.test":
-			s._scan_item_actualizado(fila)
+			s._scan_ui.item_actualizado(fila)
 			break
 	await process_frame
 	_check(_marca_de(s, "a.test").is_empty(), "al recomprobar un enlace su marca se va hasta saber el resultado")

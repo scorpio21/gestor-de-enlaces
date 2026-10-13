@@ -335,7 +335,7 @@ func _grilla(main, s) -> void:
 	await process_frame
 	_check(s._contenedor_activo().name == "GridContenedor", "se puede pasar a la vista de grilla")
 	_check(_urls(s).size() == 2, "las filas se pintan tambien en la grilla")
-	s._scan_iniciar()
+	s._scan_ui.iniciar()
 	_check(s._scan.total() == 2, "el boton comprobar mira lo que se ve en la grilla, no la lista escondida")
 	_check(s._scan.contar_caidos() == 1, "y cuenta los caidos de lo que se ve")
 	s._scan.reiniciar()
@@ -344,7 +344,7 @@ func _grilla(main, s) -> void:
 	s._ui_filtro_estado(2)
 	await process_frame
 	_check(_urls(s) == ["https://b.test"], "con filtro de caidos solo se ve la fila rota de la grilla")
-	s._scan_iniciar()
+	s._scan_ui.iniciar()
 	_check(s._scan.total() == 1, "comprobar en la grilla respeta el filtro")
 	s._scan.reiniciar()
 	s.filtro.select(0)
