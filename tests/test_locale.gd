@@ -24,8 +24,8 @@ func _initialize() -> void:
 
 func _a_cabecera(filas: Array) -> void:
 	var cab: Array = filas[0]
-	_check(cab.size() == 7 and cab[0] == "keys" and cab[1] == "es" and cab[2] == "en" and cab[3] == "it" and cab[4] == "eu" and cab[5] == "ca" and cab[6] == "es_AR", \
-		"la cabecera del CSV es keys,es,en,it,eu,ca,es_AR")
+	_check(cab.size() == 8 and cab[0] == "keys" and cab[1] == "es" and cab[2] == "en" and cab[3] == "it" and cab[4] == "eu" and cab[5] == "ca" and cab[6] == "gl" and cab[7] == "es_AR", \
+		"la cabecera del CSV es keys,es,en,it,eu,ca,gl,es_AR")
 
 
 func _a_integridad(filas: Array) -> void:
@@ -100,6 +100,9 @@ func _c_idioma() -> void:
 	_check(IdiomaScript.aplicar("", "ca_ES") == "ca", "aplicar autodetecta ca_ES")
 	_check(IdiomaScript.aplicar("", "ca-es") == "ca", "aplicar autodetecta ca-es con guion")
 	_check(IdiomaScript.aplicar("ca", "es_ES") == "ca", "la config ca manda sobre el SO")
+	_check(IdiomaScript.aplicar("", "gl_ES") == "gl", "aplicar autodetecta gl_ES")
+	_check(IdiomaScript.aplicar("", "gl-es") == "gl", "aplicar autodetecta gl-es con guion")
+	_check(IdiomaScript.aplicar("gl", "es_ES") == "gl", "la config gl manda sobre el SO")
 	IdiomaScript.cargar_traducciones()
 	TranslationServer.set_locale("es")
 	_check(tr("Nombre") == "Nombre", "la carga manual registra traducciones es")
@@ -119,6 +122,9 @@ func _c_idioma() -> void:
 	TranslationServer.set_locale("ca")
 	_check(tr("Nombre") == "Nom", "la carga manual registra traducciones ca")
 	_check(tr("%d enlaces") == "%d enllaços", "el template %d enlaces se traduce en ca")
+	TranslationServer.set_locale("gl")
+	_check(tr("Nombre") == "Nome", "la carga manual registra traducciones gl")
+	_check(tr("%d enlaces") == "%d ligazóns", "el template %d enlaces se traduce en gl")
 	TranslationServer.set_locale("es")
 	TranslationServer.clear()
 	IdiomaScript.cargar_importadas()
@@ -133,6 +139,8 @@ func _c_idioma() -> void:
 	_check(tr("Nombre") == "Izena", "el fallback importado registra el euskera completo")
 	TranslationServer.set_locale("ca")
 	_check(tr("Nombre") == "Nom", "el fallback importado registra el catalan completo")
+	TranslationServer.set_locale("gl")
+	_check(tr("Nombre") == "Nome", "el fallback importado registra el gallego completo")
 	TranslationServer.set_locale("es")
 
 
