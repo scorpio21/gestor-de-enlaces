@@ -30,7 +30,7 @@ func _arrancar() -> void:
 		and ventana.get_node("%IntervaloAuto").get_selected_id() == 15, "abrir precarga auto_abrir e intervalo")
 	_check(ventana.get_node("%Tema").get_selected_id() == 1, "abrir precarga el tema")
 	_check(ventana.get_node("%Idioma").get_selected_id() == 0, "abrir precarga el idioma es")
-	_check(ventana.get_node("%Idioma").get_item_count() == 9, "el selector de idioma ofrece los nueve idiomas (#80, #81, #82, #84, #85, #86, #87)")
+	_check(ventana.get_node("%Idioma").get_item_count() == 10, "el selector de idioma ofrece los diez idiomas (#80, #81, #82, #84, #85, #86, #87, #88)")
 	_check(ventana.get_node("%ReintentarTransitorios").button_pressed == true \
 		and ventana.get_node("%RedSinComprobar").button_pressed == true, "abrir deja los reintentos y el «sin comprobar» activados por defecto (#54)")
 	_check(ventana.get_node("%AceptarCertificados").button_pressed == false, "abrir deja los certificados TLS no aceptados por defecto (#56)")
@@ -120,6 +120,12 @@ func _arrancar() -> void:
 	_check(ventana.get_node("%Idioma").get_selected_id() == 8, "abrir precarga el idioma fr (#87)")
 	ventana.get_node("%BotonGuardar").pressed.emit()
 	_check(_aplicado != null and _aplicado[5] == "fr", "guardar emite el idioma fr (#87)")
+
+	ventana.abrir(3, 10.0, true, 0, "oscuro", "de")
+	await process_frame
+	_check(ventana.get_node("%Idioma").get_selected_id() == 9, "abrir precarga el idioma de (#88)")
+	ventana.get_node("%BotonGuardar").pressed.emit()
+	_check(_aplicado != null and _aplicado[5] == "de", "guardar emite el idioma de (#88)")
 
 	ventana.free()
 	await _cambio_modo()

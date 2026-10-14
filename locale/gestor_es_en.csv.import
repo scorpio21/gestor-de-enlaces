@@ -6,10 +6,10 @@ uid="uid://cd41pf5lakl3c"
 
 [deps]
 
-files=["res://locale/gestor_es_en.es.translation", "res://locale/gestor_es_en.en.translation", "res://locale/gestor_es_en.it.translation", "res://locale/gestor_es_en.eu.translation", "res://locale/gestor_es_en.ca.translation", "res://locale/gestor_es_en.gl.translation", "res://locale/gestor_es_en.pt.translation", "res://locale/gestor_es_en.fr.translation", "res://locale/gestor_es_en.es_AR.translation"]
+files=["res://locale/gestor_es_en.es.translation", "res://locale/gestor_es_en.en.translation", "res://locale/gestor_es_en.it.translation", "res://locale/gestor_es_en.eu.translation", "res://locale/gestor_es_en.ca.translation", "res://locale/gestor_es_en.gl.translation", "res://locale/gestor_es_en.pt.translation", "res://locale/gestor_es_en.fr.translation", "res://locale/gestor_es_en.de.translation", "res://locale/gestor_es_en.es_AR.translation"]
 
 source_file="res://locale/gestor_es_en.csv"
-dest_files=["res://locale/gestor_es_en.es.translation", "res://locale/gestor_es_en.en.translation", "res://locale/gestor_es_en.it.translation", "res://locale/gestor_es_en.eu.translation", "res://locale/gestor_es_en.ca.translation", "res://locale/gestor_es_en.gl.translation", "res://locale/gestor_es_en.pt.translation", "res://locale/gestor_es_en.fr.translation", "res://locale/gestor_es_en.es_AR.translation"]
+dest_files=["res://locale/gestor_es_en.es.translation", "res://locale/gestor_es_en.en.translation", "res://locale/gestor_es_en.it.translation", "res://locale/gestor_es_en.eu.translation", "res://locale/gestor_es_en.ca.translation", "res://locale/gestor_es_en.gl.translation", "res://locale/gestor_es_en.pt.translation", "res://locale/gestor_es_en.fr.translation", "res://locale/gestor_es_en.de.translation", "res://locale/gestor_es_en.es_AR.translation"]
 
 [params]
 

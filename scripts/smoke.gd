@@ -44,6 +44,7 @@ const RECURSOS := [
 	"res://Assets/banderas/gl.svg",
 	"res://Assets/banderas/pt.svg",
 	"res://Assets/banderas/fr.svg",
+	"res://Assets/banderas/de.svg",
 ]
 const STORES := [
 	["estado", EstadoStoreScript],
@@ -141,6 +142,9 @@ static func _idiomas() -> Array:
 	TranslationServer.set_locale("fr")
 	if TranslationServer.translate("Nombre") != "Nom":
 		fallos.append("falta la traduccion fr dentro del pck")
+	TranslationServer.set_locale("de")
+	if TranslationServer.translate("Nombre") != "Name":
+		fallos.append("falta la traduccion de dentro del pck")
 	TranslationServer.set_locale(anterior)
 	return fallos
 
