@@ -33,7 +33,7 @@
 - 🖱️ **Apertura directa** — clic en un enlace lo abre en el navegador del sistema.
 - 📊 **Progreso en tiempo real** — contador de verificaciones completadas.
 - 🗂️ **Ordenación por columnas** — pulsa las cabeceras de la lista para ordenar por fecha, nombre, imagen o estado (el criterio queda persistido, `#17`).
-- 🌐 **Internacionalización ES/EN/es-AR/IT** — selector de idioma con banderas en Preferencias (español, inglés, español de Argentina e italiano); todos los textos de la UI se traducen al arrancar según tu elección (`#30`, `#80`, `#81`).
+- 🌐 **Internacionalización ES/EN/es-AR/IT/EU** — selector de idioma con banderas en Preferencias (español, inglés, español de Argentina, italiano y euskera); todos los textos de la UI se traducen al arrancar según tu elección (`#30`, `#80`, `#81`, `#82`).
 - 🎨 **Tema claro/oscuro/automático** — selector en Preferencias; el modo **Automático** detecta el tema del sistema y lo sigue en vivo (`#19`, `#46`).
 - 🗂️ **Diálogos de archivo nativos** — elegir imagen, importar/exportar catálogo, informes y diagnóstico abren el diálogo nativo del sistema (`#38`).
 
@@ -139,7 +139,7 @@ y `GESTORAO_BASE`.
   - `.github/workflows/release.yml` — al publicar un tag `vX.Y.Z` (que debe coincidir con `config/version`): exporta los 3 presets en modo *release*, hace *smoke test* del binario, calcula los `sha256` y crea un **GitHub Release** con las notas extraídas del `CHANGELOG.md`.
 - **Smoke test del binario** (`tests/run_smoke.sh`) — arranca el binario exportado (`--headless -- --smoke`) para cazar lo que solo existe dentro del `.pck` (recursos, escenas o escritura en `user://`); exige la marca `GestorAO smoke OK` y ningún `SCRIPT ERROR`.
 - **Mutation testing** (`tools/mut.py`, `tools/README_mut.md`) — arnés **local** (no corre en CI) que aplica mutaciones conocidas de `tools/mutaciones/` y comprueba que la batería las detecta (*kill rate*); sirve para medir la calidad de los tests, no como puerta de CI.
-- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 66 suites en orden; local (Windows, pwsh):
+- **Batería de tests** — cada suite es `tests/test_<area>.gd` (extiende `SceneTree`; imprime `TESTS OK` y `quit(0)`). `tests/run_battery.sh` ejecuta las 69 suites en orden; local (Windows, pwsh):
 
   ```bash
   & "K:\Godot_v4.6.1\Godot_v4.7.2-stable_win64_console.exe" --headless --path "K:\gestor-de-enlaces" --script res://tests/test_<area>.gd
@@ -195,11 +195,11 @@ gestor-de-enlaces/
 │   ├── extraer_cadenas.gd   # Scanner de cadenas de la UI
 │   └── generar_iconos.gd    # Regenera Assets/icon (svg/png/ico/icns)
 ├── tests/
-│   ├── run_battery.sh       # Ejecuta las 66 suites headless (Linux/Windows/CI)
+│   ├── run_battery.sh       # Ejecuta las 69 suites headless (Linux/Windows/CI)
 │   ├── run_estatico.sh      # --check-only de los .gd antes de la batería
 │   ├── run_lint.sh          # gdlint con la config tolerante de .gdlintrc
 │   ├── run_smoke.sh         # Arranca el binario exportado (-- --smoke)
-│   └── test_<area>.gd       # 66 suites SceneTree (TESTS OK / quit(0))
+│   └── test_<area>.gd       # 69 suites SceneTree (TESTS OK / quit(0))
 ├── locale/
 │   └── gestor_es_en.csv     # Traducciones ES/EN/IT/es-AR (clave, ES, EN, IT, +ES-AR)
 ├── addons/
