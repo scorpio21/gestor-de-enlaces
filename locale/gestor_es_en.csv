@@ -1,308 +1,308 @@
-keys,es,en,it,eu,es_AR
-%d enlaces,%d enlaces,%d links,%d link,%d esteka
-"%d importados, %d omitidos.","%d importados, %d omitidos.","%d imported, %d skipped.","%d importati, %d saltati.","%d inportatu, %d saltatu."
-%d inválidas ignoradas.,%d inválidas ignoradas.,%d invalid ignored.,%d non valide ignorate.,%d baliogabe baztertu.
-%d omitidos (ya existían o sin URL válida).,%d omitidos (ya existían o sin URL válida).,%d skipped (already existing or no valid URL).,%d saltati (già esistenti o senza URL valido).,%d saltatu (lehendik zeuden edo URL baliogabea).
-%d repetidas ignoradas.,%d repetidas ignoradas.,%d duplicates ignored.,%d duplicati ignorati.,%d errepikatu baztertu.
-%s %s,%s %s,%s %s,%s %s,%s %s
-%s — %s — %s,%s — %s — %s,%s — %s — %s,%s — %s — %s,%s — %s — %s
-(%d errores),(%d errores),(%d errors),(%d errori),(%d errore)
-(%d intentos),(%d intentos),(%d attempts),(%d tentativi),(%d saiakera)
-7 días,7 días,7 days,7 giorni,7 egun
-30 días,30 días,30 days,30 giorni,30 egun
-90 días,90 días,90 days,90 giorni,90 egun
-Aceptar los certificados TLS no válidos,Aceptar los certificados TLS no válidos,Accept invalid TLS certificates,Accetta i certificati TLS non validi,Onartu baliogabeko TLS ziurtagiriak
-Activos:,Activos:,Working:,Attivi:,Aktiboak:
-Agregar,Agregar,Add,Aggiungi,Gehitu
-Agregar enlace,Agregar enlace,Add link,Aggiungi link,Gehitu esteka
-Agregar varias URLs,Agregar varias URLs,Add multiple URLs,Aggiungi più URL,Gehitu hainbat URL
-Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Add links or import a catalog to see its statistics here.,Aggiungi link o importa un catalogo per vedere qui le sue statistiche.,Gehitu estekak edo inportatu katalogo bat hemen bere estatistikak ikusteko.,Agregá enlaces o importá un catálogo para ver acá sus estadísticas.
-Auto-escaneo,Auto-escaneo,Auto-scan,Scansione automatica,Eskaneatze automatikoa
-Automático,Automático,Automatic,Automatico,Automatikoa
-Bajar,Bajar,Move down,Sposta giù,Jaitsi
-Buscar por nombre o descripción...,Buscar por nombre o descripción...,Search by name or description...,Cerca per nome o descrizione...,Bilatu izenaren edo deskribapenaren arabera...
-Cancelar,Cancelar,Cancel,Annulla,Utzi
-Captura reutilizada,Captura reutilizada,Capture reused,Cattura riutilizzata,Berrerabilitako kaptura
-Capturas huérfanas eliminadas: %d,Capturas huérfanas eliminadas: %d,Orphaned captures deleted: %d,Catture orfane eliminate: %d,Kaptura umezurtzak ezabatuta: %d
-Categoría,Categoría,Category,Categoria,Kategoria
-Catálogo exportado (%d enlaces).,Catálogo exportado (%d enlaces).,Catalogue exported (%d links).,Catalogo esportato (%d link).,Katalogoa esportatuta (%d esteka).
-Catálogo restaurado desde la copia.,Catálogo restaurado desde la copia.,Catalogue restored from backup.,Catalogo ripristinato dal backup.,Katalogoa segurtasun-kopiatik berreskuratuta.
-Caído,Caído,Down,Non raggiungibile,Eroria
-Caídos,Caídos,Down,Non raggiungibili,Eroriak
-Caídos / no existen,Caídos / no existen,Down / missing,Non raggiungibili / mancanti,Eroriak / ez dira existitzen
-Caídos: %d,Caídos: %d,Broken: %d,Non raggiungibili: %d,Eroriak: %d
-Cada 1 hora,Cada 1 hora,Every hour,Ogni ora,Orduro
-Cada 15 minutos,Cada 15 minutos,Every 15 minutes,Ogni 15 minuti,15 minuturo
-Cada 30 minutos,Cada 30 minutos,Every 30 minutes,Ogni 30 minuti,30 minuturo
-Código,Código,Code,Codice,Kodea
-Cualquier palabra,Cualquier palabra,Any word,Qualsiasi parola,Edozein hitz
-Cerrar,Cerrar,Close,Chiudi,Itxi
-Certificado no válido (aceptado),Certificado no válido (aceptado),Invalid certificate (accepted),Certificato non valido (accettato),Ziurtagiri baliogabea (onartuta)
-"Certificado no válido (aceptado por preferencia)","Certificado no válido (aceptado por preferencia)","Invalid certificate (accepted by preference)",Certificato non valido (accettato per preferenza),Ziurtagiri baliogabea (hobespenagatik onartuta)
-Certificado no válido (rechazado),Certificado no válido (rechazado),Invalid certificate (rejected),Certificato non valido (rifiutato),Ziurtagiri baliogabea (baztertuta)
-Claro,Claro,Light,Chiaro,Argia
-Cliente,Cliente,Client,Cliente,Bezeroa
-Comprobado: %s,Comprobado: %s,Checked: %s,Verificato: %s,Egiaztatuta: %s
-Comprobando %d/%d…,Comprobando %d/%d…,Checking %d/%d…,Verifica %d/%d…,Egiaztatzen %d/%d…
-Comprobando 0/%d…,Comprobando 0/%d…,Checking 0/%d…,Verifica 0/%d…,Egiaztatzen 0/%d…
-Comprobando…,Comprobando…,Checking…,Verifica…,Egiaztatzen…
-Comprobaciones por día,Comprobaciones por día,Checks per day,Verifiche al giorno,Egiaztapenak eguneko
-Comprobar actualizaciones,Comprobar actualizaciones,Check for updates,Controlla aggiornamenti,Egiaztatu eguneraketak
-Comprobar actualizaciones…,Comprobar actualizaciones…,Check for updates…,Controlla aggiornamenti…,Egiaztatu eguneraketak…
-Comprobar cada,Comprobar cada,Check every,Controlla ogni,Egiaztatze-maiztasuna
-Comprobar enlaces,Comprobar enlaces,Check links,Verifica link,Egiaztatu estekak
-Comprobar enlaces al abrir,Comprobar enlaces al abrir,Check links on open,Verifica link all'apertura,Egiaztatu estekak irekitzean
-Conexión cerrada,Conexión cerrada,Connection closed,Connessione chiusa,Konexioa itxita
-Copiar URL,Copiar URL,Copy URL,Copia URL,Kopiatu URLa
-Código: %s,Código: %s,Code: %s,Codice: %s,Kodea: %s
-Códigos fuente,Códigos fuente,Source code,Codice sorgente,Iturburu-kodea
-Dashboard de estadísticas,Dashboard de estadísticas,Statistics dashboard,Dashboard delle statistiche,Estatistika-panela
-Dashboard de estadísticas…,Dashboard de estadísticas…,Statistics dashboard…,Dashboard delle statistiche…,Estatistika-panela…
-Desactivado,Desactivado,Disabled,Disattivato,Desgaituta
-Descartar,Descartar,Discard,Scarta,Baztertu
-Descripción,Descripción,Description,Descrizione,Deskribapena
-días,días,days,giorni,egun
-Diagnóstico guardado en %s.,Diagnóstico guardado en %s.,Diagnostics saved to %s.,Diagnostica salvata in %s.,Diagnostikoa %s(e)n gordeta.
-Disp.,Disp.,Avail.,Disp.,Eskurag.
-Disponible: %s %% (%d comprobados),Disponible: %s %% (%d comprobados),Available: %s %% (%d checked),Disponibile: %s %% (%d verificati),Eskuragarri: %s %% (%d egiaztatuta)
-Disponibilidad,Disponibilidad,Availability,Disponibilità,Eskuragarritasuna
-Disponibilidad de %d enlaces comprobados,Disponibilidad de %d enlaces comprobados,Availability of %d checked links,Disponibilità di %d link verificati,%d esteka egiaztaturen eskuragarritasuna
-Disponibles,Disponibles,Available,Disponibili,Eskuragarriak
-Doble clic en una fila para verla en la lista.,Doble clic en una fila para verla en la lista.,Double-click a row to see it in the list.,Fai doppio clic su una riga per vederla nella lista.,Egin klik bikoitza errenkada batean zerrendan ikusteko.
-Editar…,Editar…,Edit…,Modifica…,Editatu…
-Editar enlace,Editar enlace,Edit link,Modifica link,Editatu esteka
-Ej. (Cliente + códigos),Ej. (Cliente + códigos),E.g. (Client + code),Es. (Cliente + codice),Adib. (Bezeroa + kodeak)
-Ej. Mi servidor AO,Ej. Mi servidor AO,E.g. My AO server,Es. Il mio server AO,Adib. Nire AO zerbitzaria
-"Ej. AO 1.6, español, servidor PVP","Ej. AO 1.6, español, servidor PVP","E.g. AO 1.6, Spanish, PvP server","Es. AO 1.6, spagnolo, server PvP","Adib. AO 1.6, gaztelania, PVP zerbitzaria"
-El catálogo está vacío.,El catálogo está vacío.,The catalog is empty.,Il catalogo è vuoto.,Katalogoa hutsik dago.
-El nombre no puede estar vacío.,El nombre no puede estar vacío.,The name cannot be empty.,Il nome non può essere vuoto.,Izena ezin da hutsik egon.
-Elegir imagen,Elegir imagen,Choose image,Scegli immagine,Aukeratu irudia
-Elegir imagen…,Elegir imagen…,Choose image…,Scegli immagine…,Aukeratu irudia…
-Eliminar,Eliminar,Delete,Elimina,Ezabatu
-Eliminar enlace,Eliminar enlace,Delete link,Elimina link,Ezabatu esteka
-Enlace,Enlace,Link,Link,Esteka
-Enlace actualizado: %s,Enlace actualizado: %s,Link updated: %s,Link aggiornato: %s,Esteka eguneratuta: %s
-Enlace agregado: %s,Enlace agregado: %s,Link added: %s,Link aggiunto: %s,Esteka gehituta: %s
-Enlace eliminado,Enlace eliminado,Link deleted,Link eliminato,Esteka ezabatuta
-Enlaces que más han caído,Enlaces que más han caído,Links that have failed the most,Link non raggiungibili più spesso,Gehien erori diren estekak
-Error HTTP %d,Error HTTP %d,HTTP error %d,Errore HTTP %d,HTTP errorea %d
-Error TLS/HTTPS,Error TLS/HTTPS,TLS/HTTPS error,Errore TLS/HTTPS,TLS/HTTPS errorea
-Escaneo,Escaneo,Scanning,Scansione,Eskaneatzea
-Error de conexión,Error de conexión,Connection error,Errore di connessione,Konexio-errorea
-Estado,Estado,Status,Stato,Egoera
-Estadísticas del catálogo,Estadísticas del catálogo,Catalog statistics,Statistiche del catalogo,Katalogoaren estatistikak
-Estadísticas exportadas.,Estadísticas exportadas.,Statistics exported.,Statistiche esportate.,Estatistikak esportatuta.
-Etiquetas,Etiquetas,Tags,Etichette,Etiketak
-Estás al día (v%s),Estás al día (v%s),You are up to date (v%s),Sei aggiornato (v%s),Eguneratuta zaude (v%s)
-"Existe, acceso restringido (%d)","Existe, acceso restringido (%d)","Exists, restricted access (%d)","Esiste, accesso limitato (%d)","Badago, sarbide mugatua (%d)"
-Exportar catálogo JSON,Exportar catálogo JSON,Export JSON catalogue,Esporta catalogo JSON,Esportatu JSON katalogoa
-Exportar CSV,Exportar CSV,Export CSV,Esporta CSV,Esportatu CSVa
-Exportar diagnóstico,Exportar diagnóstico,Export diagnostics,Esporta diagnostica,Esportatu diagnostikoa
-Exportar diagnóstico…,Exportar diagnóstico…,Export diagnostics…,Esporta diagnostica…,Esportatu diagnostikoa…
-Exportar estadísticas,Exportar estadísticas,Export statistics,Esporta statistiche,Esportatu estatistikak
-Exportar JSON,Exportar JSON,Export JSON,Esporta JSON,Esportatu JSONa
-Exportar…,Exportar…,Export…,Esporta…,Esportatu…
-Fecha,Fecha,Date,Data,Data
-Filtro aplicado desde el dashboard.,Filtro aplicado desde el dashboard.,Filter applied from the dashboard.,Filtro applicato dal dashboard.,Iragazkia panelatik aplikatuta.
-Filtro eliminado: %s,Filtro eliminado: %s,Filter deleted: %s,Filtro eliminato: %s,Iragazkia ezabatuta: %s
-Filtro guardado: %s,Filtro guardado: %s,Filter saved: %s,Filtro salvato: %s,Iragazkia gordeta: %s
-Gestor de enlaces AO,Gestor de enlaces AO,AO Link Manager,Gestore di link AO,AO estekak kudeatzailea
-Guardar,Guardar,Save,Salva,Gorde
-Guardar cambios,Guardar cambios,Save changes,Salva modifiche,Gorde aldaketak
-Guardar filtro…,Guardar filtro…,Save filter…,Salva filtro…,Gorde iragazkia…
-Guardar filtro como…,Guardar filtro como…,Save filter as…,Salva filtro come…,Gorde iragazkia honela…
-Guardar informe de disponibilidad,Guardar informe de disponibilidad,Save availability report,Salva report di disponibilità,Gorde eskuragarritasun-txostena
-Idioma,Idioma,Language,Lingua,Hizkuntza
-Hay una comprobación pendiente. ¿Reanudar el escaneo?,Hay una comprobación pendiente. ¿Reanudar el escaneo?,A check is pending. Resume scanning?,C'è una verifica in sospeso. Riprendere la scansione?,Egiaztapen bat dago zain. Eskaneatzea berrekin?
-Hay una nueva versión: %s,Hay una nueva versión: %s,A new version is available: %s,È disponibile una nuova versione: %s,Bertsio berri bat dago: %s
-Historial de disponibilidad,Historial de disponibilidad,Availability history,Cronologia disponibilità,Eskuragarritasunaren historia
-Historial…,Historial…,History…,Cronologia…,Historia…
-Imagen,Imagen,Image,Immagine,Irudia
-Importar…,Importar…,Import…,Importa…,Inportatu…
-Individual,Individual,Single,Singolo,Banakakoa
-Informe %s guardado (%d enlaces).,Informe %s guardado (%d enlaces).,%s report saved (%d links).,Report %s salvato (%d link).,%s txostena gordeta (%d esteka).
-Informe de disponibilidad…,Informe de disponibilidad…,Availability report…,Report di disponibilità…,Eskuragarritasun-txostena…
-La URL debe empezar por http:// o https://.,La URL debe empezar por http:// o https://.,The URL must start with http:// or https://.,L'URL deve iniziare con http:// o https://.,URLak http:// edo https:// hasi behar du.
-La URL no puede estar vacía.,La URL no puede estar vacía.,The URL cannot be empty.,L'URL non può essere vuoto.,URLa ezin da hutsik egon.
-Limpiar,Limpiar,Clean,Pulisci,Garbitu
-Limpiar capturas huérfanas,Limpiar capturas huérfanas,Clean orphan captures,Pulisci catture orfane,Garbitu kaptura umezurtzak
-Limpiar capturas huérfanas…,Limpiar capturas huérfanas…,Clean orphan captures…,Pulisci catture orfane…,Garbitu kaptura umezurtzak…
-Listo: %d caídos de %d,Listo: %d caídos de %d,Done: %d down of %d,Fatto: %d non raggiungibili su %d,Eginda: %d erori %d(e)tik
-"Marcar los fallos de red como «sin comprobar» en vez de «caído»","Marcar los fallos de red como «sin comprobar» en vez de «caído»","Mark network failures as «not checked» instead of «down»",Segnare i guasti di rete come «non verificato» invece di «non raggiungibile»,"Sare-erroreak «egiaztatu gabe» gisa markatu, «erori» beharrean"
-Nada que comprobar,Nada que comprobar,Nothing to check,Niente da verificare,Ezer ez egiaztatzeko
-No existe (%d),No existe (%d),Does not exist (%d),Non esiste (%d),Ez da existitzen (%d)
-No existe el dominio,No existe el dominio,Domain does not exist,Il dominio non esiste,Domeinua ez da existitzen
-No existe ese filtro.,No existe ese filtro.,That filter does not exist.,Quel filtro non esiste.,Iragazki hori ez da existitzen.
-No hay capturas huérfanas.,No hay capturas huérfanas.,No orphan captures.,Nessuna cattura orfana.,Ez dago kaptura umezurtzik.
-No hay copia de seguridad disponible.,No hay copia de seguridad disponible.,No backup available.,Nessun backup disponibile.,Ez dago segurtasun-kopiarik eskuragarri.
-No se añadió ningún enlace.,No se añadió ningún enlace.,No link was added.,Nessun link è stato aggiunto.,Ez zen estekarik gehitu.,No se agregó ningún enlace.
-No se encontró el enlace.,No se encontró el enlace.,Link not found.,Link non trovato.,Ez zen esteka aurkitu.
-No se pudo cargar la imagen.,No se pudo cargar la imagen.,Could not load the image.,Impossibile caricare l'immagine.,Ezin izan zen irudia kargatu.
-No se pudo comprobar actualizaciones.,No se pudo comprobar actualizaciones.,Could not check for updates.,Impossibile controllare gli aggiornamenti.,Ezin izan ziren eguneraketak egiaztatu.
-No se pudo conectar,No se pudo conectar,Could not connect,Impossibile connettersi,Ezin izan zen konektatu
-No se pudo enviar la petición,No se pudo enviar la petición,Could not send the request,Impossibile inviare la richiesta,Ezin izan zen eskaera bidali
-No se pudo exportar el diagnóstico (%d errores).,No se pudo exportar el diagnóstico (%d errores).,Could not export diagnostics (%d errors).,Impossibile esportare la diagnostica (%d errori).,Ezin izan zen diagnostikoa esportatu (%d errore).
-No se pudo exportar.,No se pudo exportar.,Could not export.,Impossibile esportare.,Ezin izan zen esportatu.
-No se pudo guardar el catálogo.,No se pudo guardar el catálogo.,Could not save the catalogue.,Impossibile salvare il catalogo.,Ezin izan zen katalogoa gorde.
-No se pudo guardar el enlace.,No se pudo guardar el enlace.,Could not save the link.,Impossibile salvare il link.,Ezin izan zen esteka gorde.
-No se pudo guardar el lote.,No se pudo guardar el lote.,Could not save the batch.,Impossibile salvare il lotto.,Ezin izan zen sorta gorde.
-No se pudo guardar el orden.,No se pudo guardar el orden.,Could not save the order.,Impossibile salvare l'ordine.,Ezin izan zen ordena gorde.
-No se pudo guardar la configuración.,No se pudo guardar la configuración.,Could not save the settings.,Impossibile salvare la configurazione.,Ezin izan zen konfigurazioa gorde.
-No se pudo iniciar la conexión,No se pudo iniciar la conexión,Could not start the connection,Impossibile avviare la connessione,Ezin izan zen konexioa hasi
-No se pudo procesar la imagen.,No se pudo procesar la imagen.,Could not process the image.,Impossibile elaborare l'immagine.,Ezin izan zen irudia prozesatu.
-No se pudo restaurar la copia.,No se pudo restaurar la copia.,Could not restore the backup.,Impossibile ripristinare il backup.,Ezin izan zen kopiatik berreskuratu.
-No se pudo escribir el catálogo base.,No se pudo escribir el catálogo base.,Could not write the base catalogue.,Impossibile scrivere il catalogo di base.,Ezin izan zen oinarrizko katalogoa idatzi.
-Nombre,Nombre,Name,Nome,Izena
-Nueva versión disponible,Nueva versión disponible,New version available,Nuova versione disponibile,Bertsio berria eskuragarri
-OK (%d),OK (%d),OK (%d),OK (%d),OK (%d)
-Oscuro,Oscuro,Dark,Scuro,Iluna
-"Ordenar por %s","Ordenar por %s","Sort by %s",Ordina per %s,Ordenatu %s(r)en arabera
-Otro,Otro,Other,Altro,Beste bat
-Parche,Parche,Patch,Patch,Adabakia
-Pasa el ratón por una barra para ver el detalle.,Pasa el ratón por una barra para ver el detalle.,Hover a bar for details.,Passa il mouse su una barra per vedere il dettaglio.,Pasatu sagua barra baten gainetik xehetasuna ikusteko.,Pasá el mouse por una barra para ver el detalle.
-Pega al menos una URL.,Pega al menos una URL.,Paste at least one URL.,Incolla almeno un URL.,Itsatsi URL bat gutxienez.,Pegá al menos una URL.
-Por categoría,Por categoría,By category,Per categoria,Kategoriaren arabera
-Por host (problemáticos),Por host (problemáticos),By host (troubled),Per host (problematici),Ostalariaren arabera (arazoak)
-Preferencias,Preferencias,Preferences,Preferenze,Hobespenak
-Preferencias…,Preferencias…,Preferences…,Preferenze…,Hobespenak…
-Presets…,Presets…,Presets…,Preset…,Aurrezarpenak…
-Quitar imagen,Quitar imagen,Remove image,Rimuovi immagine,Kendu irudia
-Rango de días incluido en el gráfico,Rango de días incluido en el gráfico,Day range included in the chart,Intervallo di giorni incluso nel grafico,Grafikoan sartutako egun-tartea
-Re-comprobando %s…,Re-comprobando %s…,Re-checking %s…,Riverifica %s…,Berregiaztatzen %s…
-Reintentar los fallos transitorios (2 veces),Reintentar los fallos transitorios (2 veces),Retry transient failures (twice),Riprova i guasti temporanei (2 volte),Saiatu berriro behin-behineko hutsegiteekin (2 aldiz)
-Reanudar,Reanudar,Resume,Riprendi,Berrekin
-Reanudar escaneo,Reanudar escaneo,Resume scan,Riprendi scansione,Berrekin eskaneatzea
-Redirección inválida (%d),Redirección inválida (%d),Invalid redirect (%d),Reindirizzamento non valido (%d),Balidogabeko birbideratzea (%d)
-Restaurar,Restaurar,Restore,Ripristina,Berreskuratu
-Restaurar copia,Restaurar copia,Restore backup,Ripristina backup,Berreskuratu kopia
-Restaurar copia…,Restaurar copia…,Restore backup…,Ripristina backup…,Berreskuratu kopia…
-Rotos:,Rotos:,Broken:,Rotti:,Hautsiak:
-Salir,Salir,Quit,Esci,Irten
-Se añadieron %d enlaces.,Se añadieron %d enlaces.,%d links added.,Sono stati aggiunti %d link.,%d esteka gehitu ziren.,Se agregaron %d enlaces.
-Servidor,Servidor,Server,Server,Zerbitzaria
-Sin comprobaciones todavía,Sin comprobaciones todavía,No checks yet,Ancora nessuna verifica,Oraindik egiaztapenik gabe
-Sin comprobar,Sin comprobar,Not checked,Non verificato,Egiaztatu gabe
-Sin comprobar: %d,Sin comprobar: %d,Not checked: %d,Non verificato: %d,Egiaztatu gabe: %d
-Sin historial,Sin historial,No history,Nessuna cronologia,Historiarik gabe
-Sin conexión segura,Sin conexión segura,No secure connection,Nessuna connessione sicura,Konexio segururik gabe
-Sin respuesta (tiempo agotado),Sin respuesta (tiempo agotado),No response (timed out),Nessuna risposta (tempo scaduto),Erantzunik gabe (denbora agortuta)
-"Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído».","Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído».","Only for catalogs with old hosts: the link becomes «valid with a warning» instead of «down».",Solo per cataloghi con host vecchi: il link diventa «valido con avviso» invece di «non raggiungibile».,"Ostalari zaharrak dituzten katalogoetarako soilik: esteka «baliozkoa ohartarazpenarekin» bihurtzen da, «erori» beharrean."
-Subir,Subir,Move up,Sposta su,Igo
-Tema,Tema,Theme,Tema,Gaia
-Timeout por enlace (segundos),Timeout por enlace (segundos),Per-link timeout (seconds),Timeout per link (secondi),Estekako denbora-muga (segundoak)
-Todas,Todas,All,Tutte,Guztiak
-Todas las palabras,Todas las palabras,All words,Tutte le parole,Hitz guztiak
-Todo el histórico,Todo el histórico,All history,Tutta la cronologia,Historia osoa
-Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,No checks yet. Press Check links to start.,Ancora nessuna verifica. Premi Verifica link per iniziare.,Oraindik ez dago egiaztapenik. Sakatu Egiaztatu estekak hasteko.,Todavía no hay comprobaciones. Pulsá Comprobar enlaces para empezar.
-Todos,Todos,All,Tutti,Denak
-Total,Total,Total,Totale,Guztira
-Total:,Total:,Total:,Totale:,Guztira:
-URL,URL,URL,URL,URLa
-URL copiada: %s,URL copiada: %s,URL copied: %s,URL copiato: %s,URLa kopiatuta: %s
-URL inválida,URL inválida,Invalid URL,URL non valido,URL baliogabea
-Una URL por línea,Una URL por línea,One URL per line,Un URL per riga,URL bat lerroko
-Última,Última,Last,Ultima,Azkena
-Varias,Varias,Multiple,Multiple,Hainbat
-Ver release,Ver release,View release,Vedi release,Ikusi bertsioa
-Verificaciones en paralelo,Verificaciones en paralelo,Parallel checks,Verifiche in parallelo,Egiaztapenak paraleloan
-Vista grilla,Vista grilla,Grid view,Vista griglia,Sareta-ikuspegia
-Vista lista,Vista lista,List view,Vista elenco,Zerrenda-ikuspegia
-Volver a comprobar,Volver a comprobar,Re-check,Verifica di nuovo,Egiaztatu berriro
-Válido,Válido,Working,Funzionante,Baliozkoa
-Válidos,Válidos,Valid,Validi,Baliozkoak
-Válidos: %d,Válidos: %d,Valid: %d,Validi: %d,Baliozkoak: %d
-Veces,Veces,Times,Volte,Aldiak
-Ya existe: %s,Ya existe: %s,Already exists: %s,Esiste già: %s,Dagoeneko badago: %s
-¿Borrar %d capturas huérfanas?,¿Borrar %d capturas huérfanas?,Delete %d orphan captures?,Eliminare %d catture orfane?,Ezabatu %d kaptura umezurtz?
-¿Eliminar «%s» para siempre?,¿Eliminar «%s» para siempre?,Delete “%s” forever?,Eliminare «%s» per sempre?,Ezabatu «%s» betiko?
-¿Reanudar escaneo de %d enlaces?,¿Reanudar escaneo de %d enlaces?,Resume scanning %d links?,Riprendere la scansione di %d link?,Berrekin %d estekaren eskaneatzea?
-¿Restaurar el catálogo desde la copia de seguridad?,¿Restaurar el catálogo desde la copia de seguridad?,Restore the catalogue from the backup?,Ripristinare il catalogo dal backup?,Berreskuratu katalogoa segurtasun-kopiatik?
-"Abrir el dashboard","Abrir el dashboard","Open the dashboard",Apri il dashboard,Ireki panela
-Cambio,Change,Change,Modifica,Aldaketa
-Cambios desde la última vez,Cambios desde la última vez,Changes since last time,Modifiche dall'ultima volta,Aldaketak azken alditik
-Cambios exportados.,Cambios exportados.,Changes exported.,Modifiche esportate.,Aldaketak esportatuta.
-cambió,cambió,changed,modificato,aldatu da
-"El historial de cambios llega hasta %s.","El historial de cambios llega hasta %s.","The change history goes back to %s.",La cronologia delle modifiche arriva fino a %s.,Aldaketen historia %s(r)aino iristen da.
-Detalle,Detalle,Detail,Dettaglio,Xehetasuna
-Exportar cambios,Exportar cambios,Export changes,Esporta modifiche,Esportatu aldaketak
-Filtrar en la lista,Filtrar en la lista,Filter in the list,Filtra nell'elenco,Iragazi zerrendan
-"Ha cambiado desde la última vez y ahora está caído.","Ha cambiado desde la última vez y ahora está caído.","It changed since last time and is now down.",È cambiato dall'ultima volta e ora non è raggiungibile.,Azken alditik aldatu da eta orain erorita dago.
-"Ha cambiado desde la última vez y ahora está válido.","Ha cambiado desde la última vez y ahora está válido.","It changed since last time and is now up.",È cambiato dall'ultima volta e ora è funzionante.,Azken alditik aldatu da eta orain baliozkoa da.
-"Ha cambiado desde la última vez.","Ha cambiado desde la última vez.","It changed since last time.",È cambiato dall'ultima volta.,Azken alditik aldatu da.
-Sin cambios,Sin cambios,No changes,Nessuna modifica,Aldaketarik gabe
-"%d nuevos caídos","%d nuevos caídos","%d newly down",%d nuovi non raggiungibili,%d erori berri
-"%d nuevo caído","%d nuevo caído","%d newly down",%d nuovo non raggiungibile,%d erori berri
-%d recuperados,%d recuperados,%d recovered,%d recuperati,%d berreskuratu
-"%d recuperado","%d recuperado","%d recovered",%d recuperato,%d berreskuratu
-%d reubicados,%d reubicados,%d moved,%d spostati,%d lekuz aldatuta
-"%d reubicado","%d reubicado","%d moved",%d spostato,%d lekuz aldatuta
-"%s → %s",%s → %s,%s → %s,%s → %s,%s → %s
-Sin cambios desde la última vez,Sin cambios desde la última vez,No changes since last time,Nessuna modifica dall'ultima volta,Aldaketarik ez azken alditik
-Viendo cambios…,Viendo cambios…,Viewing changes…,Visualizzazione modifiche…,Aldaketak ikusten…
-No se pudo guardar el historial de cambios.,No se pudo guardar el historial de cambios.,Could not save the change history.,Impossibile salvare la cronologia delle modifiche.,Ezin izan zen aldaketen historia gorde.
-1 seleccionado,1 seleccionado,1 selected,1 selezionato,1 hautatuta
-%d seleccionados,%d seleccionados,%d selected,%d selezionati,%d hautatuta
-%d URLs copiadas,%d URLs copiadas,%d URLs copied,%d URL copiati,%d URL kopiatuta
-%d enlaces eliminados,%d enlaces eliminados,%d links deleted,%d link eliminati,%d esteka ezabatuta
-¿Eliminar %d enlaces para siempre?,¿Eliminar %d enlaces para siempre?,Delete %d links for good?,Eliminare %d link per sempre?,Ezabatu %d esteka betiko?
-0 seleccionados,0 seleccionados,0 selected,0 selezionati,0 hautatuta
-Seleccionar lo que veo,Seleccionar lo que veo,Select what I see,Seleziona ciò che vedo,Hautatu ikusten dudana
-Comprobar seleccionados,Comprobar seleccionados,Check selected,Verifica selezionati,Egiaztatu hautatutakoak
-Copiar URLs,Copiar URLs,Copy URLs,Copia URL,Kopiatu URLak
-Exportar selección,Exportar selección,Export selection,Esporta selezione,Esportatu hautapena
-Eliminar seleccionados,Eliminar seleccionados,Delete selected,Elimina selezionati,Ezabatu hautatutakoak
-Quitar selección,Quitar selección,Clear selection,Annulla selezione,Kendu hautapena
-"Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Selected: Ctrl+C copies, Ctrl+Enter checks, Shift+Delete deletes.","Selezionato: Ctrl+C copia, Ctrl+Invio verifica, Maiusc+Canc elimina.","Hautatuta: Ctrl+C kopiatu, Ctrl+Sartu egiaztatu, Maius+Ezabatu ezabatu."
-Actualizar URL,Actualizar URL,Update URL,Aggiorna URL,Eguneratu URLa
-Actualizar,Actualizar,Update,Aggiorna,Eguneratu
-Enlaces reubicados,Enlaces reubicados,Relocated links,Link spostati,Lekuz aldatutako estekak
-Actualizar todos,Actualizar todos,Update all,Aggiorna tutti,Eguneratu denak
-Origen,Origen,Origin,Origine,Jatorria
-Destino,Destino,Destination,Destinazione,Helmuga
-Comprobado,Comprobado,Checked,Verificato,Egiaztatuta
-Actualizar URL a la nueva,Actualizar URL a la nueva,Update URL to the new one,Aggiorna URL a quella nuova,Eguneratu URLa berrira
-movido,movido,moved,spostato,lekuz aldatuta
-No hay una redirección que actualizar.,No hay una redirección que actualizar.,There is no redirect to update.,Non c'è alcun reindirizzamento da aggiornare.,Ez dago eguneratzeko birbideratzerik.
-La URL nueva es la misma.,La URL nueva es la misma.,The new URL is the same.,Il nuovo URL è lo stesso.,URL berria bera da.
-Redirige a: %s,Redirige a: %s,Redirects to: %s,Reindirizza a: %s,Hona birbideratzen du: %s
-Solo cambia el dominio o el https: %s,Solo cambia el dominio o el https: %s,Only the domain or https changed: %s,Cambia solo il dominio o https: %s,Domeinua edo https-a soilik aldatzen da: %s
-Cambiar la URL de %s por %s.,Cambiar la URL de %s por %s.,Change the URL of %s to %s.,Cambiare l'URL di %s in %s.,Aldatu %s(r)en URLa %s(r)engatik.
-¿Actualizar «%s» a %s?,¿Actualizar «%s» a %s?,Update «%s» to %s?,Aggiornare «%s» a %s?,Eguneratu «%s» %s(r)a?
-¿Actualizar la URL de %d enlaces a la nueva?,¿Actualizar la URL de %d enlaces a la nueva?,Update the URL of %d links to the new one?,Aggiornare l'URL di %d link a quella nuova?,Eguneratu %d estekaren URLa berrira?
-1 URL actualizada,1 URL actualizada,1 URL updated,1 URL aggiornato,1 URL eguneratuta
-%d URLs actualizadas,%d URLs actualizadas,%d URLs updated,%d URL aggiornati,%d URL eguneratuta
-Instantáneas diarias,Instantáneas diarias,Daily snapshots,Istantanee giornaliere,Eguneroko argazkiak
-"Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga.","Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga.","How many days of daily snapshot are kept for the dashboard chart. Anything older is purged.","Quanti giorni di istantanea giornaliera vengono conservati per il grafico del dashboard. Ciò che supera questo limite viene eliminato.","Zenbat eguneroko argazki gordetzen diren panelaren grafikoan. Hortik haratagoa ezabatu egiten da."
-Estado del catálogo por día,Estado del catálogo por día,Catalogue state per day,Stato del catalogo per giorno,Katalogoaren egoera egunez egun
-Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial.,Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial.,No daily snapshots yet: the chart shows the state changes from history.,Ancora nessuna istantanea giornaliera: il grafico mostra i cambi di stato della cronologia.,Oraindik ez dago eguneroko argazkirik: grafikoak historiako egoera-aldaketak erakusten ditu.
-Purgar instantáneas antiguas…,Purgar instantáneas antiguas…,Purge old snapshots…,Elimina istantanee vecchie…,Ezabatu argazki zaharrak…
-No se pudieron purgar las instantáneas.,No se pudieron purgar las instantáneas.,Could not purge the snapshots.,Impossibile eliminare le istantanee.,Ezin izan ziren argazkiak ezabatu.
-No hay instantáneas más antiguas de %d días.,No hay instantáneas más antiguas de %d días.,There are no snapshots older than %d days.,Non ci sono istantanee più vecchie di %d giorni.,Ez dago %d egun baino zaharrago den argazkirik.
-Instantáneas antiguas eliminadas: %d,Instantáneas antiguas eliminadas: %d,Old snapshots deleted: %d,Istantanee vecchie eliminate: %d,Argazki zaharrak ezabatuta: %d
-Sin datos: ese día no hubo Instantánea.,Sin datos: ese día no hubo Instantánea.,No data: no snapshot that day.,Nessun dato: quel giorno non c'era alcuna istantanea.,Daturik gabe: egun horretan ez zen argazkirik egon.
-Cambios de estado: %d,Cambios de estado: %d,State changes: %d,Cambi di stato: %d,Egoera-aldaketak: %d
-"Desde el día anterior: %+d válidos, %+d caídos","Desde el día anterior: %+d válidos, %+d caídos","Since the previous day: %+d valid, %+d broken","Rispetto al giorno precedente: %+d validi, %+d non raggiungibili","Aurreko egunetik: %+d baliozko, %+d erori"
-"Almacenamiento: %s · %d enlaces · %d estados · %d capturas · %s en disco","Almacenamiento: %s · %d enlaces · %d estados · %d capturas · %s en disco","Storage: %s · %d links · %d states · %d screenshots · %s on disk",Archiviazione: %s · %d link · %d stati · %d catture · %s su disco,Biltegiratea: %s · %d esteka · %d egoera · %d kaptura · %s diskoan
-"%d B","%d B","%d B",%d B,%d B
-"%.1f KB","%.1f KB","%.1f KB",%.1f KB,%.1f KB
-"%.1f MB","%.1f MB","%.1f MB",%.1f MB,%.1f MB
-"No se pudo migrar al almacenamiento elegido: %s","No se pudo migrar al almacenamiento elegido: %s","Could not migrate to the chosen storage: %s",Non è stato possibile migrare allo spazio di archiviazione scelto: %s,Ezin izan zen aukeratutako biltegira migratu: %s
-"%s: %d de %d","%s: %d de %d","%s: %d of %d","%s: %d di %d","%s: %d / %d"
-"recuentos distintos","recuentos distintos","counts differ",conteggi diversi,zenbaketak desberdinak
-"Se copiaron los datos, pero no se pudo guardar la preferencia: %s","Se copiaron los datos, pero no se pudo guardar la preferencia: %s","The data was copied, but the preference could not be saved: %s","I dati sono stati copiati, ma non è stato possibile salvare la preferenza: %s","Datuak kopiatu ziren, baina ezin izan zen hobespena gorde: %s"
-"Datos copiados a %s. Reinicia para usarlos.","Datos copiados a %s. Reinicia para usarlos.","Data copied to %s. Restart to use it.","Dati copiati in %s. Riavvia per utilizzarli.","Datuak %s(e)ra kopiatuta. Berrabiarazi erabiltzeko.","Datos copiados a %s. Reiniciá para usarlos."
-"Almacenamiento","Almacenamiento","Storage",Archiviazione,Biltegiratzea
-"Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json.","Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json.","Folder holding the data and the screenshots. Read from user://almacenamiento.json.",Cartella in cui risiedono i dati e le catture. Si legge da user://almacenamiento.json.,Datuak eta kapturak bizi diren karpeta. user://almacenamiento.json(e)tik irakurtzen da.
-"Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Pick another folder and copy everything there. It applies after a restart.","Scegli un'altra cartella e copia tutto lì. Si applica al riavvio.","Aukeratu beste karpeta bat eta kopiatu dena hara. Berrabiaraztean aplikatzen da.","Elegí otra carpeta y copiá todo ahí. Se aplica al reiniciar."
-"Cambiar carpeta...","Cambiar carpeta...","Change folder...",Cambia cartella...,Aldatu karpeta...
-"Abrir carpeta","Abrir carpeta","Open folder",Apri cartella,Ireki karpeta
-"Lo que ocupa el almacenamiento ahora mismo.","Lo que ocupa el almacenamiento ahora mismo.","What the storage is using right now.",Quanto occupa l'archiviazione in questo momento.,Biltegirateak oraintxe okupatzen duena.
-"Elige la carpeta de datos","Elige la carpeta de datos","Choose the data folder","Scegli la cartella dei dati",Aukeratu datuen karpeta,"Elegí la carpeta de datos"
-"%s\nOrigen: %s","%s\nOrigen: %s","%s\nSource: %s","%s\nOrigine: %s","%s\nJatorria: %s"
-"El modo «%s» todavía no está disponible.","El modo «%s» todavía no está disponible.","The «%s» mode is not available yet.",La modalità «%s» non è ancora disponibile.,«%s» modua oraindik ez dago eskuragarri.
-"Los datos ahora van en %s. Reinicia para usarlos.","Los datos ahora van en %s. Reinicia para usarlos.","Your data now goes in %s. Restart to use it.","Ora i dati vanno in %s. Riavvia per utilizzarli.","Datuak orain %s(e)n daude. Berrabiarazi erabiltzeko.","Los datos ahora van en %s. Reiniciá para usarlos."
-"Cómo se guardan los datos","Cómo se guardan los datos","How the data is stored",Come vengono salvati i dati,Nola gordetzen diren datuak
-"Ficheros sueltos","Ficheros sueltos","Separate files","File separati",Fitxategi solteak,"Archivos sueltos"
-"Un único fichero","Un único fichero","A single file","Un unico file",Fitxategi bakarra,"Un único archivo"
-"Base de datos","Base de datos","Database",Database,Datu-basea
-"Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Separate files: one JSON per thing. A single file: everything together, one write. Database: everything in one SQLite file.","File separati: un JSON per ogni cosa. Un unico file: tutto insieme, un unico salvataggio. Database: tutto in un file SQLite.","Fitxategi solteak: JSON bat gauzako. Fitxategi bakarra: dena elkarrekin, gordetze bakarra. Datu-basea: dena SQLite fitxategi batean.","Archivos sueltos: un JSON por cosa. Un único archivo: todo junto, un solo guardado. Base de datos: todo en un archivo SQLite."
+keys,es,en,it,eu,ca,es_AR
+%d enlaces,%d enlaces,%d links,%d link,%d esteka,%d enllaços
+"%d importados, %d omitidos.","%d importados, %d omitidos.","%d imported, %d skipped.","%d importati, %d saltati.","%d inportatu, %d saltatu.","%d importats, %d omesos."
+%d inválidas ignoradas.,%d inválidas ignoradas.,%d invalid ignored.,%d non valide ignorate.,%d baliogabe baztertu.,%d invàlides ignorades.
+%d omitidos (ya existían o sin URL válida).,%d omitidos (ya existían o sin URL válida).,%d skipped (already existing or no valid URL).,%d saltati (già esistenti o senza URL valido).,%d saltatu (lehendik zeuden edo URL baliogabea).,%d omesos (ja existien o sense URL vàlida).
+%d repetidas ignoradas.,%d repetidas ignoradas.,%d duplicates ignored.,%d duplicati ignorati.,%d errepikatu baztertu.,%d repetides ignorades.
+%s %s,%s %s,%s %s,%s %s,%s %s,%s %s
+%s — %s — %s,%s — %s — %s,%s — %s — %s,%s — %s — %s,%s — %s — %s,%s — %s — %s
+(%d errores),(%d errores),(%d errors),(%d errori),(%d errore),(%d errors)
+(%d intentos),(%d intentos),(%d attempts),(%d tentativi),(%d saiakera),(%d intents)
+7 días,7 días,7 days,7 giorni,7 egun,7 dies
+30 días,30 días,30 days,30 giorni,30 egun,30 dies
+90 días,90 días,90 days,90 giorni,90 egun,90 dies
+Aceptar los certificados TLS no válidos,Aceptar los certificados TLS no válidos,Accept invalid TLS certificates,Accetta i certificati TLS non validi,Onartu baliogabeko TLS ziurtagiriak,Accepta els certificats TLS no vàlids
+Activos:,Activos:,Working:,Attivi:,Aktiboak:,Actius:
+Agregar,Agregar,Add,Aggiungi,Gehitu,Afegeix
+Agregar enlace,Agregar enlace,Add link,Aggiungi link,Gehitu esteka,Afegeix enllaç
+Agregar varias URLs,Agregar varias URLs,Add multiple URLs,Aggiungi più URL,Gehitu hainbat URL,Afegeix diverses URL
+Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Añade enlaces o importa un catálogo para ver aquí sus estadísticas.,Add links or import a catalog to see its statistics here.,Aggiungi link o importa un catalogo per vedere qui le sue statistiche.,Gehitu estekak edo inportatu katalogo bat hemen bere estatistikak ikusteko.,Afegeix enllaços o importa un catàleg per veure aquí les seves estadístiques.,Agregá enlaces o importá un catálogo para ver acá sus estadísticas.
+Auto-escaneo,Auto-escaneo,Auto-scan,Scansione automatica,Eskaneatze automatikoa,Autoescaneig
+Automático,Automático,Automatic,Automatico,Automatikoa,Automàtic
+Bajar,Bajar,Move down,Sposta giù,Jaitsi,Baixa
+Buscar por nombre o descripción...,Buscar por nombre o descripción...,Search by name or description...,Cerca per nome o descrizione...,Bilatu izenaren edo deskribapenaren arabera...,Cerca per nom o descripció...
+Cancelar,Cancelar,Cancel,Annulla,Utzi,Cancel·la
+Captura reutilizada,Captura reutilizada,Capture reused,Cattura riutilizzata,Berrerabilitako kaptura,Captura reutilitzada
+Capturas huérfanas eliminadas: %d,Capturas huérfanas eliminadas: %d,Orphaned captures deleted: %d,Catture orfane eliminate: %d,Kaptura umezurtzak ezabatuta: %d,Captures òrfenes eliminades: %d
+Categoría,Categoría,Category,Categoria,Kategoria,Categoria
+Catálogo exportado (%d enlaces).,Catálogo exportado (%d enlaces).,Catalogue exported (%d links).,Catalogo esportato (%d link).,Katalogoa esportatuta (%d esteka).,Catàleg exportat (%d enllaços).
+Catálogo restaurado desde la copia.,Catálogo restaurado desde la copia.,Catalogue restored from backup.,Catalogo ripristinato dal backup.,Katalogoa segurtasun-kopiatik berreskuratuta.,Catàleg restaurat des de la còpia.
+Caído,Caído,Down,Non raggiungibile,Eroria,Caigut
+Caídos,Caídos,Down,Non raggiungibili,Eroriak,Caiguts
+Caídos / no existen,Caídos / no existen,Down / missing,Non raggiungibili / mancanti,Eroriak / ez dira existitzen,Caiguts / no existeixen
+Caídos: %d,Caídos: %d,Broken: %d,Non raggiungibili: %d,Eroriak: %d,Caiguts: %d
+Cada 1 hora,Cada 1 hora,Every hour,Ogni ora,Orduro,Cada hora
+Cada 15 minutos,Cada 15 minutos,Every 15 minutes,Ogni 15 minuti,15 minuturo,Cada 15 minuts
+Cada 30 minutos,Cada 30 minutos,Every 30 minutes,Ogni 30 minuti,30 minuturo,Cada 30 minuts
+Código,Código,Code,Codice,Kodea,Codi
+Cualquier palabra,Cualquier palabra,Any word,Qualsiasi parola,Edozein hitz,Qualsevol paraula
+Cerrar,Cerrar,Close,Chiudi,Itxi,Tanca
+Certificado no válido (aceptado),Certificado no válido (aceptado),Invalid certificate (accepted),Certificato non valido (accettato),Ziurtagiri baliogabea (onartuta),Certificat no vàlid (acceptat)
+"Certificado no válido (aceptado por preferencia)","Certificado no válido (aceptado por preferencia)","Invalid certificate (accepted by preference)",Certificato non valido (accettato per preferenza),Ziurtagiri baliogabea (hobespenagatik onartuta),Certificat no vàlid (acceptat per preferència)
+Certificado no válido (rechazado),Certificado no válido (rechazado),Invalid certificate (rejected),Certificato non valido (rifiutato),Ziurtagiri baliogabea (baztertuta),Certificat no vàlid (rebutjat)
+Claro,Claro,Light,Chiaro,Argia,Clar
+Cliente,Cliente,Client,Cliente,Bezeroa,Client
+Comprobado: %s,Comprobado: %s,Checked: %s,Verificato: %s,Egiaztatuta: %s,Comprovat: %s
+Comprobando %d/%d…,Comprobando %d/%d…,Checking %d/%d…,Verifica %d/%d…,Egiaztatzen %d/%d…,Comprovant %d/%d…
+Comprobando 0/%d…,Comprobando 0/%d…,Checking 0/%d…,Verifica 0/%d…,Egiaztatzen 0/%d…,Comprovant 0/%d…
+Comprobando…,Comprobando…,Checking…,Verifica…,Egiaztatzen…,Comprovant…
+Comprobaciones por día,Comprobaciones por día,Checks per day,Verifiche al giorno,Egiaztapenak eguneko,Comprovacions per dia
+Comprobar actualizaciones,Comprobar actualizaciones,Check for updates,Controlla aggiornamenti,Egiaztatu eguneraketak,Comprova actualitzacions
+Comprobar actualizaciones…,Comprobar actualizaciones…,Check for updates…,Controlla aggiornamenti…,Egiaztatu eguneraketak…,Comprova actualitzacions…
+Comprobar cada,Comprobar cada,Check every,Controlla ogni,Egiaztatze-maiztasuna,Comprova cada
+Comprobar enlaces,Comprobar enlaces,Check links,Verifica link,Egiaztatu estekak,Comprova enllaços
+Comprobar enlaces al abrir,Comprobar enlaces al abrir,Check links on open,Verifica link all'apertura,Egiaztatu estekak irekitzean,Comprova enllaços en obrir
+Conexión cerrada,Conexión cerrada,Connection closed,Connessione chiusa,Konexioa itxita,Connexió tancada
+Copiar URL,Copiar URL,Copy URL,Copia URL,Kopiatu URLa,Copia URL
+Código: %s,Código: %s,Code: %s,Codice: %s,Kodea: %s,Codi: %s
+Códigos fuente,Códigos fuente,Source code,Codice sorgente,Iturburu-kodea,Codi font
+Dashboard de estadísticas,Dashboard de estadísticas,Statistics dashboard,Dashboard delle statistiche,Estatistika-panela,Tauler d'estadístiques
+Dashboard de estadísticas…,Dashboard de estadísticas…,Statistics dashboard…,Dashboard delle statistiche…,Estatistika-panela…,Tauler d'estadístiques…
+Desactivado,Desactivado,Disabled,Disattivato,Desgaituta,Desactivat
+Descartar,Descartar,Discard,Scarta,Baztertu,Descarta
+Descripción,Descripción,Description,Descrizione,Deskribapena,Descripció
+días,días,days,giorni,egun,dies
+Diagnóstico guardado en %s.,Diagnóstico guardado en %s.,Diagnostics saved to %s.,Diagnostica salvata in %s.,Diagnostikoa %s(e)n gordeta.,Diagnòstic guardat a %s.
+Disp.,Disp.,Avail.,Disp.,Eskurag.,Disp.
+Disponible: %s %% (%d comprobados),Disponible: %s %% (%d comprobados),Available: %s %% (%d checked),Disponibile: %s %% (%d verificati),Eskuragarri: %s %% (%d egiaztatuta),Disponible: %s %% (%d comprovats)
+Disponibilidad,Disponibilidad,Availability,Disponibilità,Eskuragarritasuna,Disponibilitat
+Disponibilidad de %d enlaces comprobados,Disponibilidad de %d enlaces comprobados,Availability of %d checked links,Disponibilità di %d link verificati,%d esteka egiaztaturen eskuragarritasuna,Disponibilitat de %d enllaços comprovats
+Disponibles,Disponibles,Available,Disponibili,Eskuragarriak,Disponibles
+Doble clic en una fila para verla en la lista.,Doble clic en una fila para verla en la lista.,Double-click a row to see it in the list.,Fai doppio clic su una riga per vederla nella lista.,Egin klik bikoitza errenkada batean zerrendan ikusteko.,Doble clic en una fila per veure-la a la llista.
+Editar…,Editar…,Edit…,Modifica…,Editatu…,Edita…
+Editar enlace,Editar enlace,Edit link,Modifica link,Editatu esteka,Edita enllaç
+Ej. (Cliente + códigos),Ej. (Cliente + códigos),E.g. (Client + code),Es. (Cliente + codice),Adib. (Bezeroa + kodeak),Ex. (Client + codis)
+Ej. Mi servidor AO,Ej. Mi servidor AO,E.g. My AO server,Es. Il mio server AO,Adib. Nire AO zerbitzaria,Ex. El meu servidor AO
+"Ej. AO 1.6, español, servidor PVP","Ej. AO 1.6, español, servidor PVP","E.g. AO 1.6, Spanish, PvP server","Es. AO 1.6, spagnolo, server PvP","Adib. AO 1.6, gaztelania, PVP zerbitzaria","Ex. AO 1.6, espanyol, servidor PVP"
+El catálogo está vacío.,El catálogo está vacío.,The catalog is empty.,Il catalogo è vuoto.,Katalogoa hutsik dago.,El catàleg és buit.
+El nombre no puede estar vacío.,El nombre no puede estar vacío.,The name cannot be empty.,Il nome non può essere vuoto.,Izena ezin da hutsik egon.,El nom no pot estar buit.
+Elegir imagen,Elegir imagen,Choose image,Scegli immagine,Aukeratu irudia,Tria imatge
+Elegir imagen…,Elegir imagen…,Choose image…,Scegli immagine…,Aukeratu irudia…,Tria imatge…
+Eliminar,Eliminar,Delete,Elimina,Ezabatu,Elimina
+Eliminar enlace,Eliminar enlace,Delete link,Elimina link,Ezabatu esteka,Elimina enllaç
+Enlace,Enlace,Link,Link,Esteka,Enllaç
+Enlace actualizado: %s,Enlace actualizado: %s,Link updated: %s,Link aggiornato: %s,Esteka eguneratuta: %s,Enllaç actualitzat: %s
+Enlace agregado: %s,Enlace agregado: %s,Link added: %s,Link aggiunto: %s,Esteka gehituta: %s,Enllaç afegit: %s
+Enlace eliminado,Enlace eliminado,Link deleted,Link eliminato,Esteka ezabatuta,Enllaç eliminat
+Enlaces que más han caído,Enlaces que más han caído,Links that have failed the most,Link non raggiungibili più spesso,Gehien erori diren estekak,Enllaços que més han caigut
+Error HTTP %d,Error HTTP %d,HTTP error %d,Errore HTTP %d,HTTP errorea %d,Error HTTP %d
+Error TLS/HTTPS,Error TLS/HTTPS,TLS/HTTPS error,Errore TLS/HTTPS,TLS/HTTPS errorea,Error TLS/HTTPS
+Escaneo,Escaneo,Scanning,Scansione,Eskaneatzea,Escaneig
+Error de conexión,Error de conexión,Connection error,Errore di connessione,Konexio-errorea,Error de connexió
+Estado,Estado,Status,Stato,Egoera,Estat
+Estadísticas del catálogo,Estadísticas del catálogo,Catalog statistics,Statistiche del catalogo,Katalogoaren estatistikak,Estadístiques del catàleg
+Estadísticas exportadas.,Estadísticas exportadas.,Statistics exported.,Statistiche esportate.,Estatistikak esportatuta.,Estadístiques exportades.
+Etiquetas,Etiquetas,Tags,Etichette,Etiketak,Etiquetes
+Estás al día (v%s),Estás al día (v%s),You are up to date (v%s),Sei aggiornato (v%s),Eguneratuta zaude (v%s),Estàs al dia (v%s)
+"Existe, acceso restringido (%d)","Existe, acceso restringido (%d)","Exists, restricted access (%d)","Esiste, accesso limitato (%d)","Badago, sarbide mugatua (%d)","Existeix, accés restringit (%d)"
+Exportar catálogo JSON,Exportar catálogo JSON,Export JSON catalogue,Esporta catalogo JSON,Esportatu JSON katalogoa,Exporta catàleg JSON
+Exportar CSV,Exportar CSV,Export CSV,Esporta CSV,Esportatu CSVa,Exporta CSV
+Exportar diagnóstico,Exportar diagnóstico,Export diagnostics,Esporta diagnostica,Esportatu diagnostikoa,Exporta diagnòstic
+Exportar diagnóstico…,Exportar diagnóstico…,Export diagnostics…,Esporta diagnostica…,Esportatu diagnostikoa…,Exporta diagnòstic…
+Exportar estadísticas,Exportar estadísticas,Export statistics,Esporta statistiche,Esportatu estatistikak,Exporta estadístiques
+Exportar JSON,Exportar JSON,Export JSON,Esporta JSON,Esportatu JSONa,Exporta JSON
+Exportar…,Exportar…,Export…,Esporta…,Esportatu…,Exporta…
+Fecha,Fecha,Date,Data,Data,Data
+Filtro aplicado desde el dashboard.,Filtro aplicado desde el dashboard.,Filter applied from the dashboard.,Filtro applicato dal dashboard.,Iragazkia panelatik aplikatuta.,Filtre aplicat des del tauler.
+Filtro eliminado: %s,Filtro eliminado: %s,Filter deleted: %s,Filtro eliminato: %s,Iragazkia ezabatuta: %s,Filtre eliminat: %s
+Filtro guardado: %s,Filtro guardado: %s,Filter saved: %s,Filtro salvato: %s,Iragazkia gordeta: %s,Filtre guardat: %s
+Gestor de enlaces AO,Gestor de enlaces AO,AO Link Manager,Gestore di link AO,AO estekak kudeatzailea,Gestor d'enllaços AO
+Guardar,Guardar,Save,Salva,Gorde,Guarda
+Guardar cambios,Guardar cambios,Save changes,Salva modifiche,Gorde aldaketak,Guarda canvis
+Guardar filtro…,Guardar filtro…,Save filter…,Salva filtro…,Gorde iragazkia…,Guarda filtre…
+Guardar filtro como…,Guardar filtro como…,Save filter as…,Salva filtro come…,Gorde iragazkia honela…,Guarda filtre com a…
+Guardar informe de disponibilidad,Guardar informe de disponibilidad,Save availability report,Salva report di disponibilità,Gorde eskuragarritasun-txostena,Guarda informe de disponibilitat
+Idioma,Idioma,Language,Lingua,Hizkuntza,Idioma
+Hay una comprobación pendiente. ¿Reanudar el escaneo?,Hay una comprobación pendiente. ¿Reanudar el escaneo?,A check is pending. Resume scanning?,C'è una verifica in sospeso. Riprendere la scansione?,Egiaztapen bat dago zain. Eskaneatzea berrekin?,Hi ha una comprovació pendent. Voleu reprendre l'escaneig?
+Hay una nueva versión: %s,Hay una nueva versión: %s,A new version is available: %s,È disponibile una nuova versione: %s,Bertsio berri bat dago: %s,Hi ha una versió nova: %s
+Historial de disponibilidad,Historial de disponibilidad,Availability history,Cronologia disponibilità,Eskuragarritasunaren historia,Historial de disponibilitat
+Historial…,Historial…,History…,Cronologia…,Historia…,Historial…
+Imagen,Imagen,Image,Immagine,Irudia,Imatge
+Importar…,Importar…,Import…,Importa…,Inportatu…,Importa…
+Individual,Individual,Single,Singolo,Banakakoa,Individual
+Informe %s guardado (%d enlaces).,Informe %s guardado (%d enlaces).,%s report saved (%d links).,Report %s salvato (%d link).,%s txostena gordeta (%d esteka).,Informe %s guardat (%d enllaços).
+Informe de disponibilidad…,Informe de disponibilidad…,Availability report…,Report di disponibilità…,Eskuragarritasun-txostena…,Informe de disponibilitat…
+La URL debe empezar por http:// o https://.,La URL debe empezar por http:// o https://.,The URL must start with http:// or https://.,L'URL deve iniziare con http:// o https://.,URLak http:// edo https:// hasi behar du.,La URL ha de començar per http:// o https://.
+La URL no puede estar vacía.,La URL no puede estar vacía.,The URL cannot be empty.,L'URL non può essere vuoto.,URLa ezin da hutsik egon.,La URL no pot estar buida.
+Limpiar,Limpiar,Clean,Pulisci,Garbitu,Neteja
+Limpiar capturas huérfanas,Limpiar capturas huérfanas,Clean orphan captures,Pulisci catture orfane,Garbitu kaptura umezurtzak,Neteja captures òrfenes
+Limpiar capturas huérfanas…,Limpiar capturas huérfanas…,Clean orphan captures…,Pulisci catture orfane…,Garbitu kaptura umezurtzak…,Neteja captures òrfenes…
+Listo: %d caídos de %d,Listo: %d caídos de %d,Done: %d down of %d,Fatto: %d non raggiungibili su %d,Eginda: %d erori %d(e)tik,Llest: %d caiguts de %d
+"Marcar los fallos de red como «sin comprobar» en vez de «caído»","Marcar los fallos de red como «sin comprobar» en vez de «caído»","Mark network failures as «not checked» instead of «down»",Segnare i guasti di rete come «non verificato» invece di «non raggiungibile»,"Sare-erroreak «egiaztatu gabe» gisa markatu, «erori» beharrean",Marca les fallades de xarxa com a «sense comprovar» en lloc de «caigut»
+Nada que comprobar,Nada que comprobar,Nothing to check,Niente da verificare,Ezer ez egiaztatzeko,Res a comprovar
+No existe (%d),No existe (%d),Does not exist (%d),Non esiste (%d),Ez da existitzen (%d),No existeix (%d)
+No existe el dominio,No existe el dominio,Domain does not exist,Il dominio non esiste,Domeinua ez da existitzen,El domini no existeix
+No existe ese filtro.,No existe ese filtro.,That filter does not exist.,Quel filtro non esiste.,Iragazki hori ez da existitzen.,Aquest filtre no existeix.
+No hay capturas huérfanas.,No hay capturas huérfanas.,No orphan captures.,Nessuna cattura orfana.,Ez dago kaptura umezurtzik.,No hi ha captures òrfenes.
+No hay copia de seguridad disponible.,No hay copia de seguridad disponible.,No backup available.,Nessun backup disponibile.,Ez dago segurtasun-kopiarik eskuragarri.,No hi ha cap còpia de seguretat disponible.
+No se añadió ningún enlace.,No se añadió ningún enlace.,No link was added.,Nessun link è stato aggiunto.,Ez zen estekarik gehitu.,No s'ha afegit cap enllaç.,No se agregó ningún enlace.
+No se encontró el enlace.,No se encontró el enlace.,Link not found.,Link non trovato.,Ez zen esteka aurkitu.,No s'ha trobat l'enllaç.
+No se pudo cargar la imagen.,No se pudo cargar la imagen.,Could not load the image.,Impossibile caricare l'immagine.,Ezin izan zen irudia kargatu.,No s'ha pogut carregar la imatge.
+No se pudo comprobar actualizaciones.,No se pudo comprobar actualizaciones.,Could not check for updates.,Impossibile controllare gli aggiornamenti.,Ezin izan ziren eguneraketak egiaztatu.,No s'han pogut comprovar les actualitzacions.
+No se pudo conectar,No se pudo conectar,Could not connect,Impossibile connettersi,Ezin izan zen konektatu,No s'ha pogut connectar
+No se pudo enviar la petición,No se pudo enviar la petición,Could not send the request,Impossibile inviare la richiesta,Ezin izan zen eskaera bidali,No s'ha pogut enviar la petició
+No se pudo exportar el diagnóstico (%d errores).,No se pudo exportar el diagnóstico (%d errores).,Could not export diagnostics (%d errors).,Impossibile esportare la diagnostica (%d errori).,Ezin izan zen diagnostikoa esportatu (%d errore).,No s'ha pogut exportar el diagnòstic (%d errors).
+No se pudo exportar.,No se pudo exportar.,Could not export.,Impossibile esportare.,Ezin izan zen esportatu.,No s'ha pogut exportar.
+No se pudo guardar el catálogo.,No se pudo guardar el catálogo.,Could not save the catalogue.,Impossibile salvare il catalogo.,Ezin izan zen katalogoa gorde.,No s'ha pogut guardar el catàleg.
+No se pudo guardar el enlace.,No se pudo guardar el enlace.,Could not save the link.,Impossibile salvare il link.,Ezin izan zen esteka gorde.,No s'ha pogut guardar l'enllaç.
+No se pudo guardar el lote.,No se pudo guardar el lote.,Could not save the batch.,Impossibile salvare il lotto.,Ezin izan zen sorta gorde.,No s'ha pogut guardar el lot.
+No se pudo guardar el orden.,No se pudo guardar el orden.,Could not save the order.,Impossibile salvare l'ordine.,Ezin izan zen ordena gorde.,No s'ha pogut guardar l'ordre.
+No se pudo guardar la configuración.,No se pudo guardar la configuración.,Could not save the settings.,Impossibile salvare la configurazione.,Ezin izan zen konfigurazioa gorde.,No s'ha pogut guardar la configuració.
+No se pudo iniciar la conexión,No se pudo iniciar la conexión,Could not start the connection,Impossibile avviare la connessione,Ezin izan zen konexioa hasi,No s'ha pogut iniciar la connexió
+No se pudo procesar la imagen.,No se pudo procesar la imagen.,Could not process the image.,Impossibile elaborare l'immagine.,Ezin izan zen irudia prozesatu.,No s'ha pogut processar la imatge.
+No se pudo restaurar la copia.,No se pudo restaurar la copia.,Could not restore the backup.,Impossibile ripristinare il backup.,Ezin izan zen kopiatik berreskuratu.,No s'ha pogut restaurar la còpia.
+No se pudo escribir el catálogo base.,No se pudo escribir el catálogo base.,Could not write the base catalogue.,Impossibile scrivere il catalogo di base.,Ezin izan zen oinarrizko katalogoa idatzi.,No s'ha pogut escriure el catàleg base.
+Nombre,Nombre,Name,Nome,Izena,Nom
+Nueva versión disponible,Nueva versión disponible,New version available,Nuova versione disponibile,Bertsio berria eskuragarri,Versió nova disponible
+OK (%d),OK (%d),OK (%d),OK (%d),OK (%d),OK (%d)
+Oscuro,Oscuro,Dark,Scuro,Iluna,Fosc
+"Ordenar por %s","Ordenar por %s","Sort by %s",Ordina per %s,Ordenatu %s(r)en arabera,Ordena per %s
+Otro,Otro,Other,Altro,Beste bat,Un altre
+Parche,Parche,Patch,Patch,Adabakia,Pedaç
+Pasa el ratón por una barra para ver el detalle.,Pasa el ratón por una barra para ver el detalle.,Hover a bar for details.,Passa il mouse su una barra per vedere il dettaglio.,Pasatu sagua barra baten gainetik xehetasuna ikusteko.,Passa el ratolí per una barra per veure el detall.,Pasá el mouse por una barra para ver el detalle.
+Pega al menos una URL.,Pega al menos una URL.,Paste at least one URL.,Incolla almeno un URL.,Itsatsi URL bat gutxienez.,Enganxa almenys una URL.,Pegá al menos una URL.
+Por categoría,Por categoría,By category,Per categoria,Kategoriaren arabera,Per categoria
+Por host (problemáticos),Por host (problemáticos),By host (troubled),Per host (problematici),Ostalariaren arabera (arazoak),Per amfitrió (problemàtics)
+Preferencias,Preferencias,Preferences,Preferenze,Hobespenak,Preferències
+Preferencias…,Preferencias…,Preferences…,Preferenze…,Hobespenak…,Preferències…
+Presets…,Presets…,Presets…,Preset…,Aurrezarpenak…,Predefinits…
+Quitar imagen,Quitar imagen,Remove image,Rimuovi immagine,Kendu irudia,Treu imatge
+Rango de días incluido en el gráfico,Rango de días incluido en el gráfico,Day range included in the chart,Intervallo di giorni incluso nel grafico,Grafikoan sartutako egun-tartea,Rang de dies inclòs al gràfic
+Re-comprobando %s…,Re-comprobando %s…,Re-checking %s…,Riverifica %s…,Berregiaztatzen %s…,Recomprovant %s…
+Reintentar los fallos transitorios (2 veces),Reintentar los fallos transitorios (2 veces),Retry transient failures (twice),Riprova i guasti temporanei (2 volte),Saiatu berriro behin-behineko hutsegiteekin (2 aldiz),Reintenta les fallades transitòries (2 vegades)
+Reanudar,Reanudar,Resume,Riprendi,Berrekin,Reprèn
+Reanudar escaneo,Reanudar escaneo,Resume scan,Riprendi scansione,Berrekin eskaneatzea,Reprèn l'escaneig
+Redirección inválida (%d),Redirección inválida (%d),Invalid redirect (%d),Reindirizzamento non valido (%d),Balidogabeko birbideratzea (%d),Redirecció invàlida (%d)
+Restaurar,Restaurar,Restore,Ripristina,Berreskuratu,Restaura
+Restaurar copia,Restaurar copia,Restore backup,Ripristina backup,Berreskuratu kopia,Restaura còpia
+Restaurar copia…,Restaurar copia…,Restore backup…,Ripristina backup…,Berreskuratu kopia…,Restaura còpia…
+Rotos:,Rotos:,Broken:,Rotti:,Hautsiak:,Trencats:
+Salir,Salir,Quit,Esci,Irten,Surt
+Se añadieron %d enlaces.,Se añadieron %d enlaces.,%d links added.,Sono stati aggiunti %d link.,%d esteka gehitu ziren.,S'han afegit %d enllaços.,Se agregaron %d enlaces.
+Servidor,Servidor,Server,Server,Zerbitzaria,Servidor
+Sin comprobaciones todavía,Sin comprobaciones todavía,No checks yet,Ancora nessuna verifica,Oraindik egiaztapenik gabe,Encara sense comprovacions
+Sin comprobar,Sin comprobar,Not checked,Non verificato,Egiaztatu gabe,Sense comprovar
+Sin comprobar: %d,Sin comprobar: %d,Not checked: %d,Non verificato: %d,Egiaztatu gabe: %d,Sense comprovar: %d
+Sin historial,Sin historial,No history,Nessuna cronologia,Historiarik gabe,Sense historial
+Sin conexión segura,Sin conexión segura,No secure connection,Nessuna connessione sicura,Konexio segururik gabe,Sense connexió segura
+Sin respuesta (tiempo agotado),Sin respuesta (tiempo agotado),No response (timed out),Nessuna risposta (tempo scaduto),Erantzunik gabe (denbora agortuta),Sense resposta (temps esgotat)
+"Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído».","Solo para catálogos con hostings antiguos: el enlace pasa a «válido con aviso» en vez de «caído».","Only for catalogs with old hosts: the link becomes «valid with a warning» instead of «down».",Solo per cataloghi con host vecchi: il link diventa «valido con avviso» invece di «non raggiungibile».,"Ostalari zaharrak dituzten katalogoetarako soilik: esteka «baliozkoa ohartarazpenarekin» bihurtzen da, «erori» beharrean.",Només per a catàlegs amb amfitrions antics: l'enllaç passa a «vàlid amb avís» en lloc de «caigut».
+Subir,Subir,Move up,Sposta su,Igo,Puja
+Tema,Tema,Theme,Tema,Gaia,Tema
+Timeout por enlace (segundos),Timeout por enlace (segundos),Per-link timeout (seconds),Timeout per link (secondi),Estekako denbora-muga (segundoak),Temps d'espera per enllaç (segons)
+Todas,Todas,All,Tutte,Guztiak,Totes
+Todas las palabras,Todas las palabras,All words,Tutte le parole,Hitz guztiak,Totes les paraules
+Todo el histórico,Todo el histórico,All history,Tutta la cronologia,Historia osoa,Tot l'historial
+Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,Todavía no hay comprobaciones. Pulsa Comprobar enlaces para empezar.,No checks yet. Press Check links to start.,Ancora nessuna verifica. Premi Verifica link per iniziare.,Oraindik ez dago egiaztapenik. Sakatu Egiaztatu estekak hasteko.,Encara no hi ha comprovacions. Prem Comprova enllaços per començar.,Todavía no hay comprobaciones. Pulsá Comprobar enlaces para empezar.
+Todos,Todos,All,Tutti,Denak,Tots
+Total,Total,Total,Totale,Guztira,Total
+Total:,Total:,Total:,Totale:,Guztira:,Total:
+URL,URL,URL,URL,URLa,URL
+URL copiada: %s,URL copiada: %s,URL copied: %s,URL copiato: %s,URLa kopiatuta: %s,URL copiada: %s
+URL inválida,URL inválida,Invalid URL,URL non valido,URL baliogabea,URL invàlida
+Una URL por línea,Una URL por línea,One URL per line,Un URL per riga,URL bat lerroko,Una URL per línia
+Última,Última,Last,Ultima,Azkena,Última
+Varias,Varias,Multiple,Multiple,Hainbat,Diverses
+Ver release,Ver release,View release,Vedi release,Ikusi bertsioa,Veure versió
+Verificaciones en paralelo,Verificaciones en paralelo,Parallel checks,Verifiche in parallelo,Egiaztapenak paraleloan,Verificacions en paral·lel
+Vista grilla,Vista grilla,Grid view,Vista griglia,Sareta-ikuspegia,Vista de graella
+Vista lista,Vista lista,List view,Vista elenco,Zerrenda-ikuspegia,Vista de llista
+Volver a comprobar,Volver a comprobar,Re-check,Verifica di nuovo,Egiaztatu berriro,Torna a comprovar
+Válido,Válido,Working,Funzionante,Baliozkoa,Vàlid
+Válidos,Válidos,Valid,Validi,Baliozkoak,Vàlids
+Válidos: %d,Válidos: %d,Valid: %d,Validi: %d,Baliozkoak: %d,Vàlids: %d
+Veces,Veces,Times,Volte,Aldiak,Vegades
+Ya existe: %s,Ya existe: %s,Already exists: %s,Esiste già: %s,Dagoeneko badago: %s,Ja existeix: %s
+¿Borrar %d capturas huérfanas?,¿Borrar %d capturas huérfanas?,Delete %d orphan captures?,Eliminare %d catture orfane?,Ezabatu %d kaptura umezurtz?,Voleu esborrar %d captures òrfenes?
+¿Eliminar «%s» para siempre?,¿Eliminar «%s» para siempre?,Delete “%s” forever?,Eliminare «%s» per sempre?,Ezabatu «%s» betiko?,Voleu eliminar «%s» per sempre?
+¿Reanudar escaneo de %d enlaces?,¿Reanudar escaneo de %d enlaces?,Resume scanning %d links?,Riprendere la scansione di %d link?,Berrekin %d estekaren eskaneatzea?,Voleu reprendre l'escaneig de %d enllaços?
+¿Restaurar el catálogo desde la copia de seguridad?,¿Restaurar el catálogo desde la copia de seguridad?,Restore the catalogue from the backup?,Ripristinare il catalogo dal backup?,Berreskuratu katalogoa segurtasun-kopiatik?,Voleu restaurar el catàleg des de la còpia de seguretat?
+"Abrir el dashboard","Abrir el dashboard","Open the dashboard",Apri il dashboard,Ireki panela,Obre el tauler
+Cambio,Change,Change,Modifica,Aldaketa,Canvi
+Cambios desde la última vez,Cambios desde la última vez,Changes since last time,Modifiche dall'ultima volta,Aldaketak azken alditik,Canvis des de l'última vegada
+Cambios exportados.,Cambios exportados.,Changes exported.,Modifiche esportate.,Aldaketak esportatuta.,Canvis exportats.
+cambió,cambió,changed,modificato,aldatu da,va canviar
+"El historial de cambios llega hasta %s.","El historial de cambios llega hasta %s.","The change history goes back to %s.",La cronologia delle modifiche arriva fino a %s.,Aldaketen historia %s(r)aino iristen da.,L'historial de canvis arriba fins a %s.
+Detalle,Detalle,Detail,Dettaglio,Xehetasuna,Detall
+Exportar cambios,Exportar cambios,Export changes,Esporta modifiche,Esportatu aldaketak,Exporta canvis
+Filtrar en la lista,Filtrar en la lista,Filter in the list,Filtra nell'elenco,Iragazi zerrendan,Filtra a la llista
+"Ha cambiado desde la última vez y ahora está caído.","Ha cambiado desde la última vez y ahora está caído.","It changed since last time and is now down.",È cambiato dall'ultima volta e ora non è raggiungibile.,Azken alditik aldatu da eta orain erorita dago.,Ha canviat des de l'última vegada i ara està caigut.
+"Ha cambiado desde la última vez y ahora está válido.","Ha cambiado desde la última vez y ahora está válido.","It changed since last time and is now up.",È cambiato dall'ultima volta e ora è funzionante.,Azken alditik aldatu da eta orain baliozkoa da.,Ha canviat des de l'última vegada i ara és vàlid.
+"Ha cambiado desde la última vez.","Ha cambiado desde la última vez.","It changed since last time.",È cambiato dall'ultima volta.,Azken alditik aldatu da.,Ha canviat des de l'última vegada.
+Sin cambios,Sin cambios,No changes,Nessuna modifica,Aldaketarik gabe,Sense canvis
+"%d nuevos caídos","%d nuevos caídos","%d newly down",%d nuovi non raggiungibili,%d erori berri,%d caiguts nous
+"%d nuevo caído","%d nuevo caído","%d newly down",%d nuovo non raggiungibile,%d erori berri,%d caigut nou
+%d recuperados,%d recuperados,%d recovered,%d recuperati,%d berreskuratu,%d recuperats
+"%d recuperado","%d recuperado","%d recovered",%d recuperato,%d berreskuratu,%d recuperat
+%d reubicados,%d reubicados,%d moved,%d spostati,%d lekuz aldatuta,%d reubicats
+"%d reubicado","%d reubicado","%d moved",%d spostato,%d lekuz aldatuta,%d reubicat
+"%s → %s",%s → %s,%s → %s,%s → %s,%s → %s,%s → %s
+Sin cambios desde la última vez,Sin cambios desde la última vez,No changes since last time,Nessuna modifica dall'ultima volta,Aldaketarik ez azken alditik,Sense canvis des de l'última vegada
+Viendo cambios…,Viendo cambios…,Viewing changes…,Visualizzazione modifiche…,Aldaketak ikusten…,Veient canvis…
+No se pudo guardar el historial de cambios.,No se pudo guardar el historial de cambios.,Could not save the change history.,Impossibile salvare la cronologia delle modifiche.,Ezin izan zen aldaketen historia gorde.,No s'ha pogut guardar l'historial de canvis.
+1 seleccionado,1 seleccionado,1 selected,1 selezionato,1 hautatuta,1 seleccionat
+%d seleccionados,%d seleccionados,%d selected,%d selezionati,%d hautatuta,%d seleccionats
+%d URLs copiadas,%d URLs copiadas,%d URLs copied,%d URL copiati,%d URL kopiatuta,%d URL copiades
+%d enlaces eliminados,%d enlaces eliminados,%d links deleted,%d link eliminati,%d esteka ezabatuta,%d enllaços eliminats
+¿Eliminar %d enlaces para siempre?,¿Eliminar %d enlaces para siempre?,Delete %d links for good?,Eliminare %d link per sempre?,Ezabatu %d esteka betiko?,Voleu eliminar %d enllaços per sempre?
+0 seleccionados,0 seleccionados,0 selected,0 selezionati,0 hautatuta,0 seleccionats
+Seleccionar lo que veo,Seleccionar lo que veo,Select what I see,Seleziona ciò che vedo,Hautatu ikusten dudana,Selecciona el que veig
+Comprobar seleccionados,Comprobar seleccionados,Check selected,Verifica selezionati,Egiaztatu hautatutakoak,Comprova els seleccionats
+Copiar URLs,Copiar URLs,Copy URLs,Copia URL,Kopiatu URLak,Copia URL
+Exportar selección,Exportar selección,Export selection,Esporta selezione,Esportatu hautapena,Exporta la selecció
+Eliminar seleccionados,Eliminar seleccionados,Delete selected,Elimina selezionati,Ezabatu hautatutakoak,Elimina els seleccionats
+Quitar selección,Quitar selección,Clear selection,Annulla selezione,Kendu hautapena,Treu la selecció
+"Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Seleccionado: Ctrl+C copia, Ctrl+Intro comprueba, Mayús+Supr elimina.","Selected: Ctrl+C copies, Ctrl+Enter checks, Shift+Delete deletes.","Selezionato: Ctrl+C copia, Ctrl+Invio verifica, Maiusc+Canc elimina.","Hautatuta: Ctrl+C kopiatu, Ctrl+Sartu egiaztatu, Maius+Ezabatu ezabatu.","Seleccionat: Ctrl+C copia, Ctrl+Retorn comprova, Majúsc+Supr elimina."
+Actualizar URL,Actualizar URL,Update URL,Aggiorna URL,Eguneratu URLa,Actualitza URL
+Actualizar,Actualizar,Update,Aggiorna,Eguneratu,Actualitza
+Enlaces reubicados,Enlaces reubicados,Relocated links,Link spostati,Lekuz aldatutako estekak,Enllaços reubicats
+Actualizar todos,Actualizar todos,Update all,Aggiorna tutti,Eguneratu denak,Actualitza-ho tot
+Origen,Origen,Origin,Origine,Jatorria,Origen
+Destino,Destino,Destination,Destinazione,Helmuga,Destí
+Comprobado,Comprobado,Checked,Verificato,Egiaztatuta,Comprovat
+Actualizar URL a la nueva,Actualizar URL a la nueva,Update URL to the new one,Aggiorna URL a quella nuova,Eguneratu URLa berrira,Actualitza la URL a la nova
+movido,movido,moved,spostato,lekuz aldatuta,mogut
+No hay una redirección que actualizar.,No hay una redirección que actualizar.,There is no redirect to update.,Non c'è alcun reindirizzamento da aggiornare.,Ez dago eguneratzeko birbideratzerik.,No hi ha cap redirecció per actualitzar.
+La URL nueva es la misma.,La URL nueva es la misma.,The new URL is the same.,Il nuovo URL è lo stesso.,URL berria bera da.,La URL nova és la mateixa.
+Redirige a: %s,Redirige a: %s,Redirects to: %s,Reindirizza a: %s,Hona birbideratzen du: %s,Redirigeix a: %s
+Solo cambia el dominio o el https: %s,Solo cambia el dominio o el https: %s,Only the domain or https changed: %s,Cambia solo il dominio o https: %s,Domeinua edo https-a soilik aldatzen da: %s,Només canvia el domini o l'https: %s
+Cambiar la URL de %s por %s.,Cambiar la URL de %s por %s.,Change the URL of %s to %s.,Cambiare l'URL di %s in %s.,Aldatu %s(r)en URLa %s(r)engatik.,Canviar la URL de %s per %s.
+¿Actualizar «%s» a %s?,¿Actualizar «%s» a %s?,Update «%s» to %s?,Aggiornare «%s» a %s?,Eguneratu «%s» %s(r)a?,Voleu actualitzar «%s» a %s?
+¿Actualizar la URL de %d enlaces a la nueva?,¿Actualizar la URL de %d enlaces a la nueva?,Update the URL of %d links to the new one?,Aggiornare l'URL di %d link a quella nuova?,Eguneratu %d estekaren URLa berrira?,Voleu actualitzar la URL de %d enllaços a la nova?
+1 URL actualizada,1 URL actualizada,1 URL updated,1 URL aggiornato,1 URL eguneratuta,1 URL actualitzada
+%d URLs actualizadas,%d URLs actualizadas,%d URLs updated,%d URL aggiornati,%d URL eguneratuta,%d URL actualitzades
+Instantáneas diarias,Instantáneas diarias,Daily snapshots,Istantanee giornaliere,Eguneroko argazkiak,Instantànies diàries
+"Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga.","Cuántos días de Instantánea diaria se guardan para el gráfico del dashboard. Lo que pase de aquí se purga.","How many days of daily snapshot are kept for the dashboard chart. Anything older is purged.","Quanti giorni di istantanea giornaliera vengono conservati per il grafico del dashboard. Ciò che supera questo limite viene eliminato.","Zenbat eguneroko argazki gordetzen diren panelaren grafikoan. Hortik haratagoa ezabatu egiten da.",Quants dies d'instantània diària es guarden per al gràfic del tauler. El que passi d'aquí es purga.
+Estado del catálogo por día,Estado del catálogo por día,Catalogue state per day,Stato del catalogo per giorno,Katalogoaren egoera egunez egun,Estat del catàleg per dia
+Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial.,Aún no hay Instantáneas diarias: el gráfico muestra los cambios de estado del historial.,No daily snapshots yet: the chart shows the state changes from history.,Ancora nessuna istantanea giornaliera: il grafico mostra i cambi di stato della cronologia.,Oraindik ez dago eguneroko argazkirik: grafikoak historiako egoera-aldaketak erakusten ditu.,Encara no hi ha instantànies diàries: el gràfic mostra els canvis d'estat de l'historial.
+Purgar instantáneas antiguas…,Purgar instantáneas antiguas…,Purge old snapshots…,Elimina istantanee vecchie…,Ezabatu argazki zaharrak…,Purga instantànies antigues…
+No se pudieron purgar las instantáneas.,No se pudieron purgar las instantáneas.,Could not purge the snapshots.,Impossibile eliminare le istantanee.,Ezin izan ziren argazkiak ezabatu.,No s'han pogut purgar les instantànies.
+No hay instantáneas más antiguas de %d días.,No hay instantáneas más antiguas de %d días.,There are no snapshots older than %d days.,Non ci sono istantanee più vecchie di %d giorni.,Ez dago %d egun baino zaharrago den argazkirik.,No hi ha instantànies més antigues de %d dies.
+Instantáneas antiguas eliminadas: %d,Instantáneas antiguas eliminadas: %d,Old snapshots deleted: %d,Istantanee vecchie eliminate: %d,Argazki zaharrak ezabatuta: %d,Instantànies antigues eliminades: %d
+Sin datos: ese día no hubo Instantánea.,Sin datos: ese día no hubo Instantánea.,No data: no snapshot that day.,Nessun dato: quel giorno non c'era alcuna istantanea.,Daturik gabe: egun horretan ez zen argazkirik egon.,Sense dades: aquell dia no hi va haver instantània.
+Cambios de estado: %d,Cambios de estado: %d,State changes: %d,Cambi di stato: %d,Egoera-aldaketak: %d,Canvis d'estat: %d
+"Desde el día anterior: %+d válidos, %+d caídos","Desde el día anterior: %+d válidos, %+d caídos","Since the previous day: %+d valid, %+d broken","Rispetto al giorno precedente: %+d validi, %+d non raggiungibili","Aurreko egunetik: %+d baliozko, %+d erori","Des del dia anterior: %+d vàlids, %+d caiguts"
+"Almacenamiento: %s · %d enlaces · %d estados · %d capturas · %s en disco","Almacenamiento: %s · %d enlaces · %d estados · %d capturas · %s en disco","Storage: %s · %d links · %d states · %d screenshots · %s on disk",Archiviazione: %s · %d link · %d stati · %d catture · %s su disco,Biltegiratea: %s · %d esteka · %d egoera · %d kaptura · %s diskoan,Emmagatzematge: %s · %d enllaços · %d estats · %d captures · %s al disc
+"%d B","%d B","%d B",%d B,%d B,%d B
+"%.1f KB","%.1f KB","%.1f KB",%.1f KB,%.1f KB,%.1f KB
+"%.1f MB","%.1f MB","%.1f MB",%.1f MB,%.1f MB,%.1f MB
+"No se pudo migrar al almacenamiento elegido: %s","No se pudo migrar al almacenamiento elegido: %s","Could not migrate to the chosen storage: %s",Non è stato possibile migrare allo spazio di archiviazione scelto: %s,Ezin izan zen aukeratutako biltegira migratu: %s,No s'ha pogut migrar a l'emmagatzematge triat: %s
+"%s: %d de %d","%s: %d de %d","%s: %d of %d","%s: %d di %d","%s: %d / %d",%s: %d de %d
+"recuentos distintos","recuentos distintos","counts differ",conteggi diversi,zenbaketak desberdinak,recomptes diferents
+"Se copiaron los datos, pero no se pudo guardar la preferencia: %s","Se copiaron los datos, pero no se pudo guardar la preferencia: %s","The data was copied, but the preference could not be saved: %s","I dati sono stati copiati, ma non è stato possibile salvare la preferenza: %s","Datuak kopiatu ziren, baina ezin izan zen hobespena gorde: %s","S'han copiat les dades, però no s'ha pogut guardar la preferència: %s"
+"Datos copiados a %s. Reinicia para usarlos.","Datos copiados a %s. Reinicia para usarlos.","Data copied to %s. Restart to use it.","Dati copiati in %s. Riavvia per utilizzarli.","Datuak %s(e)ra kopiatuta. Berrabiarazi erabiltzeko.",Dades copiades a %s. Reinicia per utilitzar-les.,"Datos copiados a %s. Reiniciá para usarlos."
+"Almacenamiento","Almacenamiento","Storage",Archiviazione,Biltegiratzea,Emmagatzematge
+"Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json.","Carpeta donde viven los datos y las capturas. Se lee de user://almacenamiento.json.","Folder holding the data and the screenshots. Read from user://almacenamiento.json.",Cartella in cui risiedono i dati e le catture. Si legge da user://almacenamiento.json.,Datuak eta kapturak bizi diren karpeta. user://almacenamiento.json(e)tik irakurtzen da.,Carpeta on viuen les dades i les captures. Es llegeix de user://almacenamiento.json.
+"Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Elige otra carpeta y copia todo allí. Se aplica al reiniciar.","Pick another folder and copy everything there. It applies after a restart.","Scegli un'altra cartella e copia tutto lì. Si applica al riavvio.","Aukeratu beste karpeta bat eta kopiatu dena hara. Berrabiaraztean aplikatzen da.",Tria una altra carpeta i copia-ho tot allà. S'aplica en reiniciar.,"Elegí otra carpeta y copiá todo ahí. Se aplica al reiniciar."
+"Cambiar carpeta...","Cambiar carpeta...","Change folder...",Cambia cartella...,Aldatu karpeta...,Canvia carpeta...
+"Abrir carpeta","Abrir carpeta","Open folder",Apri cartella,Ireki karpeta,Obre carpeta
+"Lo que ocupa el almacenamiento ahora mismo.","Lo que ocupa el almacenamiento ahora mismo.","What the storage is using right now.",Quanto occupa l'archiviazione in questo momento.,Biltegirateak oraintxe okupatzen duena.,El que ocupa l'emmagatzematge ara mateix.
+"Elige la carpeta de datos","Elige la carpeta de datos","Choose the data folder","Scegli la cartella dei dati",Aukeratu datuen karpeta,Tria la carpeta de dades,"Elegí la carpeta de datos"
+"%s\nOrigen: %s","%s\nOrigen: %s","%s\nSource: %s","%s\nOrigine: %s","%s\nJatorria: %s",%s\nOrigen: %s
+"El modo «%s» todavía no está disponible.","El modo «%s» todavía no está disponible.","The «%s» mode is not available yet.",La modalità «%s» non è ancora disponibile.,«%s» modua oraindik ez dago eskuragarri.,El mode «%s» encara no està disponible.
+"Los datos ahora van en %s. Reinicia para usarlos.","Los datos ahora van en %s. Reinicia para usarlos.","Your data now goes in %s. Restart to use it.","Ora i dati vanno in %s. Riavvia per utilizzarli.","Datuak orain %s(e)n daude. Berrabiarazi erabiltzeko.",Les dades ara van a %s. Reinicia per utilitzar-les.,"Los datos ahora van en %s. Reiniciá para usarlos."
+"Cómo se guardan los datos","Cómo se guardan los datos","How the data is stored",Come vengono salvati i dati,Nola gordetzen diren datuak,Com es guarden les dades
+"Ficheros sueltos","Ficheros sueltos","Separate files","File separati",Fitxategi solteak,Fitxers solts,"Archivos sueltos"
+"Un único fichero","Un único fichero","A single file","Un unico file",Fitxategi bakarra,Un únic fitxer,"Un único archivo"
+"Base de datos","Base de datos","Database",Database,Datu-basea,Base de dades
+"Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Ficheros sueltos: un JSON por cosa. Un único fichero: todo junto, un solo guardado. Base de datos: todo en un fichero SQLite.","Separate files: one JSON per thing. A single file: everything together, one write. Database: everything in one SQLite file.","File separati: un JSON per ogni cosa. Un unico file: tutto insieme, un unico salvataggio. Database: tutto in un file SQLite.","Fitxategi solteak: JSON bat gauzako. Fitxategi bakarra: dena elkarrekin, gordetze bakarra. Datu-basea: dena SQLite fitxategi batean.","Fitxers solts: un JSON per cosa. Un únic fitxer: tot junt, un sol guardat. Base de dades: tot en un fitxer SQLite.","Archivos sueltos: un JSON por cosa. Un único archivo: todo junto, un solo guardado. Base de datos: todo en un archivo SQLite."
