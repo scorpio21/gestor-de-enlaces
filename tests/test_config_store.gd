@@ -201,7 +201,7 @@ func idioma_persistido() -> bool:
 func idioma_invalido_rechaza() -> bool:
 	var store := ConfigStore.new(BASE)
 	store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "es")
-	return not store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "fr") \
+	return not store.guardar(4, 12.0, true, 30, "oscuro", "", "", 1, "de") \
 		and store.cargar().get("idioma", "#") == "es"
 
 

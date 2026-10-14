@@ -24,8 +24,8 @@ func _initialize() -> void:
 
 func _a_cabecera(filas: Array) -> void:
 	var cab: Array = filas[0]
-	_check(cab.size() == 9 and cab[0] == "keys" and cab[1] == "es" and cab[2] == "en" and cab[3] == "it" and cab[4] == "eu" and cab[5] == "ca" and cab[6] == "gl" and cab[7] == "pt" and cab[8] == "es_AR", \
-		"la cabecera del CSV es keys,es,en,it,eu,ca,gl,pt,es_AR")
+	_check(cab.size() == 10 and cab[0] == "keys" and cab[1] == "es" and cab[2] == "en" and cab[3] == "it" and cab[4] == "eu" and cab[5] == "ca" and cab[6] == "gl" and cab[7] == "pt" and cab[8] == "fr" and cab[9] == "es_AR", \
+		"la cabecera del CSV es keys,es,en,it,eu,ca,gl,pt,fr,es_AR")
 
 
 func _a_integridad(filas: Array) -> void:
@@ -84,7 +84,7 @@ func _b_cobertura(filas: Array) -> void:
 func _c_idioma() -> void:
 	_check(IdiomaScript.aplicar("", "en_US") == "en", "aplicar autodetecta en_US")
 	_check(IdiomaScript.aplicar("", "es_ES") == "es", "aplicar autodetecta es_ES")
-	_check(IdiomaScript.aplicar("", "fr_FR") == "es", "aplicar cae a es con locale ajeno")
+	_check(IdiomaScript.aplicar("", "de_DE") == "es", "aplicar cae a es con locale ajeno")
 	_check(IdiomaScript.aplicar("en", "es_ES") == "en", "la config en manda sobre el SO")
 	_check(IdiomaScript.aplicar("es", "en_US") == "es", "la config es manda sobre el SO")
 	_check(IdiomaScript.aplicar("", "es_AR") == "es_AR", "aplicar autodetecta es_AR")
@@ -106,6 +106,9 @@ func _c_idioma() -> void:
 	_check(IdiomaScript.aplicar("", "pt_PT") == "pt", "aplicar autodetecta pt_PT")
 	_check(IdiomaScript.aplicar("", "pt-BR") == "pt", "aplicar autodetecta pt-BR con guion")
 	_check(IdiomaScript.aplicar("pt", "es_ES") == "pt", "la config pt manda sobre el SO")
+	_check(IdiomaScript.aplicar("", "fr_FR") == "fr", "aplicar autodetecta fr_FR")
+	_check(IdiomaScript.aplicar("", "fr-FR") == "fr", "aplicar autodetecta fr-FR con guion")
+	_check(IdiomaScript.aplicar("fr", "es_ES") == "fr", "la config fr manda sobre el SO")
 	IdiomaScript.cargar_traducciones()
 	TranslationServer.set_locale("es")
 	_check(tr("Nombre") == "Nombre", "la carga manual registra traducciones es")
@@ -131,6 +134,9 @@ func _c_idioma() -> void:
 	TranslationServer.set_locale("pt")
 	_check(tr("Nombre") == "Nome", "la carga manual registra traducciones pt")
 	_check(tr("%d enlaces") == "%d ligações", "el template %d enlaces se traduce en pt")
+	TranslationServer.set_locale("fr")
+	_check(tr("Nombre") == "Nom", "la carga manual registra traducciones fr")
+	_check(tr("%d enlaces") == "%d liens", "el template %d enlaces se traduce en fr")
 	TranslationServer.set_locale("es")
 	TranslationServer.clear()
 	IdiomaScript.cargar_importadas()
@@ -149,6 +155,8 @@ func _c_idioma() -> void:
 	_check(tr("Nombre") == "Nome", "el fallback importado registra el gallego completo")
 	TranslationServer.set_locale("pt")
 	_check(tr("Nombre") == "Nome", "el fallback importado registra el portugués completo")
+	TranslationServer.set_locale("fr")
+	_check(tr("Nombre") == "Nom", "el fallback importado registra el francés completo")
 	TranslationServer.set_locale("es")
 
 
