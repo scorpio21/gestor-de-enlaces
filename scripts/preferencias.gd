@@ -8,7 +8,7 @@ const AlmacenJsonScript := preload("res://scripts/almacen_json.gd")
 const AlmacenUnoScript := preload("res://scripts/almacen_uno.gd")
 const AlmacenBdScript := preload("res://scripts/almacen_bd.gd")
 
-const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"], ["es_AR", "Español (Argentina)", "ar"], ["it", "Italiano", "it"], ["eu", "Euskara", "eu"], ["ca", "Català", "ca"], ["gl", "Galego", "gl"], ["pt", "Português", "pt"], ["fr", "Français", "fr"], ["de", "Deutsch", "de"]]
+const IDIOMAS := [["es", "Español", "es"], ["en", "English", "gb"], ["es_AR", "Español (Argentina)", "ar"], ["it", "Italiano", "it"], ["eu", "Euskara", "eu"], ["ca", "Català", "ca"], ["gl", "Galego", "gl"], ["pt", "Português", "pt"], ["fr", "Français", "fr"], ["de", "Deutsch", "de"], ["ru", "Русский", "ru"]]
 
 @onready var paralelismo_spin: SpinBox = %Paralelismo
 @onready var timeout_spin: SpinBox = %Timeout

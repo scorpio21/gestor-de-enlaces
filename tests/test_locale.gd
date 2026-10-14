@@ -24,8 +24,8 @@ func _initialize() -> void:
 
 func _a_cabecera(filas: Array) -> void:
 	var cab: Array = filas[0]
-	_check(cab.size() == 11 and cab[0] == "keys" and cab[1] == "es" and cab[2] == "en" and cab[3] == "it" and cab[4] == "eu" and cab[5] == "ca" and cab[6] == "gl" and cab[7] == "pt" and cab[8] == "fr" and cab[9] == "de" and cab[10] == "es_AR", \
-		"la cabecera del CSV es keys,es,en,it,eu,ca,gl,pt,fr,de,es_AR")
+	_check(cab.size() == 12 and cab[0] == "keys" and cab[1] == "es" and cab[2] == "en" and cab[3] == "it" and cab[4] == "eu" and cab[5] == "ca" and cab[6] == "gl" and cab[7] == "pt" and cab[8] == "fr" and cab[9] == "de" and cab[10] == "ru" and cab[11] == "es_AR", \
+		"la cabecera del CSV es keys,es,en,it,eu,ca,gl,pt,fr,de,ru,es_AR")
 
 
 func _a_integridad(filas: Array) -> void:
@@ -112,6 +112,9 @@ func _c_idioma() -> void:
 	_check(IdiomaScript.aplicar("", "de_DE") == "de", "aplicar autodetecta de_DE")
 	_check(IdiomaScript.aplicar("", "de-DE") == "de", "aplicar autodetecta de-DE con guion")
 	_check(IdiomaScript.aplicar("de", "es_ES") == "de", "la config de manda sobre el SO")
+	_check(IdiomaScript.aplicar("", "ru_RU") == "ru", "aplicar autodetecta ru_RU")
+	_check(IdiomaScript.aplicar("", "ru-RU") == "ru", "aplicar autodetecta ru-RU con guion")
+	_check(IdiomaScript.aplicar("ru", "es_ES") == "ru", "la config ru manda sobre el SO")
 	IdiomaScript.cargar_traducciones()
 	TranslationServer.set_locale("es")
 	_check(tr("Nombre") == "Nombre", "la carga manual registra traducciones es")
@@ -143,6 +146,9 @@ func _c_idioma() -> void:
 	TranslationServer.set_locale("de")
 	_check(tr("Nombre") == "Name", "la carga manual registra traducciones de")
 	_check(tr("%d enlaces") == "%d Links", "el template %d enlaces se traduce en de")
+	TranslationServer.set_locale("ru")
+	_check(tr("Nombre") == "Название", "la carga manual registra traducciones ru")
+	_check(tr("%d enlaces") == "%d ссылок", "el template %d enlaces se traduce en ru")
 	TranslationServer.set_locale("es")
 	TranslationServer.clear()
 	IdiomaScript.cargar_importadas()
@@ -166,6 +172,9 @@ func _c_idioma() -> void:
 	TranslationServer.set_locale("de")
 	_check(tr("Nombre") == "Name", "el fallback importado registra el alemán completo")
 	_check(tr("%d enlaces") == "%d Links", "el fallback importado traduce el template alemán (no cae a en)")
+	TranslationServer.set_locale("ru")
+	_check(tr("Nombre") == "Название", "el fallback importado registra el ruso completo")
+	_check(tr("%d enlaces") == "%d ссылок", "el fallback importado traduce el template ruso (no cae a en)")
 	TranslationServer.set_locale("es")
 
 
