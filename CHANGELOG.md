@@ -2,7 +2,11 @@
 
 Todos los cambios relevantes de GestorAO por día.
 
-## [Sin publicar]
+## [0.4.0] - 2026-10-17
+
+### Cambiado
+
+- **Versión del proyecto a 0.4.0.** Primer release que publica la ronda completa de internacionalización —los nueve idiomas añadidos desde `0.3.0` (`es_AR`, `it`, `eu`, `ca`, `gl`, `pt`, `fr`, `de`, `ru`)— y el tercer modo de almacenamiento (`#65`), además del arreglo del propio workflow de release (ver *Corregido*). Con `v0.4.0` el workflow `.github/workflows/release.yml` **se estrena**: se añadió en `#69` después del tag `v0.3.0`, así que hasta ahora ningún tag lo había ejecutado.
 
 ### Añadido
 
@@ -27,6 +31,8 @@ Todos los cambios relevantes de GestorAO por día.
 - **Las traducciones no cargaban en el binario exportado** (`#80`): `idioma.gd` leía `res://locale/gestor_es_en.csv` en runtime, pero con `export_filter="all_resources"` el `.csv` crudo **no entra en el pck** (del `.csv` solo se empaqueta el `.translation` que genera el importador), así que la lectura devolvía vacío y **no se registraba ninguna traducción**: el selector de idioma no cambiaba nada en un release y la UI salía siempre con las claves (español). `cargar_traducciones()` ahora usa el `.csv` cuando está (el editor, que es la fuente de verdad) y, si no, carga los `.translation` importados, que sí viajan empaquetados. Para que no vuelva a pasar en silencio, el smoke —que corre *dentro* del binario— traduce «Nombre» y comprueba el override `es_AR` de «Ficheros sueltos». Afectaba por igual a `es` y `en` desde `#30`.
 
 - **Elegir Base de datos reventaba al arrancar** (`#65`): `cola_store.cargar()` lee la sección cruda de la cola con `almacen.seccion("cola")` para recuperar también su fecha, y el backend de SQLite no tenía ese método, así que en cuanto el modo era Base de datos `main.gd` soltaba `Invalid call. Nonexistent function 'seccion'` en `_ready()` (el camino `_scan_revisar_pendientes()` → `pendientes()` → `cargar()`) y la app no llegaba a levantar. `almacen_bd.gd` implementa `seccion()` devolviendo cada sección como el backend de fichero único —la cola con su `fecha` al lado de las urls— y la superficie `almacen.gd` trae un `{}` por defecto para que un backend que no lo implemente devuelva vacío en vez de romper. De paso, `GESTORAO_ALMACEN=base_datos` con otra `GESTORAO_BASE` ya no dejaba el `.db` en `user://gestorao.db`: el valor por defecto de `ruta_bd` no es una elección explícita y, si la base se mudó, la base de datos la sigue.
+
+- **Las notas del GitHub Release salían vacías** (`#69`): el `awk` que extrae la sección del `CHANGELOG` para el cuerpo del GitHub Release incrementaba el contador en la propia línea del encabezado y **salía justo al llegar al segundo `## [`**, así que el fichero de notas quedaba vacío en cualquier tag. Ahora imprime la primera sección —la versión que se publica— y para en la siguiente. El workflow se añadió en `#69`, **después** del tag `v0.3.0`, así que nunca llegó a ejecutarse y el fallo no se había visto: `v0.4.0` es el primer tag que lo estrena.
 
 ### Mantenimiento
 

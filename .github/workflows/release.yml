@@ -73,7 +73,7 @@ jobs:
         id: changelog
         shell: bash
         run: |
-          awk '/^## \[/{p++} p==2{if($0 ~ /^## \[/) exit; print}' CHANGELOG.md | sed '/^$/d' > RELEASE_NOTES.md || echo "" > RELEASE_NOTES.md
+          awk '/^## \[/{n++; if(n==2) exit} n==1' CHANGELOG.md | sed '/^$/d' > RELEASE_NOTES.md || echo "" > RELEASE_NOTES.md
           if [ -s RELEASE_NOTES.md ]; then
             echo "has_notes=true" >> "$GITHUB_OUTPUT"
           else
